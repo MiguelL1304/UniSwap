@@ -10,6 +10,8 @@
     * Lead Programmer
 * **Christine Kommu** :lollipop:
     * Team Manager
+* **Cynthia Kem** :dumpling:
+  * UX/UI Design
 
 ## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
 
