@@ -7,6 +7,7 @@
 
 1. **Christine Kommu** :lollipop:
     * Team Manager
+    * Documentation Lead
 
 1. **Miguel Leon** :ghost:
     * Code Architecture
@@ -14,6 +15,9 @@
 
 1. **Cynthia Kem** :dumpling:
     * UX/UI Design
+  
+1. **Jay Tak** :video_game:
+    * Testing Lead
 
 ## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
 
