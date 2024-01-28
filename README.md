@@ -15,6 +15,9 @@
 1. **Cynthia Kem** :dumpling:
     * UX/UI Design
 
+1. **Drew Kuykendall**
+    * Data Modeler
+
 ## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
 
 ## Link to Our JIRA: [Epic](https://jira.ggc.edu/projects/SDII24/issues/SDII24-8?filter=allopenissues)
