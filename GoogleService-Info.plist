@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCDb0-DtrTnDQq7Uur3jpu71ID3tCFGmEU</string>
+	<key>GCM_SENDER_ID</key>
+	<string>515683420215</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.uni.UniSwap</string>
+	<key>PROJECT_ID</key>
+	<string>uniswap-e14c1</string>
+	<key>STORAGE_BUCKET</key>
+	<string>uniswap-e14c1.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:515683420215:ios:39df4b2925a57b1ab197b2</string>
+	<key>DATABASE_URL</key>
+	<string>https://uniswap-e14c1-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>

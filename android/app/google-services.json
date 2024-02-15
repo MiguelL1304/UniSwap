@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "515683420215",
+    "project_id": "uniswap-e14c1",
+    "storage_bucket": "uniswap-e14c1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:515683420215:android:5bd6bb2633dac46eb197b2",
+        "android_client_info": {
+          "package_name": "com.uni.UniSwap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaL8LsOuNT4GUFYXvHQl4UWqdrTPSLuvE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
