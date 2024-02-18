@@ -1,6 +1,6 @@
 import React from 'react';
 
-function ProfileScreen(props) {
+function Search(props) {
     return (
         <div>
             
@@ -8,4 +8,4 @@ function ProfileScreen(props) {
     );
 }
 
-export default ProfileScreen;
+export default Search;
