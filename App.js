@@ -6,7 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Login from "./app/screens/Login";
 import Listing from "./app/screens/Listing";
-import { Search } from "./app/screens/Search";
+import SignUp from "./app/screens/SignUp";
 import Profile from "./app/screens/Profile";
 
 
@@ -21,6 +21,13 @@ export default function App() {
         <Stack.Screen 
           name="Login" 
           component={Login} 
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen 
+          name="SignUp" 
+          component={SignUp} 
           options={{
             headerShown: false,
           }}
