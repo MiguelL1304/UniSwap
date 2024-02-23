@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, StyleSheet, Text, View } from 'react-native'
 import { TextInput } from 'react-native';
 import { TouchableOpacity } from 'react-native';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../../Firebase/firebase';
 import { useNavigation } from '@react-navigation/native';
 import { signOut } from 'firebase/auth';
@@ -17,7 +17,7 @@ const SignUp = () => {
         const unsubscribe = auth.onAuthStateChanged(user => {
             if (user) {
                 signOut(auth)
-                navigation.replace("Login")
+                .then(() => navigation.replace("Login"))
                 .catch(error => alert(error.message))
             }
         })
@@ -26,6 +26,12 @@ const SignUp = () => {
     }, [])
 
     const handleNewAccount = () => {
+        //Handles non edu emails
+        if (!email.endsWith('.edu')) {
+            alert('Please enter an email associated with an educational institution');
+            return; // Exit function if email is invalid
+        }
+
         createUserWithEmailAndPassword(auth, email, password)
         .then(userCredentials => {
             const user = userCredentials.user;
@@ -102,7 +108,7 @@ const styles = StyleSheet.create({
         marginTop: 40,
     },
     button: {
-        backgroundColor: 'blue',
+        backgroundColor: '#3f9eeb',
         width: '100%',
         padding: 15,
         borderRadius: 10,
@@ -111,7 +117,7 @@ const styles = StyleSheet.create({
     buttonOutline: {
         backgroundColor: 'white',
         marginTop: 5,
-        borderColor: 'blue',
+        borderColor: '#3f9eeb',
         borderWidth: 2,
     },
     buttonText: {
