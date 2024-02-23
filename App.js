@@ -29,12 +29,15 @@ export default function App() {
           name="SignUp" 
           component={SignUp} 
           options={{
-            headerShown: false,
+            headerTitle: '',
           }}
         />
         <Stack.Screen 
           name="Profile" 
           component={Profile} 
+          options={{
+            headerShown: false,
+          }}
         />
         <Stack.Screen 
           name="Listing" 
