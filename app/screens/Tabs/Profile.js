@@ -3,18 +3,21 @@ import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { signOut } from "firebase/auth";
 import { doc, getDoc } from 'firebase/firestore';
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 
 //this is the first screen you see once logged in
 
 function Profile() {
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
 
   const [profileData, setProfileData] = useState(null); // State to store profile data
 
   useEffect(() => {
-    fetchProfile(); // Fetch profile data when component mounts
-  }, []);
+    if (isFocused) {
+      fetchProfile(); // Fetch profile data when screen is focused
+    }
+  }, [isFocused]);
 
   const handleSignOut = () => {
     signOut(auth)
@@ -41,6 +44,10 @@ function Profile() {
     }
   };
 
+  const handleUpdate = () => {
+    navigation.navigate("UpdateProfile", { profileData: profileData });
+  };
+
   return (
     <View style={styles.container}>
       <Text>Email: {auth.currentUser?.email}</Text>
@@ -49,10 +56,16 @@ function Profile() {
           <Text>First Name: {profileData.firstName}</Text>
           <Text>Last Name: {profileData.lastName}</Text>
           <Text>College: {profileData.college}</Text>
+          <Text>Bio: {profileData.bio}</Text>
         </View>
       )}
+      <TouchableOpacity
+        onPress={handleUpdate}
+        style={[styles.button, styles.buttonOutline]}>
+        <Text style={styles.buttonOutlineText}>Update Profile</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={handleSignOut} style={styles.button}>
-        <Text style={styles.buttonText}>Sign out</Text>
+        <Text style={styles.buttonText}>Sign Out</Text>
       </TouchableOpacity>
     </View>
   );
@@ -76,6 +89,17 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  buttonOutline: {
+    backgroundColor: "white",
+    marginTop: 5,
+    borderColor: "#3f9eeb",
+    borderWidth: 2,
+  },
+  buttonOutlineText: {
+    color: "#3f9eeb",
     fontWeight: "700",
     fontSize: 16,
   },
