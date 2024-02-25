@@ -48,7 +48,7 @@ const SignUp = () => {
         lastName: lastName,
         college: college,
       });
-      console.log("Profile data added successfully!"); //Delete Later
+      console.log("Profile data added successfully!"); //Delete Later to not show
     } catch (error) {
       alert(error.message);
     }
