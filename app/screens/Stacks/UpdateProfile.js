@@ -2,55 +2,40 @@ import React, { useEffect, useState } from "react";
 import { KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
 import { TextInput } from "react-native";
 import { TouchableOpacity } from "react-native";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 
-const SignUp = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [college, setCollege] = useState("");
+const UpdateProfile = ({ route }) => { // Receive profile data as props
 
-  const navigation = useNavigation();
+    const { profileData } = route.params;
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        signOut(auth)
-          .then(() => navigation.goBack())
-          .catch((error) => alert(error.message));
-      }
-    });
+    const [firstName, setFirstName] = useState(profileData.firstName || ""); // Initialize state with profile data
+    const [lastName, setLastName] = useState(profileData.lastName || "");
+    const [college, setCollege] = useState(profileData.college || "");
+    const [bio, setBio] = useState(profileData.bio || "");
 
-    return unsubscribe;
-  }, []);
+    const navigation = useNavigation();
 
-  const handleNewAccount = async () => {
-    //Handles non edu emails
-    if (!email.endsWith(".edu")) {
-      alert("Please enter an email associated with an educational institution");
-      return; // Exit function if email is invalid
-    }
-
+    const handleUpdate = async () => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      console.log("Registered with: ", email);
+        const email = auth.currentUser.email;
+        const userProfileRef = doc(firestoreDB, "profile", email);
+        // Create a reference to the 'profile' collection with the user's email as the document ID
   
-      const userProfileRef = doc(firestoreDB, "profile", email);
-      // Create a reference to the 'profile' collection with the user's email as the document ID
-  
-      await setDoc(userProfileRef, {
-        firstName: firstName,
-        lastName: lastName,
-        college: college,
-      });
-      console.log("Profile data added successfully!"); //Delete Later to not show
+        await setDoc(userProfileRef, {
+            firstName: firstName,
+            lastName: lastName,
+            college: college,
+            bio: bio,
+        });
+
+        alert("Profile updated successfully!");
+        navigation.goBack();
+
     } catch (error) {
-      alert(error.message);
+        alert(error.message);
     }
   };
 
@@ -76,22 +61,15 @@ const SignUp = () => {
           style={styles.input}
         />
         <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={(text) => setEmail(text)}
+          placeholder="Bio"
+          value={bio}
+          onChangeText={(text) => setBio(text)}
           style={styles.input}
-        />
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={(text) => setPassword(text)}
-          style={styles.input}
-          secureTextEntry
         />
       </View>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleNewAccount} style={styles.button}>
-          <Text style={styles.buttonText}>Register Account</Text>
+        <TouchableOpacity onPress={handleUpdate} style={styles.button}>
+          <Text style={styles.buttonText}>Update Account</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -145,4 +123,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignUp;
+export default UpdateProfile;

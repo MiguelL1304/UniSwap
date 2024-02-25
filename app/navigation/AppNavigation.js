@@ -11,6 +11,7 @@ import Wishlist from "../screens/Tabs/Wishlist";
 import Cart from "../screens/Tabs/Cart";
 // import OnboardingScreen from "react-native-onboarding-swiper";
 import OnboardingScreen from "../screens/Stacks/OnboardingScreen";
+import UpdateProfile from "../screens/Stacks/UpdateProfile";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -18,7 +19,18 @@ const Tab = createBottomTabNavigator();
 export default function AppNavigation() {
   function MyStack() {
     return (
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: {
+          backgroundColor: "#d4e9fa", // Set the header background color
+        },
+        headerTintColor: "#3f9eeb", // Set the header text color
+        headerTitleStyle: {
+          fontWeight: "bold",
+          fontSize: 25,
+        },
+      }}
+      >
         <Stack.Screen
           name="OnboardingScreen"
           component={OnboardingScreen}
@@ -30,16 +42,10 @@ export default function AppNavigation() {
         <Stack.Screen
           name="Login"
           component={Login}
-          options={{
-            headerShown: false,
-          }}
         />
         <Stack.Screen
           name="SignUp"
           component={SignUp}
-          options={{
-            headerShown: false,
-          }}
         />
         <Stack.Screen
           name="Tabs"
@@ -47,6 +53,10 @@ export default function AppNavigation() {
           options={{
             headerShown: false,
           }}
+        />
+        <Stack.Screen
+          name="UpdateProfile"
+          component={UpdateProfile}
         />
       </Stack.Navigator>
     );
