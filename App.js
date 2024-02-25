@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
@@ -10,6 +11,11 @@ import SignUp from "./app/screens/SignUp";
 import Profile from "./app/screens/Profile";
 import OnboardingScreen from './app/screens/OnboardingScreen';
 import { AsyncStorage } from '@react-native-async-storage/async-storage';
+
+
+import * as React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import AppNavigation from "./app/navigation/AppNavigation";
 
 const Stack = createNativeStackNavigator();
 
@@ -73,56 +79,14 @@ const lauch = () => {
 }
 
 export default function App() {
-  
-
-  return (
-    <NavigationContainer>
-      <Stack.Navigator>
-      <Stack.Screen 
-          name="OnboardingScreen" 
-          component={OnboardingScreen} 
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen 
-          name="Login" 
-          component={Login} 
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen 
-          name="SignUp" 
-          component={SignUp} 
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen 
-          name="Profile" 
-          component={Profile} 
-        />
-        <Stack.Screen 
-          name="Listing" 
-          component={Listing} 
-        />
-      
-      </Stack.Navigator>
-    </NavigationContainer>
-    
-    //<View style={styles.container}>
-      //<Text>Open up App.js to start working on your app!!!</Text>
-      //<StatusBar style="auto" />
-    //</View>
-  );
+  return <AppNavigation />;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
