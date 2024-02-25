@@ -9,6 +9,8 @@ import Home from "../screens/Tabs/Home";
 import Profile from "../screens/Tabs/Profile";
 import Wishlist from "../screens/Tabs/Wishlist";
 import Cart from "../screens/Tabs/Cart";
+// import OnboardingScreen from "react-native-onboarding-swiper";
+import OnboardingScreen from "../screens/OnboardingScreen";;
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -17,6 +19,15 @@ export default function AppNavigation() {
   function MyStack() {
     return (
       <Stack.Navigator>
+
+        <Stack.Screen 
+          name="OnboardingScreen" 
+          component={OnboardingScreen} 
+          options={{
+            headerShown: false,
+          }}
+        />
+
         <Stack.Screen
           name="Login"
           component={Login}
