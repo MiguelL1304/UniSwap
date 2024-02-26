@@ -57,10 +57,12 @@ function Profile() {
         />
       </View>
       {/* User Information */}
+      <Text style={styles.emailText}>Email: {auth.currentUser?.email}</Text>
       <Text style={styles.userInfoText}>{profileData.firstName}</Text>
       <Text style={styles.userInfoText}>{profileData.lastName}</Text>
       <Text style={styles.userInfoText}>{profileData.college}</Text>
-      <Text style={styles.emailText}>Email: {auth.currentUser?.email}</Text>
+      <Text style={styles.userInfoText}>{profileData.bio}</Text>
+      
       {/* Update Profile button */}
       <TouchableOpacity onPress={handleUpdate} style={[styles.button, styles.buttonOutline]}>
         <Text style={styles.buttonOutlineText}>Update Profile</Text>
@@ -120,7 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderColor: "#3f9eeb",
     borderWidth: 2,
-    marginTop: 5,
+    marginTop: 50,
   },
   buttonOutlineText: {
     color: "#3f9eeb",
