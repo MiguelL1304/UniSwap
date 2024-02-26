@@ -12,6 +12,7 @@ import Cart from "../screens/Tabs/Cart";
 // import OnboardingScreen from "react-native-onboarding-swiper";
 import OnboardingScreen from "../screens/Stacks/OnboardingScreen";
 import UpdateProfile from "../screens/Stacks/UpdateProfile";
+import ForgotPassword from "../screens/Stacks/ForgotPassword";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -57,6 +58,16 @@ export default function AppNavigation() {
         <Stack.Screen
           name="UpdateProfile"
           component={UpdateProfile}
+          options={{
+            headerTitle: "Update Profile",
+          }}
+        />
+        <Stack.Screen
+          name="ForgotPassword"
+          component={ForgotPassword}
+          options={{
+            headerTitle: "Reset Password",
+          }}
         />
       </Stack.Navigator>
     );

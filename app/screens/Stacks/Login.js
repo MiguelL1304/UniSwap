@@ -29,6 +29,10 @@ const Login = () => {
     navigation.navigate("SignUp");
   };
 
+  const handleForgot = () => {
+    navigation.navigate("ForgotPassword");
+  };
+
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password).catch((error) =>
       alert(error.message)
@@ -51,6 +55,11 @@ const Login = () => {
           style={styles.input}
           secureTextEntry
         />
+      </View>
+      <View style={styles.forgotContainer}>
+        <TouchableOpacity onPress={handleForgot} style={styles.forgotPassword}>
+          <Text style={styles.forgotText}>Forgot Password?</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={handleLogin} style={styles.button}>
@@ -89,6 +98,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 40,
+  },
+  forgotPassword: {
+    backgroundColor: "white",
+    width: "50%",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  forgotText: {
+    color: "#3f9eeb",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  forgotContainer: {
+    justifyContent: 'flex-end',
+    flexDirection: 'row', // to make sure the button is aligned to the right
+    width: '80%', // adjust width as needed
   },
   button: {
     backgroundColor: "#3f9eeb",
