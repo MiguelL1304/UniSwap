@@ -20,7 +20,11 @@ const UpdateProfile = ({ route }) => { // Receive profile data as props
 
     const handleUpdate = async () => {
     try {
-        const email = auth.currentUser.email;
+        const email = auth.currentUser ? auth.currentUser.email: null;
+        if (!email) {
+          throw new Error("Current user is null or email is undefined.");
+        }
+      
         const userProfileRef = doc(firestoreDB, "profile", email);
         // Create a reference to the 'profile' collection with the user's email as the document ID
   
@@ -31,11 +35,11 @@ const UpdateProfile = ({ route }) => { // Receive profile data as props
             bio: bio,
         });
 
-        alert("Profile updated successfully!");
+        console.log("Profile updated successfully!");
         navigation.goBack();
 
     } catch (error) {
-        alert(error.message);
+        console.error(error.message);
     }
   };
 

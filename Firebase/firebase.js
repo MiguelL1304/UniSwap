@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from 'firebase/firestore';
-import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { getFirestore } from "firebase/firestore";
+import { initializeAuth, getReactNativePersistence } from "@firebase/auth";
+import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 
 
 
@@ -13,13 +13,13 @@ const firebaseConfig = {
   storageBucket: "uniswap-e14c1.appspot.com",
   messagingSenderId: "515683420215",
   appId: "1:515683420215:web:39189f0a17497775b197b2",
-  measurementId: "G-L1XZP18FBF"
+  measurementId: "G-L1XZP18FBF",
 };
 
 // Initialize Firebase and Auth
 const app = initializeApp(firebaseConfig);
 const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
 
 
