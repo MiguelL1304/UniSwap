@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { signOut } from "firebase/auth";
@@ -6,13 +6,15 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 
 function Profile() {
+  
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
   const [profileData, setProfileData] = useState({
     firstName: "First Name: NA",
     lastName: "Last Name: NA",
-    college: "College: NA"
+    college: "College: NA",
+    profilePic: "https://via.placeholder.com/100",
   }); // Default values for the profile data
 
   useEffect(() => {
@@ -52,7 +54,7 @@ function Profile() {
       {/* Profile Image moved up */}
       <View style={styles.profileImgContainer}>
         <Image
-          source={{ uri: 'https://via.placeholder.com/100' }}
+          source={{ uri: profileData.profilePic ? profileData.profilePic : 'https://via.placeholder.com/100' }}
           style={styles.profileImg}
         />
       </View>
@@ -71,6 +73,7 @@ function Profile() {
       <TouchableOpacity onPress={handleSignOut} style={styles.button}>
         <Text style={styles.buttonText}>Sign Out</Text>
       </TouchableOpacity>
+
     </View>
   );
 }
@@ -78,6 +81,13 @@ function Profile() {
 export default Profile;
 
 const styles = StyleSheet.create({
+  contentSheet: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    padding: 16,
+  },
   container: {
     flex: 1,
     justifyContent: 'flex-start',
