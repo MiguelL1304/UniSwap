@@ -100,7 +100,6 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   forgotPassword: {
-    backgroundColor: "white",
     width: "50%",
     padding: 15,
     borderRadius: 10,

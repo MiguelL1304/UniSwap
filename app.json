@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./app/assets/icon.png",
     "userInterfaceStyle": "light",
+    "permissions": ["CAMERA", "CAMERA_ROLL"],
     "splash": {
       "image": "./app/assets/splash.png",
       "resizeMode": "contain",
@@ -16,7 +17,11 @@
     ],
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "permissions": [
+        "CAMERA",
+        "PHOTO_LIBRARY_ADD_ONLY"
+      ]
     },
     "android": {
       "googleServicesFile": "google-services.json",
@@ -24,7 +29,12 @@
         "foregroundImage": "./app/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.uni.UniSwap"
+      "package": "com.uni.UniSwap",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./app/assets/favicon.png"
@@ -37,6 +47,14 @@
           "ios": {
             "userFrameworks": "static"
           }
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true
         }
       ]
     ]

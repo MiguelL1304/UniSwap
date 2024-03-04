@@ -47,6 +47,7 @@ const SignUp = () => {
         firstName: firstName,
         lastName: lastName,
         college: college,
+        profilePic: "https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg",
       });
       console.log("Profile data added successfully!"); //Delete Later to not show
     } catch (error) {
