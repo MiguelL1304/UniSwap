@@ -13,6 +13,7 @@ import Cart from "../screens/Tabs/Cart";
 import OnboardingScreen from "../screens/Stacks/OnboardingScreen";
 import UpdateProfile from "../screens/Stacks/UpdateProfile";
 import ForgotPassword from "../screens/Stacks/ForgotPassword";
+import CreateListing from "../screens/Stacks/CreateListing";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -67,6 +68,13 @@ export default function AppNavigation() {
           component={ForgotPassword}
           options={{
             headerTitle: "Reset Password",
+          }}
+        />
+        <Stack.Screen
+          name="CreateListing"
+          component={CreateListing}
+          options={{
+            headerTitle: "Listing",
           }}
         />
       </Stack.Navigator>
