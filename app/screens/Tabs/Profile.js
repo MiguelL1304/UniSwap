@@ -49,6 +49,10 @@ function Profile() {
     navigation.navigate("UpdateProfile", { profileData: profileData });
   };
 
+  const handleListing = () => {
+    navigation.navigate("CreateListing", { profileData: profileData });
+  };
+
   return (
     <View style={styles.container}>
       {/* Profile Image moved up */}
@@ -74,6 +78,10 @@ function Profile() {
         <Text style={styles.buttonText}>Sign Out</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={handleListing} style={[styles.button, styles.buttonOutline]}>
+        <Text style={styles.buttonOutlineText}>Listing</Text>
+      </TouchableOpacity>
+
     </View>
   );
 }
@@ -93,8 +101,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 20,
-    paddingTop: 80, // Adjusted padding to move everything up
-    backgroundColor: '#fff',
+    paddingTop: 80,
+    backgroundColor: 'white',
   },
   profileImgContainer: {
     marginBottom: 40, // Adjusted space above the profile image

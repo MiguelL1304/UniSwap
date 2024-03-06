@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo, useRef, useCallback  } from "react";
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert } from "react-native";
+import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, ScrollView, Keyboard } from "react-native";
 import { TextInput } from "react-native";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
@@ -16,31 +16,46 @@ import { Camera } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 
-//import firestore from '@react-native-firebase/firestore';
 
-const UpdateProfile = ({ route }) => { // Receive profile data as props
-    const snapPoints = useMemo(() => ['25%'], []);
+const CreateListing = ({ route }) => { // Receive profile data as props
+    const snapPoints = useMemo(() => ['30%'], []);
+    const [animatedIndex, setAnimatedIndex] = useState(-1);
 
     const bottomSheetRef = useRef(null);
 
-    const handleClosePress = () => bottomSheetRef.current?.close();
-    const handleOpenPress = () => bottomSheetRef.current?.expand();
+    const handleClosePress = () => {
+      bottomSheetRef.current?.close();
+      setAnimatedIndex(-1);
+    };
+    
+    const handleOpenPress = () => {
+      bottomSheetRef.current?.expand();
+      setAnimatedIndex(1);
+    };
 
-    const { profileData } = route.params;
+    const { listingID } = route.params;
+    const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
 
-    const [firstName, setFirstName] = useState(profileData.firstName || ""); // Initialize state with profile data
-    const [lastName, setLastName] = useState(profileData.lastName || "");
-    const [college, setCollege] = useState(profileData.college || "");
-    const [bio, setBio] = useState(profileData.bio || "");
+    const [ownerID, setOwnerID] = useState("");
+    const [ownerName, setOwnerName] = useState("");
+    const [price, setPrice] = useState("");
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [condition, setCondition] = useState("");
+    const [category, setCategory] = useState("");
+    const [subject, setSubject] = useState("");
+    const [course, setCourse] = useState("");
+
+
     const [profilePic, setProfilePic] = useState("https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg");
     
 
     useEffect(() => {
       // Set profilePic state when component mounts
-      setProfilePic(profileData.profilePic || "");
+      //setProfilePic(profileData.profilePic || "");
     }, []);
 
-    const[progress, setProgress] = useState(0);
+    //const[progress, setProgress] = useState(0);
 
     const navigation = useNavigation();
 
@@ -116,15 +131,6 @@ const UpdateProfile = ({ route }) => { // Receive profile data as props
     }
   }
 
-  async function compressImage(uri) {
-    const compressedImage = await ImageManipulator.manipulateAsync(
-      uri,
-      [],
-      { compress: 0.5 } // Adjust compression level as needed
-    );
-    return compressedImage;
-  }
-
   async function uploadImage (uri, fileType) {
     try {
       const email = auth.currentUser ? auth.currentUser.email: null;
@@ -169,7 +175,7 @@ const UpdateProfile = ({ route }) => { // Receive profile data as props
     }
   }
 
-  const handleDeleteProfilePic = async () => {
+  const handleDeletePic = async () => {
     try {
       const email = auth.currentUser ? auth.currentUser.email : null;
       if (!email) {
@@ -207,50 +213,78 @@ const UpdateProfile = ({ route }) => { // Receive profile data as props
     (props) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />,
     []
   );
-
+  
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-    <KeyboardAvoidingView style={[styles.container, { marginTop: -200 }]} behavior="padding">
-      <View style={styles.inputContainer}>
-        <View style={styles.profileImgContainer}>
+    <GestureHandlerRootView style={[styles.container, { backgroundColor: 'white' }]} onTouchStart={Keyboard.dismiss}>
+      <View style={styles.imgContainer}>
+        <View style={styles.imageWrapper}>
           <TouchableOpacity onPress={handleImagePress}>
             <Image
-              source={{ uri: profilePic }}
-              style={styles.profileImg}
+              source={require("../../assets/addPhotoIcon.png")}
+              style={styles.listingImg}
             />
           </TouchableOpacity>
         </View>
+      </View>
+
+      <View style={styles.titleContainer}>
+        <Text style={styles.titleText}>Title:</Text>
         <TextInput
-          placeholder="First Name"
-          value={firstName}
-          onChangeText={(text) => setFirstName(text)}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Last Name"
-          value={lastName}
-          onChangeText={(text) => setLastName(text)}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="College / University"
-          value={college}
-          onChangeText={(text) => setCollege(text)}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Bio"
-          value={bio}
-          onChangeText={(text) => setBio(text)}
-          style={styles.input}
+          value={title}
+          onChangeText={(text) => setTitle(text)}
+          style={styles.titleInput}
         />
       </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleUpdate} style={styles.button}>
-          <Text style={styles.buttonText}>Update Account</Text>
+
+      <View style={styles.descriptionContainer}>
+        <Text style={styles.titleText}>Description:</Text>
+        <TextInput
+          value={description}
+          onChangeText={(text) => setDescription(text)}
+          style={styles.descriptionInput}
+          multiline={true}
+        />
+      </View>
+
+      <View style={styles.titleContainer}>
+        <Text style={styles.titleText}>Price: $</Text>
+        <TextInput
+          value={price}
+          onChangeText={(text) => setPrice(text)}
+          style={styles.priceInput}
+          keyboardType="numeric"
+        />
+      </View>
+
+      <View style={styles.menuView}>
+        <TouchableOpacity style={styles.topMenuButton}>
+          <Text style={styles.titleText}> lotus</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.menuButton}>
+          <Text style={styles.titleText}> lotus</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.menuButton}>
+          <Text style={styles.titleText}> lotus</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.menuButton}>
+          <Text style={styles.titleText}> lotus</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.menuButton}>
+          <Text style={styles.titleText}> lotus</Text>
         </TouchableOpacity>
       </View>
 
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleUpdate} style={styles.button}>
+          <Text style={styles.buttonText}>Create Listing</Text>
+        </TouchableOpacity>
+      </View>
+      
       <BottomSheet 
         ref={bottomSheetRef} 
         index={-1} 
@@ -268,18 +302,13 @@ const UpdateProfile = ({ route }) => { // Receive profile data as props
           <TouchableOpacity onPress={takePicture} style={styles.picButton}>
             <Text style={styles.buttonText}>Take a Picture</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleDeleteProfilePic} style={styles.deleteButton}>
+          <TouchableOpacity onPress={handleDeletePic} style={styles.deleteButton}>
             <Text style={styles.buttonText}>Delete</Text>
           </TouchableOpacity>
         </View>
       </BottomSheet>
-      
-      {/*<Uploading />
-      <ProgressBar progress={50}/>*/}
-
-      
-    </KeyboardAvoidingView>
     </GestureHandlerRootView>
+    
   );
 };
 
@@ -296,23 +325,85 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: 'white',
+    backgroundColor: '#ffffff',
   },
-  inputContainer: {
-    width: "80%",
+  menuView: {
+    width: "85%", 
+    height: "25%",
+    backgroundColor: "#d4e9fa",
+    marginTop: 20,
+    borderRadius: 10,
   },
-  input: {
+  topMenuButton: {
+    width: "100%", 
+    height: "20%",
+    backgroundColor: "#d4e9fa",
+    borderRadius: 10,
+  },
+  menuButton: {
+    width: "100%", 
+    height: "20%",
+    backgroundColor: "#d4e9fa",
+    borderTopLeftRadius: 0, 
+    borderTopRightRadius: 0, 
+    borderBottomLeftRadius: 10, 
+    borderBottomRightRadius: 10,
+    borderTopWidth: 2,
+    borderColor: '#3f9eeb',
+  },
+  titleContainer: {
+    width: "85%",
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  descriptionContainer: {
+    width: "85%",
+    marginTop: 20,
+  },
+  titleText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: "#3f9eeb",
+    padding: 5,
+  },
+  titleInput: {
     backgroundColor: "#d4e9fa",
     paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 10,
     marginTop: 5,
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 18,
+  },
+  priceInput: {
+    backgroundColor: "#d4e9fa",
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginTop: 5,
+    flex: 1,
+    marginLeft: 10,
+    marginRight: 140,
+    fontSize: 20,
+    textAlign: 'center',
+  },
+  descriptionInput: {
+    backgroundColor: "#d4e9fa",
+    paddingHorizontal: 15,
+    paddingVertical: 30,
+    borderRadius: 10,
+    marginTop: 5,
+    fontSize: 15,
   },
   buttonContainer: {
-    width: "60%",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 40,
+    flex: 1,
+    justifyContent: "flex-end",
+    width: "100%",
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   button: {
     backgroundColor: "#3f9eeb",
@@ -351,23 +442,30 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontWeight: "700",
-    fontSize: 16,
+    fontSize: 18,
   },
   buttonOutlineText: {
     color: "#3f9eeb",
     fontWeight: "700",
     fontSize: 16,
   },
-  profileImgContainer: {
-    marginBottom: 20, // Adjusted space above the profile image
-    alignItems: 'center',
+  imgContainer: {
+    justifyContent: "flex-start",
+    width: "100%",
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    position: 'relative',
   },
-  profileImg: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#f5f5f5',
+  imageWrapper: {
+    position: 'relative',
+    width: 80,
+    height: 80,
+  },
+  listingImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
   },
 });
 
-export default UpdateProfile;
+export default CreateListing;
