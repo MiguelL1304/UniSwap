@@ -27,12 +27,14 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     const bottomSheetRefCon = useRef(null);
     const bottomSheetRefSubj = useRef(null);
     const bottomSheetRefCourse = useRef(null);
+    const bottomSheetRefCat = useRef(null);
 
     const handleClosePress = () => {
       bottomSheetRefImg.current?.close();
       bottomSheetRefCon.current?.close();
       bottomSheetRefSubj.current?.close();
       bottomSheetRefCourse.current?.close();
+      bottomSheetRefCat.current?.close();
       setAnimatedIndex(-1);
     };
     
@@ -41,6 +43,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       bottomSheetRefCon.current?.expand();
       bottomSheetRefSubj.current?.expand();
       bottomSheetRefCourse.current?.expand();
+      bottomSheetRefCat.current?.expand();
       setAnimatedIndex(1);
     };
 
@@ -69,6 +72,27 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     //const[progress, setProgress] = useState(0);
 
     const navigation = useNavigation();
+
+    const handleCondition = (selectedCondition) => {
+      setCondition(selectedCondition);
+      if (bottomSheetRefCon.current) {
+        bottomSheetRefCon.current.close(); 
+      }
+    };
+
+    const handleSubject = (selectedSubject) => {
+      setSubject(selectedSubject);
+      if (bottomSheetRefSubj.current) {
+        bottomSheetRefSubj.current.close(); 
+      }
+    };
+
+    const handleCategory = (selectedCategory) => {
+      setCategory(selectedCategory);
+      if (bottomSheetRefCat.current) {
+        bottomSheetRefCat.current.close(); 
+      }
+    };
 
     const handleUpdate = async () => {
     try {
@@ -117,6 +141,12 @@ const CreateListing = ({ route }) => { // Receive profile data as props
   const handleCoursePress = () => {
     if (bottomSheetRefCourse.current) {
       bottomSheetRefCourse.current.expand();
+    }
+  };
+
+  const handleCategoryPress = () => {
+    if (bottomSheetRefCat.current) {
+      bottomSheetRefCat.current.expand();
     }
   };
 
@@ -286,20 +316,32 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       </View>
 
       <View style={styles.menuView}>
-        <TouchableOpacity style={styles.topMenuButton}>
-          <Text style={styles.titleTextMenu}> Category</Text>
+        <TouchableOpacity style={styles.topMenuButton} onPress={handleCategoryPress}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={styles.titleTextMenu}> Category</Text>
+            <Text style={styles.menuSelection}> {category}</Text>
+          </View> 
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuButton} onPress={handleSubjectPress}>
-          <Text style={styles.titleTextMenu}> Subject</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={styles.titleTextMenu}> Subject</Text>
+            <Text style={styles.menuSelection}> {subject}</Text>
+          </View> 
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuButton} onPress={handleCoursePress}>
-          <Text style={styles.titleTextMenu}> Course</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={styles.titleTextMenu}> Course</Text>
+            <Text style={styles.menuSelection}> {course}</Text>
+          </View>  
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuButton} onPress={handleConditionPress}>
-          <Text style={styles.titleTextMenu}> Condition</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={styles.titleTextMenu}> Condition:</Text>
+            <Text style={styles.menuSelection}> {condition}</Text>
+          </View>  
         </TouchableOpacity>
       </View>
 
@@ -343,27 +385,27 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       >
         <View style={styles.contentSheet}>
           <View style={styles.menuBS}>
-            <TouchableOpacity style={styles.topMenuButtonBS}>
+            <TouchableOpacity style={styles.topMenuButtonBS} onPress={() => handleCondition('Brand New')}>
               <Text style={styles.titleText}> Brand New</Text>
               <Text style={styles.titleBody}>   Unused, still in original packaging</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuButtonBS}>
+            <TouchableOpacity style={styles.menuButtonBS} onPress={() => handleCondition('Like New')}>
               <Text style={styles.titleText}> Like New</Text>
               <Text style={styles.titleBody}>   Mint condition, minimal signs of wear.</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuButtonBS}>
+            <TouchableOpacity style={styles.menuButtonBS} onPress={() => handleCondition('Used - Excellent')}>
               <Text style={styles.titleText}> Used - Excellent</Text>
               <Text style={styles.titleBody}>   Previously owned, no noticible flaws</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuButtonBS}>
+            <TouchableOpacity style={styles.menuButtonBS} onPress={() => handleCondition('Used - Good')}>
               <Text style={styles.titleText}> Used - Good</Text>
               <Text style={styles.titleBody}>   Moderately used, minor flaws or signs of wear</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuButtonBS}>
+            <TouchableOpacity style={styles.menuButtonBS} onPress={() => handleCondition('Used - Fair')}>
               <Text style={styles.titleText}> Used - Fair</Text>
               <Text style={styles.titleBody}>   Noticeably used, significant signs of wear to be noted</Text>
             </TouchableOpacity>
@@ -380,111 +422,111 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         backdropComponent={renderBackdrop}
       >
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-          <TouchableOpacity style={styles.subjectButtonTop}>
+          <TouchableOpacity style={styles.subjectButtonTop} onPress={() => handleSubject('Accounting')}>
             <Text style={styles.subjectText}>Accounting</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('African American Studies')}>
             <Text style={styles.subjectText}>African American Studies</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Anthropology')}>
             <Text style={styles.subjectText}>Anthropology</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Art')}>
             <Text style={styles.subjectText}>Art</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Biochemistry')}>
             <Text style={styles.subjectText}>Biochemistry</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Biology')}>
             <Text style={styles.subjectText}>Biology</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Business Administration')}>
             <Text style={styles.subjectText}>Business Administration</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Chemistry')}>
             <Text style={styles.subjectText}>Chemistry</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Cinema Media')}>
             <Text style={styles.subjectText}>Cinema Media</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Communications')}>
             <Text style={styles.subjectText}>Communications</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Computer Science')}>
             <Text style={styles.subjectText}>Computer Science</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Economics')}>
             <Text style={styles.subjectText}>Economics</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Education')}>
             <Text style={styles.subjectText}>Education</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('English')}>
             <Text style={styles.subjectText}>English</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Environmental Science')}>
             <Text style={styles.subjectText}>Environmental Science</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Film')}>
             <Text style={styles.subjectText}>Film</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Finance')}>
             <Text style={styles.subjectText}>Finance</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('French')}>
             <Text style={styles.subjectText}>French</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Geography')}>
             <Text style={styles.subjectText}>Geography</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Health Science')}>
             <Text style={styles.subjectText}>Health Science</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Honors')}>
             <Text style={styles.subjectText}>Honors</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Human Services')}>
             <Text style={styles.subjectText}>Human Services</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Information Technology')}>
             <Text style={styles.subjectText}>Information Technology</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Management')}>
             <Text style={styles.subjectText}>Management</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Marketing')}>
             <Text style={styles.subjectText}>Marketing</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Mathematics')}>
             <Text style={styles.subjectText}>Mathematics</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Music')}>
             <Text style={styles.subjectText}>Music</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Nursing')}>
             <Text style={styles.subjectText}>Nursing</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Philosophy')}>
             <Text style={styles.subjectText}>Philosophy</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Physical Education')}>
             <Text style={styles.subjectText}>Physical Education</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Political Science')}>
             <Text style={styles.subjectText}>Political Science</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Psychology')}>
             <Text style={styles.subjectText}>Psychology</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Sociology')}>
             <Text style={styles.subjectText}>Sociology</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Spanish')}>
             <Text style={styles.subjectText}>Spanish</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton}>
+          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Theatre')}>
             <Text style={styles.subjectText}>Theatre</Text>
-          </TouchableOpacity>        
+          </TouchableOpacity>          
         </ScrollView>
       </BottomSheet>
 
@@ -496,7 +538,6 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
       >
-         
         <View style={styles.courseContainer}>
           <Text style={styles.courseText}>   Course Number: </Text>
             <TextInput
@@ -508,7 +549,21 @@ const CreateListing = ({ route }) => { // Receive profile data as props
               onSubmitEditing={handleClosePress}
           />
         </View>
-      
+      </BottomSheet>
+
+      <BottomSheet 
+        ref={bottomSheetRefCat} 
+        index={-1} 
+        snapPoints={snapPointsSubj}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+      >
+        <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+          <TouchableOpacity style={styles.subjectButtonTop} onPress={() => handleCategory('Books')}>
+            <Text style={styles.subjectText}>Books</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </BottomSheet>
       
       
@@ -555,6 +610,7 @@ const styles = StyleSheet.create({
     height: "25%",
     backgroundColor: "#e6f2ff",
     borderRadius: 10,
+    paddingRight: 10,
   },
   menuButton: {
     width: "100%", 
@@ -566,6 +622,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     borderTopWidth: 1,
     borderColor: '#3f9eeb',
+    paddingRight: 10,
   },
   topMenuButtonBS: {
     width: "100%", 
@@ -643,6 +700,12 @@ const styles = StyleSheet.create({
   titleTextMenu: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: "#3f9eeb",
+    padding: 5,
+    paddingTop: 10,
+  },
+  menuSelection: {
+    fontSize: 20,
     color: "#3f9eeb",
     padding: 5,
     paddingTop: 10,
