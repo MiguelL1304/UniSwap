@@ -14,23 +14,9 @@ import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Camera } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
-import NumberPlease from 'react-native-number-please';
-
-
 
 const CreateListing = ({ route }) => { // Receive profile data as props
-    const initialNumber = { digitOne: 0, digitTwo: 0, digitThree: 0, digitFour: 0 };
-    const [courseNumber, setCourseNumber] = React.useState(initialNumber);
-
-    const { digit1, digit2, digit3, digit4 } = courseNumber;
-
-    const digits = [
-      { id: 'digit1', label: '', min: 0, max: 9 },
-      { id: 'digit2', label: '', min: 0, max: 9 },
-      { id: 'digit3', label: '', min: 0, max: 9 },
-      { id: 'digit4', label: '', min: 0, max: 9 },
-    ];
-
+    
     const snapPointsImg = useMemo(() => ['30%'], []);
     const snapPointsTag = useMemo(() => ['50%'], []);
     const snapPointsSubj = useMemo(() => ['80%'], []);
@@ -301,19 +287,19 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
       <View style={styles.menuView}>
         <TouchableOpacity style={styles.topMenuButton}>
-          <Text style={styles.titleText}> Category</Text>
+          <Text style={styles.titleTextMenu}> Category</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuButton} onPress={handleSubjectPress}>
-          <Text style={styles.titleText}> Subject</Text>
+          <Text style={styles.titleTextMenu}> Subject</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuButton} onPress={handleCoursePress}>
-          <Text style={styles.titleText}> Course</Text>
+          <Text style={styles.titleTextMenu}> Course</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuButton} onPress={handleConditionPress}>
-          <Text style={styles.titleText}> Condition</Text>
+          <Text style={styles.titleTextMenu}> Condition</Text>
         </TouchableOpacity>
       </View>
 
@@ -510,27 +496,23 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
       >
-        <View style={styles.contentSheet}>
-          <Text>Enter a four-digit combination:</Text>
-            <NumberPlease
-              pickers={digits}
-              values={[
-                { id: 'digit1', value: courseNumber.digit1 },
-                { id: 'digit2', value: courseNumber.digit2 },
-                { id: 'digit3', value: courseNumber.digit3 },
-                { id: 'digit4', value: courseNumber.digit4 }
-              ]}
-              onChange={(values) => setCourseNumber({
-                digit1: values.find(item => item.id === 'digit1').value,
-                digit2: values.find(item => item.id === 'digit2').value,
-                digit3: values.find(item => item.id === 'digit3').value,
-                digit4: values.find(item => item.id === 'digit4').value
-              })}
-            />
-          <Text>Combination: {digit1}{digit2}{digit3}{digit4}</Text>
+         
+        <View style={styles.courseContainer}>
+          <Text style={styles.courseText}>   Course Number: </Text>
+            <TextInput
+              value={course}
+              onChangeText={(text) => setCourse(text)}
+              style={styles.courseInput}
+              keyboardType="numeric"
+              maxLength={4}
+              onSubmitEditing={handleClosePress}
+          />
         </View>
+      
       </BottomSheet>
       
+      
+
     </GestureHandlerRootView>
     
   );
@@ -554,7 +536,7 @@ const styles = StyleSheet.create({
   menuView: {
     width: "85%", 
     height: "25%",
-    backgroundColor: "#d4e9fa",
+    backgroundColor: "#e6f2ff",
     marginTop: 20,
     borderRadius: 10,
   },
@@ -571,13 +553,13 @@ const styles = StyleSheet.create({
   topMenuButton: {
     width: "100%", 
     height: "25%",
-    backgroundColor: "#d4e9fa",
+    backgroundColor: "#e6f2ff",
     borderRadius: 10,
   },
   menuButton: {
     width: "100%", 
     height: "25%",
-    backgroundColor: "#d4e9fa",
+    backgroundColor: "#e6f2ff",
     borderTopLeftRadius: 0, 
     borderTopRightRadius: 0, 
     borderBottomLeftRadius: 10, 
@@ -590,6 +572,7 @@ const styles = StyleSheet.create({
     height: "25%",
     backgroundColor: "#ffffff",
     borderRadius: 10,
+    paddingTop: 5,
   },
   menuButtonBS: {
     width: "100%", 
@@ -601,6 +584,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     borderTopWidth: 1,
     borderColor: '#3f9eeb',
+    paddingTop: 5,
   },
   scrollViewContainer: {
     flexGrow: 1, // Allow the ScrollView to grow vertically
@@ -636,18 +620,39 @@ const styles = StyleSheet.create({
     width: "85%",
     marginTop: 20,
   },
+  courseContainer: {
+    width: "100%",
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    marginTop: 20,
+    paddingRight: 20,
+  },
   titleText: {
     fontSize: 20,
     fontWeight: 'bold',
     color: "#3f9eeb",
     padding: 5,
   },
+  courseText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: "#3f9eeb",
+    padding: 5,
+  },
+  titleTextMenu: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: "#3f9eeb",
+    padding: 5,
+    paddingTop: 10,
+  },
   titleBody: {
     fontSize: 14,
     color: "#5fb6e3",
   },
   titleInput: {
-    backgroundColor: "#d4e9fa",
+    backgroundColor: "#e6f2ff",
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 10,
@@ -657,7 +662,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   priceInput: {
-    backgroundColor: "#d4e9fa",
+    backgroundColor: '#e6f2ff', //#d4e9fa
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 10,
@@ -667,9 +672,22 @@ const styles = StyleSheet.create({
     marginRight: 140,
     fontSize: 20,
     textAlign: 'center',
+    shadowColor: 'black',
+  },
+  courseInput: {
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginTop: 5,
+    flex: 1,
+    marginLeft: 35,
+    marginRight: 35,
+    fontSize: 30,
+    textAlign: 'center',
+    borderBottomWidth: 1,
+    borderColor: '#3f9eeb',
   },
   descriptionInput: {
-    backgroundColor: "#d4e9fa",
+    backgroundColor: "#e6f2ff",
     paddingHorizontal: 15,
     paddingVertical: 30,
     borderRadius: 10,
