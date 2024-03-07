@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, ScrollView, Keyboard } from "react-native";
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Keyboard } from "react-native";
 import { TextInput } from "react-native";
 import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
@@ -7,29 +7,54 @@ import { useNavigation } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
 import { collection, addDoc, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import ProgressBar from "../Components/ProgressBar";
 import Uploading from "../Components/Uploading";
 import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Camera } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
+import NumberPlease from 'react-native-number-please';
 
 
 
 const CreateListing = ({ route }) => { // Receive profile data as props
-    const snapPoints = useMemo(() => ['30%'], []);
+    const initialNumber = { digitOne: 0, digitTwo: 0, digitThree: 0, digitFour: 0 };
+    const [courseNumber, setCourseNumber] = React.useState(initialNumber);
+
+    const { digit1, digit2, digit3, digit4 } = courseNumber;
+
+    const digits = [
+      { id: 'digit1', label: '', min: 0, max: 9 },
+      { id: 'digit2', label: '', min: 0, max: 9 },
+      { id: 'digit3', label: '', min: 0, max: 9 },
+      { id: 'digit4', label: '', min: 0, max: 9 },
+    ];
+
+    const snapPointsImg = useMemo(() => ['30%'], []);
+    const snapPointsTag = useMemo(() => ['50%'], []);
+    const snapPointsSubj = useMemo(() => ['80%'], []);
+
     const [animatedIndex, setAnimatedIndex] = useState(-1);
 
-    const bottomSheetRef = useRef(null);
+    const bottomSheetRefImg = useRef(null);
+    const bottomSheetRefCon = useRef(null);
+    const bottomSheetRefSubj = useRef(null);
+    const bottomSheetRefCourse = useRef(null);
 
     const handleClosePress = () => {
-      bottomSheetRef.current?.close();
+      bottomSheetRefImg.current?.close();
+      bottomSheetRefCon.current?.close();
+      bottomSheetRefSubj.current?.close();
+      bottomSheetRefCourse.current?.close();
       setAnimatedIndex(-1);
     };
     
     const handleOpenPress = () => {
-      bottomSheetRef.current?.expand();
+      bottomSheetRefImg.current?.expand();
+      bottomSheetRefCon.current?.expand();
+      bottomSheetRefSubj.current?.expand();
+      bottomSheetRefCourse.current?.expand();
       setAnimatedIndex(1);
     };
 
@@ -86,8 +111,26 @@ const CreateListing = ({ route }) => { // Receive profile data as props
   };
 
   const handleImagePress = () => {
-    if (bottomSheetRef.current) {
-      bottomSheetRef.current.expand();
+    if (bottomSheetRefImg.current) {
+      bottomSheetRefImg.current.expand();
+    }
+  };
+
+  const handleConditionPress = () => {
+    if (bottomSheetRefCon.current) {
+      bottomSheetRefCon.current.expand();
+    }
+  };
+
+  const handleSubjectPress = () => {
+    if (bottomSheetRefSubj.current) {
+      bottomSheetRefSubj.current.expand();
+    }
+  };
+
+  const handleCoursePress = () => {
+    if (bottomSheetRefCourse.current) {
+      bottomSheetRefCourse.current.expand();
     }
   };
 
@@ -258,23 +301,19 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
       <View style={styles.menuView}>
         <TouchableOpacity style={styles.topMenuButton}>
-          <Text style={styles.titleText}> lotus</Text>
+          <Text style={styles.titleText}> Category</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuButton}>
-          <Text style={styles.titleText}> lotus</Text>
+        <TouchableOpacity style={styles.menuButton} onPress={handleSubjectPress}>
+          <Text style={styles.titleText}> Subject</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuButton}>
-          <Text style={styles.titleText}> lotus</Text>
+        <TouchableOpacity style={styles.menuButton} onPress={handleCoursePress}>
+          <Text style={styles.titleText}> Course</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuButton}>
-          <Text style={styles.titleText}> lotus</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuButton}>
-          <Text style={styles.titleText}> lotus</Text>
+        <TouchableOpacity style={styles.menuButton} onPress={handleConditionPress}>
+          <Text style={styles.titleText}> Condition</Text>
         </TouchableOpacity>
       </View>
 
@@ -286,9 +325,9 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       </View>
       
       <BottomSheet 
-        ref={bottomSheetRef} 
+        ref={bottomSheetRefImg} 
         index={-1} 
-        snapPoints={snapPoints}
+        snapPoints={snapPointsImg}
         handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
@@ -307,6 +346,191 @@ const CreateListing = ({ route }) => { // Receive profile data as props
           </TouchableOpacity>
         </View>
       </BottomSheet>
+
+      <BottomSheet 
+        ref={bottomSheetRefCon} 
+        index={-1} 
+        snapPoints={snapPointsTag}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+      >
+        <View style={styles.contentSheet}>
+          <View style={styles.menuBS}>
+            <TouchableOpacity style={styles.topMenuButtonBS}>
+              <Text style={styles.titleText}> Brand New</Text>
+              <Text style={styles.titleBody}>   Unused, still in original packaging</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuButtonBS}>
+              <Text style={styles.titleText}> Like New</Text>
+              <Text style={styles.titleBody}>   Mint condition, minimal signs of wear.</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuButtonBS}>
+              <Text style={styles.titleText}> Used - Excellent</Text>
+              <Text style={styles.titleBody}>   Previously owned, no noticible flaws</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuButtonBS}>
+              <Text style={styles.titleText}> Used - Good</Text>
+              <Text style={styles.titleBody}>   Moderately used, minor flaws or signs of wear</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuButtonBS}>
+              <Text style={styles.titleText}> Used - Fair</Text>
+              <Text style={styles.titleBody}>   Noticeably used, significant signs of wear to be noted</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </BottomSheet>
+
+      <BottomSheet 
+        ref={bottomSheetRefSubj} 
+        index={-1} 
+        snapPoints={snapPointsSubj}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+      >
+        <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+          <TouchableOpacity style={styles.subjectButtonTop}>
+            <Text style={styles.subjectText}>Accounting</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>African American Studies</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Anthropology</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Art</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Biochemistry</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Biology</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Business Administration</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Chemistry</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Cinema Media</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Communications</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Computer Science</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Economics</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Education</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>English</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Environmental Science</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Film</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Finance</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>French</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Geography</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Health Science</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Honors</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Human Services</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Information Technology</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Management</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Marketing</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Mathematics</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Music</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Nursing</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Philosophy</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Physical Education</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Political Science</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Psychology</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Sociology</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Spanish</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.subjectButton}>
+            <Text style={styles.subjectText}>Theatre</Text>
+          </TouchableOpacity>        
+        </ScrollView>
+      </BottomSheet>
+
+      <BottomSheet 
+        ref={bottomSheetRefCourse} 
+        index={-1} 
+        snapPoints={snapPointsTag}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+      >
+        <View style={styles.contentSheet}>
+          <Text>Enter a four-digit combination:</Text>
+            <NumberPlease
+              pickers={digits}
+              values={[
+                { id: 'digit1', value: courseNumber.digit1 },
+                { id: 'digit2', value: courseNumber.digit2 },
+                { id: 'digit3', value: courseNumber.digit3 },
+                { id: 'digit4', value: courseNumber.digit4 }
+              ]}
+              onChange={(values) => setCourseNumber({
+                digit1: values.find(item => item.id === 'digit1').value,
+                digit2: values.find(item => item.id === 'digit2').value,
+                digit3: values.find(item => item.id === 'digit3').value,
+                digit4: values.find(item => item.id === 'digit4').value
+              })}
+            />
+          <Text>Combination: {digit1}{digit2}{digit3}{digit4}</Text>
+        </View>
+      </BottomSheet>
+      
     </GestureHandlerRootView>
     
   );
@@ -334,22 +558,72 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderRadius: 10,
   },
+  menuBS: {
+    width: "100%", 
+    height: "85%",
+    backgroundColor: "#ffffff",
+    marginTop: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 10,
+  },
   topMenuButton: {
     width: "100%", 
-    height: "20%",
+    height: "25%",
     backgroundColor: "#d4e9fa",
     borderRadius: 10,
   },
   menuButton: {
     width: "100%", 
-    height: "20%",
+    height: "25%",
     backgroundColor: "#d4e9fa",
     borderTopLeftRadius: 0, 
     borderTopRightRadius: 0, 
     borderBottomLeftRadius: 10, 
     borderBottomRightRadius: 10,
-    borderTopWidth: 2,
+    borderTopWidth: 1,
     borderColor: '#3f9eeb',
+  },
+  topMenuButtonBS: {
+    width: "100%", 
+    height: "25%",
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+  },
+  menuButtonBS: {
+    width: "100%", 
+    height: "25%",
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 0, 
+    borderTopRightRadius: 0, 
+    borderBottomLeftRadius: 10, 
+    borderBottomRightRadius: 10,
+    borderTopWidth: 1,
+    borderColor: '#3f9eeb',
+  },
+  scrollViewContainer: {
+    flexGrow: 1, // Allow the ScrollView to grow vertically
+    paddingHorizontal: 20,
+    paddingTop: 20, // Adjust padding as needed
+    paddingBottom: 35, // Adjust padding as needed
+  },
+  subjectButtonTop: {
+    backgroundColor: '#ffffff',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  subjectButton: {
+    backgroundColor: '#ffffff',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderTopWidth: 1,
+    borderColor: '#3f9eeb',
+  },
+  subjectText: {
+    color: '#3f9eeb',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   titleContainer: {
     width: "85%",
@@ -367,6 +641,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: "#3f9eeb",
     padding: 5,
+  },
+  titleBody: {
+    fontSize: 14,
+    color: "#5fb6e3",
   },
   titleInput: {
     backgroundColor: "#d4e9fa",
