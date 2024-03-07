@@ -74,7 +74,7 @@ export default function AppNavigation() {
           name="CreateListing"
           component={CreateListing}
           options={{
-            headerTitle: "Listing",
+            headerTitle: "Create Listing",
           }}
         />
       </Stack.Navigator>
