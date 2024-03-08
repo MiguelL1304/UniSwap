@@ -45,29 +45,29 @@ const UpdateProfile = ({ route }) => { // Receive profile data as props
     const navigation = useNavigation();
 
     const handleUpdate = async () => {
-    try {
-        const email = auth.currentUser ? auth.currentUser.email: null;
-        if (!email) {
-          throw new Error("Current user is null or email is undefined.");
-        }
-      
-        const userProfileRef = doc(firestoreDB, "profile", email);
-        // Create a reference to the 'profile' collection with the user's email as the document ID
-  
-        await setDoc(userProfileRef, {
-            firstName: firstName,
-            lastName: lastName,
-            college: college,
-            bio: bio,
-            profilePic: profilePic,
-        });
+      try {
+          const email = auth.currentUser ? auth.currentUser.email: null;
+          if (!email) {
+            throw new Error("Current user is null or email is undefined.");
+          }
+        
+          const userProfileRef = doc(firestoreDB, "profile", email);
+          // Create a reference to the 'profile' collection with the user's email as the document ID
+    
+          await setDoc(userProfileRef, {
+              firstName: firstName,
+              lastName: lastName,
+              college: college,
+              bio: bio,
+              profilePic: profilePic,
+          });
 
-        console.log("Profile updated successfully!");
-        navigation.goBack();
+          console.log("Profile updated successfully!");
+          navigation.goBack();
 
-    } catch (error) {
-        console.error(error.message);
-    }
+      } catch (error) {
+          console.error(error.message);
+      }
   };
 
   const handleImagePress = () => {
