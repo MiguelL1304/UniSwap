@@ -94,31 +94,38 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       }
     };
 
-    const handleUpdate = async () => {
-    try {
+    const handleCreation = async () => {
+      console.log("Listing Details:");
+      console.log("Title:", title);
+      console.log("Description:", description);
+      console.log("Price:", price);
+      console.log("Category:", category);
+      console.log("Subject:", subject);
+      console.log("Course:", course);
+      console.log("Condition:", condition);
+      try {
         const email = auth.currentUser ? auth.currentUser.email: null;
         if (!email) {
           throw new Error("Current user is null or email is undefined.");
         }
-      
-        const userProfileRef = doc(firestoreDB, "profile", email);
-        // Create a reference to the 'profile' collection with the user's email as the document ID
-  
-        await setDoc(userProfileRef, {
-            firstName: firstName,
-            lastName: lastName,
-            college: college,
-            bio: bio,
-            profilePic: profilePic,
-        });
 
-        console.log("Profile updated successfully!");
+        const listingRef = doc(firestoreDB, "listing", email);
+
+        await setDoc(listingRef, {
+            title: title,
+            description: description,
+            price: price,
+            category: category,
+            subject: subject,
+            course: course,
+            condition: condition,
+        });
         navigation.goBack();
 
     } catch (error) {
         console.error(error.message);
     }
-  };
+    };
 
   const handleImagePress = () => {
     if (bottomSheetRefImg.current) {
@@ -347,7 +354,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleUpdate} style={styles.button}>
+        <TouchableOpacity onPress={handleCreation} style={styles.button}>
           <Text style={styles.buttonText}>Create Listing</Text>
         </TouchableOpacity>
       </View>
