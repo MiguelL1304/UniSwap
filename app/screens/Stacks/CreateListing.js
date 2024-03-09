@@ -21,6 +21,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     const snapPointsTag = useMemo(() => ['50%'], []);
     const snapPointsSubj = useMemo(() => ['80%'], []);
 
+    const[progress, setProgress] = useState(0);
     const [animatedIndex, setAnimatedIndex] = useState(-1);
 
     const bottomSheetRefImg = useRef(null);
@@ -47,11 +48,9 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       setAnimatedIndex(1);
     };
 
-    const { listingID } = route.params;
+    const [listingID, setListingID] = useState("");
     const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
 
-    const [ownerID, setOwnerID] = useState("");
-    const [ownerName, setOwnerName] = useState("");
     const [price, setPrice] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -60,9 +59,11 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     const [subject, setSubject] = useState("");
     const [course, setCourse] = useState("");
 
-
-    const [profilePic, setProfilePic] = useState("https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg");
-    
+    const [listingImg1, setListingImg1] = useState("");
+    const [listingImg2, setListingImg2] = useState("");
+    const [listingImg3, setListingImg3] = useState("");
+    const [listingImg4, setListingImg4] = useState("");
+    const [listingImg5, setListingImg5] = useState("");
 
     useEffect(() => {
       // Set profilePic state when component mounts
@@ -95,23 +96,15 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     };
 
     const handleCreation = async () => {
-      console.log("Listing Details:");
-      console.log("Title:", title);
-      console.log("Description:", description);
-      console.log("Price:", price);
-      console.log("Category:", category);
-      console.log("Subject:", subject);
-      console.log("Course:", course);
-      console.log("Condition:", condition);
       try {
         const email = auth.currentUser ? auth.currentUser.email: null;
         if (!email) {
           throw new Error("Current user is null or email is undefined.");
         }
 
-        const listingRef = doc(firestoreDB, "listing", email);
+        const listingRef = collection(firestoreDB, "listing");
 
-        await setDoc(listingRef, {
+        const newListingDocRef = await addDoc(listingRef, {
             title: title,
             description: description,
             price: price,
@@ -120,6 +113,21 @@ const CreateListing = ({ route }) => { // Receive profile data as props
             course: course,
             condition: condition,
         });
+
+        const newListingId = newListingDocRef.id;
+
+        const docName = `${email}_${newListingId}`;
+
+        await setDoc(doc(firestoreDB, "listing", docName), {
+          title: title,
+          description: description,
+          price: price,
+          category: category,
+          subject: subject,
+          course: course,
+          condition: condition,
+        });
+
         navigation.goBack();
 
     } catch (error) {
@@ -171,7 +179,22 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     });
 
     if(!result.canceled) {
-      setProfilePic(result.assets[0].uri)
+      if(listingImg1 == "") {
+        setListingImg1(result.assets[0].uri)
+      }
+      else if(listingImg2 == "") {
+        setListingImg2(result.assets[0].uri)
+      }
+      else if(listingImg3 == "") {
+        setListingImg3(result.assets[0].uri)
+      }
+      else if(listingImg4 == "") {
+        setListingImg4(result.assets[0].uri)
+      }
+      else {
+        setListingImg5(result.assets[0].uri)
+      }
+      
       //Upload Image
       await uploadImage(result.assets[0].uri, "image");
     }
@@ -191,7 +214,21 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     });
   
     if(!result.canceled) {
-      setProfilePic(result.assets[0].uri)
+      if(listingImg1 == "") {
+        setListingImg1(result.assets[0].uri)
+      }
+      else if(listingImg2 == "") {
+        setListingImg2(result.assets[0].uri)
+      }
+      else if(listingImg3 == "") {
+        setListingImg3(result.assets[0].uri)
+      }
+      else if(listingImg4 == "") {
+        setListingImg4(result.assets[0].uri)
+      }
+      else {
+        setListingImg5(result.assets[0].uri)
+      }
       //Upload Image
       await uploadImage(result.assets[0].uri, "image");
     }
@@ -199,13 +236,11 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
   async function uploadImage (uri, fileType) {
     try {
-      const email = auth.currentUser ? auth.currentUser.email: null;
-
       const response = await fetch(uri);
       const blob = await response.blob();
     
-
-      const storageRef = ref(firebaseStorage, "ProfilePic/" + email);
+      const randomFileName = generateRandomFileName();
+      const storageRef = ref(firebaseStorage, "ListingPic/" + randomFileName);
       const uploadTask = uploadBytesResumable(storageRef, blob);
 
       //Listen for events
@@ -225,13 +260,21 @@ const CreateListing = ({ route }) => { // Receive profile data as props
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             console.log("File available at", downloadURL);
             // Save the download URL to the state or use it as needed
-            setProfilePic(downloadURL);
-
-            // Update Firestore document with the download URL
-            const userProfileRef = doc(firestoreDB, "profile", email);
-            setDoc(userProfileRef, { profilePic: downloadURL }, { merge: true })
-              .then(() => console.log("Profile document updated with image URL"))
-              .catch((error) => console.error("Error updating profile document:", error));
+            if(listingImg1 == "") {
+              setListingImg1(downloadURL)
+            }
+            else if(listingImg2 == "") {
+              setListingImg2(downloadURL)
+            }
+            else if(listingImg3 == "") {
+              setListingImg3(downloadURL)
+            }
+            else if(listingImg4 == "") {
+              setListingImg4(downloadURL)
+            }
+            else {
+              setListingImg5(downloadURL)
+            }
           });
         }
       );
@@ -239,6 +282,16 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       console.error("Error uploading image:", error);
       // Handle error
     }
+
+    function generateRandomFileName() {
+      // Function to generate a random filename
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let randomFileName = "";
+      for (let i = 0; i < 10; i++) {
+        randomFileName += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return randomFileName;
+  } 
   }
 
   const handleDeletePic = async () => {
@@ -285,10 +338,81 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       <View style={styles.imgContainer}>
         <View style={styles.imageWrapper}>
           <TouchableOpacity onPress={handleImagePress}>
-            <Image
-              source={require("../../assets/addPhotoIcon.png")}
-              style={styles.listingImg}
-            />
+            {listingImg1 ? (
+              <Image
+                source={{ uri: listingImg1 }}
+                style={styles.listingImg}
+              />
+            ) : (
+              <Image
+                source={require("../../assets/addPhotoIcon.png")}
+                style={styles.listingImg}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.imageWrapper}>
+          <TouchableOpacity onPress={handleImagePress}>
+            {listingImg2 ? (
+              <Image
+                source={{ uri: listingImg2 }}
+                style={styles.listingImg}
+              />
+            ) : (
+              <Image
+                source={require("../../assets/addPhotoIcon.png")}
+                style={styles.listingImg}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.imageWrapper}>
+          <TouchableOpacity onPress={handleImagePress}>
+            {listingImg3 ? (
+              <Image
+                source={{ uri: listingImg3 }}
+                style={styles.listingImg}
+              />
+            ) : (
+              <Image
+                source={require("../../assets/addPhotoIcon.png")}
+                style={styles.listingImg}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.imageWrapper}>
+          <TouchableOpacity onPress={handleImagePress}>
+            {listingImg4 ? (
+              <Image
+                source={{ uri: listingImg4 }}
+                style={styles.listingImg}
+              />
+            ) : (
+              <Image
+                source={require("../../assets/addPhotoIcon.png")}
+                style={styles.listingImg}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.imageWrapper}>
+          <TouchableOpacity onPress={handleImagePress}>
+            {listingImg5 ? (
+              <Image
+                source={{ uri: listingImg5 }}
+                style={styles.listingImg}
+              />
+            ) : (
+              <Image
+                source={require("../../assets/addPhotoIcon.png")}
+                style={styles.listingImg}
+              />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -816,20 +940,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   imgContainer: {
-    justifyContent: "flex-start",
+    justifyContent: 'space-between',
+    flexDirection: 'row',
     width: "100%",
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
     paddingTop: 15,
     position: 'relative',
+    alignItems: 'center',
   },
   imageWrapper: {
     position: 'relative',
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
   },
   listingImg: {
-    width: '100%',
-    height: '100%',
+    width: 60,
+    height: 60,
     borderRadius: 10,
   },
 });
