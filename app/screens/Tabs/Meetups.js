@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 const Cart = () => {
   return (
     <View>
-      <Text>Shopping Cart</Text>
+      <Text>Meetups</Text>
     </View>
   );
 };
