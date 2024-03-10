@@ -5,7 +5,7 @@ import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
-import { collection, addDoc, doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import ProgressBar from "../Components/ProgressBar";
@@ -17,13 +17,20 @@ import * as ImageManipulator from 'expo-image-manipulator';
 
 const CreateListing = ({ route }) => { // Receive profile data as props
     
+    
+    const [selectedImageNumber, setSelectedImageNumber] = useState("");
+
+
+    //Snap points for the different bottom screens
     const snapPointsImg = useMemo(() => ['30%'], []);
     const snapPointsTag = useMemo(() => ['50%'], []);
     const snapPointsSubj = useMemo(() => ['80%'], []);
 
+    //Used for tracking uploading progress. Still need to implement UI
     const[progress, setProgress] = useState(0);
     const [animatedIndex, setAnimatedIndex] = useState(-1);
 
+    //Bottom sheets
     const bottomSheetRefImg = useRef(null);
     const bottomSheetRefCon = useRef(null);
     const bottomSheetRefSubj = useRef(null);
@@ -65,9 +72,9 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     const [listingImg4, setListingImg4] = useState("");
     const [listingImg5, setListingImg5] = useState("");
 
+    //Handles cleanup
     useEffect(() => {
-      // Set profilePic state when component mounts
-      //setProfilePic(profileData.profilePic || "");
+    
     }, []);
 
     //const[progress, setProgress] = useState(0);
@@ -112,7 +119,14 @@ const CreateListing = ({ route }) => { // Receive profile data as props
             subject: subject,
             course: course,
             condition: condition,
+            listingImg1: listingImg1,
+            listingImg2: listingImg2,
+            listingImg3: listingImg3,
+            listingImg4: listingImg4,
+            listingImg5: listingImg5,
         });
+
+       
 
         const newListingId = newListingDocRef.id;
 
@@ -126,17 +140,24 @@ const CreateListing = ({ route }) => { // Receive profile data as props
           subject: subject,
           course: course,
           condition: condition,
+          listingImg1: listingImg1,
+          listingImg2: listingImg2,
+          listingImg3: listingImg3,
+          listingImg4: listingImg4,
+          listingImg5: listingImg5,
         });
 
-        navigation.goBack();
+        await deleteDoc(doc(firestoreDB, "listing", newListingId));
 
-    } catch (error) {
+        navigation.goBack();
+      } catch (error) {
         console.error(error.message);
-    }
+      }
     };
 
-  const handleImagePress = () => {
+  const handleImagePress = (imageNumber) => {
     if (bottomSheetRefImg.current) {
+      setSelectedImageNumber(imageNumber);
       bottomSheetRefImg.current.expand();
     }
   };
@@ -291,36 +312,100 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         randomFileName += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       return randomFileName;
-  } 
+    } 
+  }
+
+  const handleCancel = async () => {
+    if (!(listingImg1 === "")) {
+      deletePics(listingImg1)
+    }
+    if (!(listingImg2 === "")) {
+      deletePics(listingImg2)
+    }
+    if (!(listingImg3 === "")) {
+      deletePics(listingImg3)
+    }
+    if (!(listingImg4 === "")) {
+      deletePics(listingImg4)
+    }
+    if (!(listingImg5 === "")) {
+      deletePics(listingImg5)
+    }
+
+    navigation.goBack();
+    
+  }
+
+  const deletePics = async (imageUrl) => {
+    // Extract the document name from the image URL
+    const startIndex = imageUrl.indexOf("ListingPic%2F") + "ListingPic%2F".length;
+    const endIndex = imageUrl.indexOf("?", startIndex);
+    const documentName = imageUrl.substring(startIndex, endIndex);
+    
+    const storageRef = ref(firebaseStorage, "ListingPic/" + documentName);
+    await deleteObject(storageRef);
+
+    console.log("Picture deleted successfully!");
   }
 
   const handleDeletePic = async () => {
     try {
-      const email = auth.currentUser ? auth.currentUser.email : null;
-      if (!email) {
-        throw new Error("Current user is null or email is undefined.");
-      }
-      
-      const defaultProfilePic = "https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg";
+      let imageUrl = "";
 
-      if (profilePic === defaultProfilePic) {
+      switch (selectedImageNumber) {
+        case 1:
+          imageUrl = listingImg1;
+          setListingImg1(""); // Clear the variable
+          break;
+        case 2:
+          imageUrl = listingImg2;
+          setListingImg2(""); // Clear the variable
+          break;
+        case 3:
+          imageUrl = listingImg3;
+          setListingImg3(""); // Clear the variable
+          break;
+        case 4:
+          imageUrl = listingImg4;
+          setListingImg4(""); // Clear the variable
+          break;
+        case 5:
+          imageUrl = listingImg5;
+          setListingImg5(""); // Clear the variable
+          break;
+        default:
+          break;
+      }
+
+      if (!imageUrl) {
         Alert.alert(
-          "No Profile Picture",
-          "There is no profile picture to delete.",
-          [{ text: "OK", onPress: () => console.log("OK Pressed") }]
+          "No Listing Picture",
+          "There is no listing picture to delete.",
+          [{ text: "OK" }]
         );
-        return; // No need to delete or update, exit the function
+        return;
       }
 
-      const storageRef = ref(firebaseStorage, "ProfilePic/" + email);
+      // Extract the document name from the image URL
+      const startIndex = imageUrl.indexOf("ListingPic%2F") + "ListingPic%2F".length;
+      const endIndex = imageUrl.indexOf("?", startIndex);
+      const documentName = imageUrl.substring(startIndex, endIndex);
+      
+      const storageRef = ref(firebaseStorage, "ListingPic/" + documentName);
       await deleteObject(storageRef);
   
-  
-      const userProfileRef = doc(firestoreDB, "profile", email);
-      await setDoc(userProfileRef, { profilePic: defaultProfilePic }, { merge: true });
-  
-      console.log("Profile picture deleted successfully!");
-      setProfilePic(defaultProfilePic);
+      console.log("Picture deleted successfully!");
+
+      // Shift the numbers of the remaining images
+      for (let i = selectedImageNumber + 1; i <= 5; i++) {
+        const nextImageUrl = getImageUrl(i);
+        if (nextImageUrl) {
+          // Update the state with the URL of the shifted image
+          setImageUrl(i - 1, nextImageUrl);
+          // Reset the URL of the shifted image in the state
+          setImageUrl(i, "");
+        }
+      }
   
       handleClosePress(); // Close the bottom sheet after deletion
     } catch (error) {
@@ -328,16 +413,55 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     }
   };
 
+  const getImageUrl = (imageNumber) => {
+    switch (imageNumber) {
+      case 1:
+        return listingImg1;
+      case 2:
+        return listingImg2;
+      case 3:
+        return listingImg3;
+      case 4:
+        return listingImg4;
+      case 5:
+        return listingImg5;
+      default:
+        return null;
+    }
+  };
+
+  const setImageUrl = (imageNumber, url) => {
+    switch (imageNumber) {
+      case 1:
+        setListingImg1(url);
+        break;
+      case 2:
+        setListingImg2(url);
+        break;
+      case 3:
+        setListingImg3(url);
+        break;
+      case 4:
+        setListingImg4(url);
+        break;
+      case 5:
+        setListingImg5(url);
+        break;
+      default:
+        break;
+    }
+  };
+
   const renderBackdrop = useCallback(
     (props) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />,
     []
   );
-  
+
   return (
     <GestureHandlerRootView style={[styles.container, { backgroundColor: 'white' }]} onTouchStart={Keyboard.dismiss}>
       <View style={styles.imgContainer}>
         <View style={styles.imageWrapper}>
-          <TouchableOpacity onPress={handleImagePress}>
+          <TouchableOpacity onPress={() => handleImagePress(1)}>
             {listingImg1 ? (
               <Image
                 source={{ uri: listingImg1 }}
@@ -353,7 +477,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         </View>
 
         <View style={styles.imageWrapper}>
-          <TouchableOpacity onPress={handleImagePress}>
+          <TouchableOpacity onPress={() => handleImagePress(2)}>
             {listingImg2 ? (
               <Image
                 source={{ uri: listingImg2 }}
@@ -369,7 +493,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         </View>
 
         <View style={styles.imageWrapper}>
-          <TouchableOpacity onPress={handleImagePress}>
+          <TouchableOpacity onPress={() => handleImagePress(3)}>
             {listingImg3 ? (
               <Image
                 source={{ uri: listingImg3 }}
@@ -385,7 +509,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         </View>
 
         <View style={styles.imageWrapper}>
-          <TouchableOpacity onPress={handleImagePress}>
+          <TouchableOpacity onPress={() => handleImagePress(4)}>
             {listingImg4 ? (
               <Image
                 source={{ uri: listingImg4 }}
@@ -401,7 +525,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         </View>
 
         <View style={styles.imageWrapper}>
-          <TouchableOpacity onPress={handleImagePress}>
+          <TouchableOpacity onPress={() => handleImagePress(5)}>
             {listingImg5 ? (
               <Image
                 source={{ uri: listingImg5 }}
@@ -477,9 +601,14 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       </View>
 
 
+
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={handleCreation} style={styles.button}>
           <Text style={styles.buttonText}>Create Listing</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
+          <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
       </View>
       
@@ -893,7 +1022,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     width: "100%",
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
   button: {
     backgroundColor: "#3f9eeb",
@@ -922,6 +1051,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: '35%',
   },
+  cancelButton: {
+    backgroundColor: 'white',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '35%',
+    marginLeft: 'auto',
+    marginRight: 'auto', 
+  },
   buttonOutline: {
     backgroundColor: "white",
     color: "#3f9eeb",
@@ -931,6 +1071,11 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    fontWeight: "700",
+    fontSize: 18,
+  },
+  cancelText: {
+    color: "#e8594f",
     fontWeight: "700",
     fontSize: 18,
   },
