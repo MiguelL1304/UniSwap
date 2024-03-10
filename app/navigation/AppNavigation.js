@@ -10,11 +10,13 @@ import Home from "../screens/Tabs/Home";
 import Profile from "../screens/Tabs/Profile";
 import Wishlist from "../screens/Tabs/Wishlist";
 import Meetups from "../screens/Tabs/Meetups";
+//import PostListing from "../screens/Tabs/CreateListing";
 // import OnboardingScreen from "react-native-onboarding-swiper";
 import OnboardingScreen from "../screens/Stacks/OnboardingScreen";
 import UpdateProfile from "../screens/Stacks/UpdateProfile";
 import ForgotPassword from "../screens/Stacks/ForgotPassword";
 import CreateListing from "../screens/Stacks/CreateListing";
+import { View } from "react-native";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -24,6 +26,7 @@ const homeName = "Home";
 const profileName = "Profile";
 const wishlistName = "Wishlist";
 const meetupsName = "Meetups";
+const postListing = "CreateListing";
 
 export default function AppNavigation() {
   function MyStack() {
@@ -89,6 +92,7 @@ export default function AppNavigation() {
         screenOptions={({ route }) => ({
           tabBarShowLabel: false, // "home", "wishlist", etc. do not appear
           //tabBarActiveBackgroundColor: "#d4e9fa",
+          //tabBarLabelPosition: "absolute",
           tabBarActiveTintColor: "#3f9eeb",
           tabBarIcon: ({ focused, size, color }) => {
             let iconName;
@@ -112,6 +116,36 @@ export default function AppNavigation() {
       >
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Wishlist" component={Wishlist} />
+        <Tab.Screen
+          name="CreateListing"
+          component={CreateListing}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <View
+                style={{
+                  bottom: 15, // Position the icon above the tab bar for emphasis
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: focused ? "#3f9eeb" : "#fff",
+                  borderRadius: 50,
+                  width: 60, // Larger width for the floating effect
+                  height: 60, // Larger height for the floating effect
+                  elevation: 5, // Add shadow for better visibility on Android
+                  shadowColor: "#000", // Shadow color for iOS
+                  shadowOffset: { width: 0, height: 2 }, // Shadow position for iOS
+                  shadowOpacity: 0.5, // Shadow opacity for iOS
+                  shadowRadius: 3.84, // Shadow blur radius for iOS
+                }}
+              >
+                <Ionicons
+                  name="add-circle-outline"
+                  size={60} // Larger icon size
+                  color={focused ? "#fff" : "#3f9eeb"}
+                />
+              </View>
+            ),
+          }}
+        />
         <Tab.Screen name="Meetups" component={Meetups} />
         <Tab.Screen name="Profile" component={Profile} />
       </Tab.Navigator>
