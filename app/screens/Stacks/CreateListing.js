@@ -1,139 +1,169 @@
-import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Keyboard } from "react-native";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
+import {
+  KeyboardAvoidingView,
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Alert,
+  Keyboard,
+} from "react-native";
 import { TextInput } from "react-native";
 import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
-import { collection, addDoc, doc, setDoc, onSnapshot } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+  onSnapshot,
+} from "firebase/firestore";
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
-import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
+import {
+  GestureHandlerRootView,
+  ScrollView,
+} from "react-native-gesture-handler";
 import ProgressBar from "../Components/ProgressBar";
 import Uploading from "../Components/Uploading";
 import * as ImagePicker from "expo-image-picker";
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
-import { Camera } from 'expo-camera';
-import * as ImageManipulator from 'expo-image-manipulator';
+import {
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import { Camera } from "expo-camera";
+import * as ImageManipulator from "expo-image-manipulator";
 
-const CreateListing = ({ route }) => { // Receive profile data as props
-    
-    const snapPointsImg = useMemo(() => ['30%'], []);
-    const snapPointsTag = useMemo(() => ['50%'], []);
-    const snapPointsSubj = useMemo(() => ['80%'], []);
+const CreateListing = ({ route }) => {
+  // Receive profile data as props
 
-    const[progress, setProgress] = useState(0);
-    const [animatedIndex, setAnimatedIndex] = useState(-1);
+  const snapPointsImg = useMemo(() => ["30%"], []);
+  const snapPointsTag = useMemo(() => ["50%"], []);
+  const snapPointsSubj = useMemo(() => ["80%"], []);
 
-    const bottomSheetRefImg = useRef(null);
-    const bottomSheetRefCon = useRef(null);
-    const bottomSheetRefSubj = useRef(null);
-    const bottomSheetRefCourse = useRef(null);
-    const bottomSheetRefCat = useRef(null);
+  const [progress, setProgress] = useState(0);
+  const [animatedIndex, setAnimatedIndex] = useState(-1);
 
-    const handleClosePress = () => {
-      bottomSheetRefImg.current?.close();
-      bottomSheetRefCon.current?.close();
-      bottomSheetRefSubj.current?.close();
-      bottomSheetRefCourse.current?.close();
-      bottomSheetRefCat.current?.close();
-      setAnimatedIndex(-1);
-    };
-    
-    const handleOpenPress = () => {
-      bottomSheetRefImg.current?.expand();
-      bottomSheetRefCon.current?.expand();
-      bottomSheetRefSubj.current?.expand();
-      bottomSheetRefCourse.current?.expand();
-      bottomSheetRefCat.current?.expand();
-      setAnimatedIndex(1);
-    };
+  const bottomSheetRefImg = useRef(null);
+  const bottomSheetRefCon = useRef(null);
+  const bottomSheetRefSubj = useRef(null);
+  const bottomSheetRefCourse = useRef(null);
+  const bottomSheetRefCat = useRef(null);
 
-    const [listingID, setListingID] = useState("");
-    const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
+  const handleClosePress = () => {
+    bottomSheetRefImg.current?.close();
+    bottomSheetRefCon.current?.close();
+    bottomSheetRefSubj.current?.close();
+    bottomSheetRefCourse.current?.close();
+    bottomSheetRefCat.current?.close();
+    setAnimatedIndex(-1);
+  };
 
-    const [price, setPrice] = useState("");
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [condition, setCondition] = useState("");
-    const [category, setCategory] = useState("");
-    const [subject, setSubject] = useState("");
-    const [course, setCourse] = useState("");
+  const handleOpenPress = () => {
+    bottomSheetRefImg.current?.expand();
+    bottomSheetRefCon.current?.expand();
+    bottomSheetRefSubj.current?.expand();
+    bottomSheetRefCourse.current?.expand();
+    bottomSheetRefCat.current?.expand();
+    setAnimatedIndex(1);
+  };
 
-    const [listingImg1, setListingImg1] = useState("");
-    const [listingImg2, setListingImg2] = useState("");
-    const [listingImg3, setListingImg3] = useState("");
-    const [listingImg4, setListingImg4] = useState("");
-    const [listingImg5, setListingImg5] = useState("");
+  const [listingID, setListingID] = useState("");
+  const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
 
-    useEffect(() => {
-      // Set profilePic state when component mounts
-      //setProfilePic(profileData.profilePic || "");
-    }, []);
+  const [price, setPrice] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [condition, setCondition] = useState("");
+  const [category, setCategory] = useState("");
+  const [subject, setSubject] = useState("");
+  const [course, setCourse] = useState("");
 
-    //const[progress, setProgress] = useState(0);
+  const [listingImg1, setListingImg1] = useState("");
+  const [listingImg2, setListingImg2] = useState("");
+  const [listingImg3, setListingImg3] = useState("");
+  const [listingImg4, setListingImg4] = useState("");
+  const [listingImg5, setListingImg5] = useState("");
 
-    const navigation = useNavigation();
+  useEffect(() => {
+    // Set profilePic state when component mounts
+    //setProfilePic(profileData.profilePic || "");
+  }, []);
 
-    const handleCondition = (selectedCondition) => {
-      setCondition(selectedCondition);
-      if (bottomSheetRefCon.current) {
-        bottomSheetRefCon.current.close(); 
-      }
-    };
+  //const[progress, setProgress] = useState(0);
 
-    const handleSubject = (selectedSubject) => {
-      setSubject(selectedSubject);
-      if (bottomSheetRefSubj.current) {
-        bottomSheetRefSubj.current.close(); 
-      }
-    };
+  const navigation = useNavigation();
 
-    const handleCategory = (selectedCategory) => {
-      setCategory(selectedCategory);
-      if (bottomSheetRefCat.current) {
-        bottomSheetRefCat.current.close(); 
-      }
-    };
-
-    const handleCreation = async () => {
-      try {
-        const email = auth.currentUser ? auth.currentUser.email: null;
-        if (!email) {
-          throw new Error("Current user is null or email is undefined.");
-        }
-
-        const listingRef = collection(firestoreDB, "listing");
-
-        const newListingDocRef = await addDoc(listingRef, {
-            title: title,
-            description: description,
-            price: price,
-            category: category,
-            subject: subject,
-            course: course,
-            condition: condition,
-        });
-
-        const newListingId = newListingDocRef.id;
-
-        const docName = `${email}_${newListingId}`;
-
-        await setDoc(doc(firestoreDB, "listing", docName), {
-          title: title,
-          description: description,
-          price: price,
-          category: category,
-          subject: subject,
-          course: course,
-          condition: condition,
-        });
-
-        navigation.goBack();
-
-    } catch (error) {
-        console.error(error.message);
+  const handleCondition = (selectedCondition) => {
+    setCondition(selectedCondition);
+    if (bottomSheetRefCon.current) {
+      bottomSheetRefCon.current.close();
     }
-    };
+  };
+
+  const handleSubject = (selectedSubject) => {
+    setSubject(selectedSubject);
+    if (bottomSheetRefSubj.current) {
+      bottomSheetRefSubj.current.close();
+    }
+  };
+
+  const handleCategory = (selectedCategory) => {
+    setCategory(selectedCategory);
+    if (bottomSheetRefCat.current) {
+      bottomSheetRefCat.current.close();
+    }
+  };
+
+  const handleCreation = async () => {
+    try {
+      const email = auth.currentUser ? auth.currentUser.email : null;
+      if (!email) {
+        throw new Error("Current user is null or email is undefined.");
+      }
+
+      const listingRef = collection(firestoreDB, "listing");
+
+      const newListingDocRef = await addDoc(listingRef, {
+        title: title,
+        description: description,
+        price: price,
+        category: category,
+        subject: subject,
+        course: course,
+        condition: condition,
+      });
+
+      const newListingId = newListingDocRef.id;
+
+      const docName = `${email}_${newListingId}`;
+
+      await setDoc(doc(firestoreDB, "listing", docName), {
+        title: title,
+        description: description,
+        price: price,
+        category: category,
+        subject: subject,
+        course: course,
+        condition: condition,
+      });
+
+      // resets all form input fields to blank after listing is created
+      resetForm();
+      navigation.goBack();
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
 
   const handleImagePress = () => {
     if (bottomSheetRefImg.current) {
@@ -167,34 +197,30 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
   async function pickImage() {
     let { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
+    if (status !== "granted") {
       // Handle permission denied
       return;
     }
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1,1],
-      quality: .5,
+      aspect: [1, 1],
+      quality: 0.5,
     });
 
-    if(!result.canceled) {
-      if(listingImg1 == "") {
-        setListingImg1(result.assets[0].uri)
+    if (!result.canceled) {
+      if (listingImg1 == "") {
+        setListingImg1(result.assets[0].uri);
+      } else if (listingImg2 == "") {
+        setListingImg2(result.assets[0].uri);
+      } else if (listingImg3 == "") {
+        setListingImg3(result.assets[0].uri);
+      } else if (listingImg4 == "") {
+        setListingImg4(result.assets[0].uri);
+      } else {
+        setListingImg5(result.assets[0].uri);
       }
-      else if(listingImg2 == "") {
-        setListingImg2(result.assets[0].uri)
-      }
-      else if(listingImg3 == "") {
-        setListingImg3(result.assets[0].uri)
-      }
-      else if(listingImg4 == "") {
-        setListingImg4(result.assets[0].uri)
-      }
-      else {
-        setListingImg5(result.assets[0].uri)
-      }
-      
+
       //Upload Image
       await uploadImage(result.assets[0].uri, "image");
     }
@@ -202,7 +228,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
   async function takePicture() {
     let { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
+    if (status !== "granted") {
       // Handle permission denied
       return;
     }
@@ -212,33 +238,29 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       aspect: [1, 1],
       quality: 0.5,
     });
-  
-    if(!result.canceled) {
-      if(listingImg1 == "") {
-        setListingImg1(result.assets[0].uri)
-      }
-      else if(listingImg2 == "") {
-        setListingImg2(result.assets[0].uri)
-      }
-      else if(listingImg3 == "") {
-        setListingImg3(result.assets[0].uri)
-      }
-      else if(listingImg4 == "") {
-        setListingImg4(result.assets[0].uri)
-      }
-      else {
-        setListingImg5(result.assets[0].uri)
+
+    if (!result.canceled) {
+      if (listingImg1 == "") {
+        setListingImg1(result.assets[0].uri);
+      } else if (listingImg2 == "") {
+        setListingImg2(result.assets[0].uri);
+      } else if (listingImg3 == "") {
+        setListingImg3(result.assets[0].uri);
+      } else if (listingImg4 == "") {
+        setListingImg4(result.assets[0].uri);
+      } else {
+        setListingImg5(result.assets[0].uri);
       }
       //Upload Image
       await uploadImage(result.assets[0].uri, "image");
     }
   }
 
-  async function uploadImage (uri, fileType) {
+  async function uploadImage(uri, fileType) {
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
-    
+
       const randomFileName = generateRandomFileName();
       const storageRef = ref(firebaseStorage, "ListingPic/" + randomFileName);
       const uploadTask = uploadBytesResumable(storageRef, blob);
@@ -247,7 +269,8 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log("Upload is " + progress + "% done");
           setProgress(progress.toFixed());
         },
@@ -260,20 +283,16 @@ const CreateListing = ({ route }) => { // Receive profile data as props
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             console.log("File available at", downloadURL);
             // Save the download URL to the state or use it as needed
-            if(listingImg1 == "") {
-              setListingImg1(downloadURL)
-            }
-            else if(listingImg2 == "") {
-              setListingImg2(downloadURL)
-            }
-            else if(listingImg3 == "") {
-              setListingImg3(downloadURL)
-            }
-            else if(listingImg4 == "") {
-              setListingImg4(downloadURL)
-            }
-            else {
-              setListingImg5(downloadURL)
+            if (listingImg1 == "") {
+              setListingImg1(downloadURL);
+            } else if (listingImg2 == "") {
+              setListingImg2(downloadURL);
+            } else if (listingImg3 == "") {
+              setListingImg3(downloadURL);
+            } else if (listingImg4 == "") {
+              setListingImg4(downloadURL);
+            } else {
+              setListingImg5(downloadURL);
             }
           });
         }
@@ -285,13 +304,16 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
     function generateRandomFileName() {
       // Function to generate a random filename
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      const chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
       let randomFileName = "";
       for (let i = 0; i < 10; i++) {
-        randomFileName += chars.charAt(Math.floor(Math.random() * chars.length));
+        randomFileName += chars.charAt(
+          Math.floor(Math.random() * chars.length)
+        );
       }
       return randomFileName;
-  } 
+    }
   }
 
   const handleDeletePic = async () => {
@@ -300,8 +322,9 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       if (!email) {
         throw new Error("Current user is null or email is undefined.");
       }
-      
-      const defaultProfilePic = "https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg";
+
+      const defaultProfilePic =
+        "https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg";
 
       if (profilePic === defaultProfilePic) {
         Alert.alert(
@@ -314,14 +337,17 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
       const storageRef = ref(firebaseStorage, "ProfilePic/" + email);
       await deleteObject(storageRef);
-  
-  
+
       const userProfileRef = doc(firestoreDB, "profile", email);
-      await setDoc(userProfileRef, { profilePic: defaultProfilePic }, { merge: true });
-  
+      await setDoc(
+        userProfileRef,
+        { profilePic: defaultProfilePic },
+        { merge: true }
+      );
+
       console.log("Profile picture deleted successfully!");
       setProfilePic(defaultProfilePic);
-  
+
       handleClosePress(); // Close the bottom sheet after deletion
     } catch (error) {
       console.error("Error deleting profile picture:", error);
@@ -329,20 +355,42 @@ const CreateListing = ({ route }) => { // Receive profile data as props
   };
 
   const renderBackdrop = useCallback(
-    (props) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />,
+    (props) => (
+      <BottomSheetBackdrop
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        {...props}
+      />
+    ),
     []
   );
-  
+
+  // resets all form input fields to blank after listing is created
+  const resetForm = () => {
+    setPrice("");
+    setTitle("");
+    setDescription("");
+    setCondition("");
+    setCategory("");
+    setSubject("");
+    setCourse("");
+    setListingImg1("");
+    setListingImg2("");
+    setListingImg3("");
+    setListingImg4("");
+    setListingImg5("");
+  };
+
   return (
-    <GestureHandlerRootView style={[styles.container, { backgroundColor: 'white' }]} onTouchStart={Keyboard.dismiss}>
+    <GestureHandlerRootView
+      style={[styles.container, { backgroundColor: "white" }]}
+      onTouchStart={Keyboard.dismiss}
+    >
       <View style={styles.imgContainer}>
         <View style={styles.imageWrapper}>
           <TouchableOpacity onPress={handleImagePress}>
             {listingImg1 ? (
-              <Image
-                source={{ uri: listingImg1 }}
-                style={styles.listingImg}
-              />
+              <Image source={{ uri: listingImg1 }} style={styles.listingImg} />
             ) : (
               <Image
                 source={require("../../assets/addPhotoIcon.png")}
@@ -355,10 +403,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         <View style={styles.imageWrapper}>
           <TouchableOpacity onPress={handleImagePress}>
             {listingImg2 ? (
-              <Image
-                source={{ uri: listingImg2 }}
-                style={styles.listingImg}
-              />
+              <Image source={{ uri: listingImg2 }} style={styles.listingImg} />
             ) : (
               <Image
                 source={require("../../assets/addPhotoIcon.png")}
@@ -371,10 +416,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         <View style={styles.imageWrapper}>
           <TouchableOpacity onPress={handleImagePress}>
             {listingImg3 ? (
-              <Image
-                source={{ uri: listingImg3 }}
-                style={styles.listingImg}
-              />
+              <Image source={{ uri: listingImg3 }} style={styles.listingImg} />
             ) : (
               <Image
                 source={require("../../assets/addPhotoIcon.png")}
@@ -387,10 +429,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         <View style={styles.imageWrapper}>
           <TouchableOpacity onPress={handleImagePress}>
             {listingImg4 ? (
-              <Image
-                source={{ uri: listingImg4 }}
-                style={styles.listingImg}
-              />
+              <Image source={{ uri: listingImg4 }} style={styles.listingImg} />
             ) : (
               <Image
                 source={require("../../assets/addPhotoIcon.png")}
@@ -403,10 +442,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         <View style={styles.imageWrapper}>
           <TouchableOpacity onPress={handleImagePress}>
             {listingImg5 ? (
-              <Image
-                source={{ uri: listingImg5 }}
-                style={styles.listingImg}
-              />
+              <Image source={{ uri: listingImg5 }} style={styles.listingImg} />
             ) : (
               <Image
                 source={require("../../assets/addPhotoIcon.png")}
@@ -447,269 +483,441 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       </View>
 
       <View style={styles.menuView}>
-        <TouchableOpacity style={styles.topMenuButton} onPress={handleCategoryPress}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <TouchableOpacity
+          style={styles.topMenuButton}
+          onPress={handleCategoryPress}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <Text style={styles.titleTextMenu}> Category</Text>
             <Text style={styles.menuSelection}> {category}</Text>
-          </View> 
+          </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuButton} onPress={handleSubjectPress}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={handleSubjectPress}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <Text style={styles.titleTextMenu}> Subject</Text>
             <Text style={styles.menuSelection}> {subject}</Text>
-          </View> 
+          </View>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuButton} onPress={handleCoursePress}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <Text style={styles.titleTextMenu}> Course</Text>
             <Text style={styles.menuSelection}> {course}</Text>
-          </View>  
+          </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuButton} onPress={handleConditionPress}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={handleConditionPress}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <Text style={styles.titleTextMenu}> Condition:</Text>
             <Text style={styles.menuSelection}> {condition}</Text>
-          </View>  
+          </View>
         </TouchableOpacity>
       </View>
-
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={handleCreation} style={styles.button}>
           <Text style={styles.buttonText}>Create Listing</Text>
         </TouchableOpacity>
       </View>
-      
-      <BottomSheet 
-        ref={bottomSheetRefImg} 
-        index={-1} 
+
+      <BottomSheet
+        ref={bottomSheetRefImg}
+        index={-1}
         snapPoints={snapPointsImg}
-        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        handleIndicatorStyle={{ backgroundColor: "#3f9eeb" }}
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
       >
         <View style={styles.contentSheet}>
           {/* Choose from library button */}
-          <TouchableOpacity onPress={pickImage} style={[styles.picButton, styles.buttonOutline]}>
+          <TouchableOpacity
+            onPress={pickImage}
+            style={[styles.picButton, styles.buttonOutline]}
+          >
             <Text style={styles.buttonOutlineText}>Choose From Library</Text>
           </TouchableOpacity>
           {/* Take a pic button */}
           <TouchableOpacity onPress={takePicture} style={styles.picButton}>
             <Text style={styles.buttonText}>Take a Picture</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleDeletePic} style={styles.deleteButton}>
+          <TouchableOpacity
+            onPress={handleDeletePic}
+            style={styles.deleteButton}
+          >
             <Text style={styles.buttonText}>Delete</Text>
           </TouchableOpacity>
         </View>
       </BottomSheet>
 
-      <BottomSheet 
-        ref={bottomSheetRefCon} 
-        index={-1} 
+      <BottomSheet
+        ref={bottomSheetRefCon}
+        index={-1}
         snapPoints={snapPointsTag}
-        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        handleIndicatorStyle={{ backgroundColor: "#3f9eeb" }}
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
       >
         <View style={styles.contentSheet}>
           <View style={styles.menuBS}>
-            <TouchableOpacity style={styles.topMenuButtonBS} onPress={() => handleCondition('Brand New')}>
+            <TouchableOpacity
+              style={styles.topMenuButtonBS}
+              onPress={() => handleCondition("Brand New")}
+            >
               <Text style={styles.titleText}> Brand New</Text>
-              <Text style={styles.titleBody}>   Unused, still in original packaging</Text>
+              <Text style={styles.titleBody}>
+                {" "}
+                Unused, still in original packaging
+              </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuButtonBS} onPress={() => handleCondition('Like New')}>
+            <TouchableOpacity
+              style={styles.menuButtonBS}
+              onPress={() => handleCondition("Like New")}
+            >
               <Text style={styles.titleText}> Like New</Text>
-              <Text style={styles.titleBody}>   Mint condition, minimal signs of wear.</Text>
+              <Text style={styles.titleBody}>
+                {" "}
+                Mint condition, minimal signs of wear.
+              </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuButtonBS} onPress={() => handleCondition('Used - Excellent')}>
+            <TouchableOpacity
+              style={styles.menuButtonBS}
+              onPress={() => handleCondition("Used - Excellent")}
+            >
               <Text style={styles.titleText}> Used - Excellent</Text>
-              <Text style={styles.titleBody}>   Previously owned, no noticible flaws</Text>
+              <Text style={styles.titleBody}>
+                {" "}
+                Previously owned, no noticible flaws
+              </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuButtonBS} onPress={() => handleCondition('Used - Good')}>
+            <TouchableOpacity
+              style={styles.menuButtonBS}
+              onPress={() => handleCondition("Used - Good")}
+            >
               <Text style={styles.titleText}> Used - Good</Text>
-              <Text style={styles.titleBody}>   Moderately used, minor flaws or signs of wear</Text>
+              <Text style={styles.titleBody}>
+                {" "}
+                Moderately used, minor flaws or signs of wear
+              </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuButtonBS} onPress={() => handleCondition('Used - Fair')}>
+            <TouchableOpacity
+              style={styles.menuButtonBS}
+              onPress={() => handleCondition("Used - Fair")}
+            >
               <Text style={styles.titleText}> Used - Fair</Text>
-              <Text style={styles.titleBody}>   Noticeably used, significant signs of wear to be noted</Text>
+              <Text style={styles.titleBody}>
+                {" "}
+                Noticeably used, significant signs of wear to be noted
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       </BottomSheet>
 
-      <BottomSheet 
-        ref={bottomSheetRefSubj} 
-        index={-1} 
+      <BottomSheet
+        ref={bottomSheetRefSubj}
+        index={-1}
         snapPoints={snapPointsSubj}
-        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        handleIndicatorStyle={{ backgroundColor: "#3f9eeb" }}
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
       >
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-          <TouchableOpacity style={styles.subjectButtonTop} onPress={() => handleSubject('Accounting')}>
+          <TouchableOpacity
+            style={styles.subjectButtonTop}
+            onPress={() => handleSubject("Accounting")}
+          >
             <Text style={styles.subjectText}>Accounting</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('African American Studies')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("African American Studies")}
+          >
             <Text style={styles.subjectText}>African American Studies</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Anthropology')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Anthropology")}
+          >
             <Text style={styles.subjectText}>Anthropology</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Art')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Art")}
+          >
             <Text style={styles.subjectText}>Art</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Biochemistry')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Biochemistry")}
+          >
             <Text style={styles.subjectText}>Biochemistry</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Biology')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Biology")}
+          >
             <Text style={styles.subjectText}>Biology</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Business Administration')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Business Administration")}
+          >
             <Text style={styles.subjectText}>Business Administration</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Chemistry')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Chemistry")}
+          >
             <Text style={styles.subjectText}>Chemistry</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Cinema Media')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Cinema Media")}
+          >
             <Text style={styles.subjectText}>Cinema Media</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Communications')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Communications")}
+          >
             <Text style={styles.subjectText}>Communications</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Computer Science')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Computer Science")}
+          >
             <Text style={styles.subjectText}>Computer Science</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Economics')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Economics")}
+          >
             <Text style={styles.subjectText}>Economics</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Education')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Education")}
+          >
             <Text style={styles.subjectText}>Education</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('English')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("English")}
+          >
             <Text style={styles.subjectText}>English</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Environmental Science')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Environmental Science")}
+          >
             <Text style={styles.subjectText}>Environmental Science</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Film')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Film")}
+          >
             <Text style={styles.subjectText}>Film</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Finance')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Finance")}
+          >
             <Text style={styles.subjectText}>Finance</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('French')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("French")}
+          >
             <Text style={styles.subjectText}>French</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Geography')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Geography")}
+          >
             <Text style={styles.subjectText}>Geography</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Health Science')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Health Science")}
+          >
             <Text style={styles.subjectText}>Health Science</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Honors')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Honors")}
+          >
             <Text style={styles.subjectText}>Honors</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Human Services')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Human Services")}
+          >
             <Text style={styles.subjectText}>Human Services</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Information Technology')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Information Technology")}
+          >
             <Text style={styles.subjectText}>Information Technology</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Management')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Management")}
+          >
             <Text style={styles.subjectText}>Management</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Marketing')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Marketing")}
+          >
             <Text style={styles.subjectText}>Marketing</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Mathematics')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Mathematics")}
+          >
             <Text style={styles.subjectText}>Mathematics</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Music')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Music")}
+          >
             <Text style={styles.subjectText}>Music</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Nursing')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Nursing")}
+          >
             <Text style={styles.subjectText}>Nursing</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Philosophy')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Philosophy")}
+          >
             <Text style={styles.subjectText}>Philosophy</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Physical Education')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Physical Education")}
+          >
             <Text style={styles.subjectText}>Physical Education</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Political Science')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Political Science")}
+          >
             <Text style={styles.subjectText}>Political Science</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Psychology')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Psychology")}
+          >
             <Text style={styles.subjectText}>Psychology</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Sociology')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Sociology")}
+          >
             <Text style={styles.subjectText}>Sociology</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Spanish')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Spanish")}
+          >
             <Text style={styles.subjectText}>Spanish</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Theatre')}>
+          <TouchableOpacity
+            style={styles.subjectButton}
+            onPress={() => handleSubject("Theatre")}
+          >
             <Text style={styles.subjectText}>Theatre</Text>
-          </TouchableOpacity>          
+          </TouchableOpacity>
         </ScrollView>
       </BottomSheet>
 
-      <BottomSheet 
-        ref={bottomSheetRefCourse} 
-        index={-1} 
+      <BottomSheet
+        ref={bottomSheetRefCourse}
+        index={-1}
         snapPoints={snapPointsTag}
-        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        handleIndicatorStyle={{ backgroundColor: "#3f9eeb" }}
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
       >
         <View style={styles.courseContainer}>
-          <Text style={styles.courseText}>   Course Number: </Text>
-            <TextInput
-              value={course}
-              onChangeText={(text) => setCourse(text)}
-              style={styles.courseInput}
-              keyboardType="numeric"
-              maxLength={4}
-              onSubmitEditing={handleClosePress}
+          <Text style={styles.courseText}> Course Number: </Text>
+          <TextInput
+            value={course}
+            onChangeText={(text) => setCourse(text)}
+            style={styles.courseInput}
+            keyboardType="numeric"
+            maxLength={4}
+            onSubmitEditing={handleClosePress}
           />
         </View>
       </BottomSheet>
 
-      <BottomSheet 
-        ref={bottomSheetRefCat} 
-        index={-1} 
+      <BottomSheet
+        ref={bottomSheetRefCat}
+        index={-1}
         snapPoints={snapPointsSubj}
-        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        handleIndicatorStyle={{ backgroundColor: "#3f9eeb" }}
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
       >
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-          <TouchableOpacity style={styles.subjectButtonTop} onPress={() => handleCategory('Books')}>
+          <TouchableOpacity
+            style={styles.subjectButtonTop}
+            onPress={() => handleCategory("Books")}
+          >
             <Text style={styles.subjectText}>Books</Text>
           </TouchableOpacity>
         </ScrollView>
       </BottomSheet>
-      
-      
-
     </GestureHandlerRootView>
-    
   );
 };
 
 const styles = StyleSheet.create({
   contentSheet: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ffffff",
     padding: 16,
     marginTop: -30,
   },
@@ -717,17 +925,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
   menuView: {
-    width: "85%", 
+    width: "85%",
     height: "25%",
     backgroundColor: "#e6f2ff",
     marginTop: 20,
     borderRadius: 10,
   },
   menuBS: {
-    width: "100%", 
+    width: "100%",
     height: "85%",
     backgroundColor: "#ffffff",
     marginTop: 20,
@@ -737,41 +945,41 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   topMenuButton: {
-    width: "100%", 
+    width: "100%",
     height: "25%",
     backgroundColor: "#e6f2ff",
     borderRadius: 10,
     paddingRight: 10,
   },
   menuButton: {
-    width: "100%", 
+    width: "100%",
     height: "25%",
     backgroundColor: "#e6f2ff",
-    borderTopLeftRadius: 0, 
-    borderTopRightRadius: 0, 
-    borderBottomLeftRadius: 10, 
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
     borderTopWidth: 1,
-    borderColor: '#3f9eeb',
+    borderColor: "#3f9eeb",
     paddingRight: 10,
   },
   topMenuButtonBS: {
-    width: "100%", 
+    width: "100%",
     height: "25%",
     backgroundColor: "#ffffff",
     borderRadius: 10,
     paddingTop: 5,
   },
   menuButtonBS: {
-    width: "100%", 
+    width: "100%",
     height: "25%",
     backgroundColor: "#ffffff",
-    borderTopLeftRadius: 0, 
-    borderTopRightRadius: 0, 
-    borderBottomLeftRadius: 10, 
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
     borderTopWidth: 1,
-    borderColor: '#3f9eeb',
+    borderColor: "#3f9eeb",
     paddingTop: 5,
   },
   scrollViewContainer: {
@@ -781,27 +989,27 @@ const styles = StyleSheet.create({
     paddingBottom: 35, // Adjust padding as needed
   },
   subjectButtonTop: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     paddingVertical: 10,
     paddingHorizontal: 10,
   },
   subjectButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     paddingVertical: 10,
     paddingHorizontal: 10,
     borderTopWidth: 1,
-    borderColor: '#3f9eeb',
+    borderColor: "#3f9eeb",
   },
   subjectText: {
-    color: '#3f9eeb',
+    color: "#3f9eeb",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   titleContainer: {
     width: "85%",
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginTop: 20,
   },
   descriptionContainer: {
@@ -810,27 +1018,27 @@ const styles = StyleSheet.create({
   },
   courseContainer: {
     width: "100%",
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginTop: 20,
     paddingRight: 20,
   },
   titleText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: "#3f9eeb",
     padding: 5,
   },
   courseText: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: "#3f9eeb",
     padding: 5,
   },
   titleTextMenu: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: "#3f9eeb",
     padding: 5,
     paddingTop: 10,
@@ -856,7 +1064,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   priceInput: {
-    backgroundColor: '#e6f2ff', //#d4e9fa
+    backgroundColor: "#e6f2ff", //#d4e9fa
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 10,
@@ -865,8 +1073,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginRight: 140,
     fontSize: 20,
-    textAlign: 'center',
-    shadowColor: 'black',
+    textAlign: "center",
+    shadowColor: "black",
   },
   courseInput: {
     paddingVertical: 8,
@@ -876,9 +1084,9 @@ const styles = StyleSheet.create({
     marginLeft: 35,
     marginRight: 35,
     fontSize: 30,
-    textAlign: 'center',
+    textAlign: "center",
     borderBottomWidth: 1,
-    borderColor: '#3f9eeb',
+    borderColor: "#3f9eeb",
   },
   descriptionInput: {
     backgroundColor: "#e6f2ff",
@@ -903,24 +1111,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   picButton: {
-    backgroundColor: '#3f9eeb',
+    backgroundColor: "#3f9eeb",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 20,
-    width: '60%',
+    width: "60%",
   },
   deleteButton: {
-    backgroundColor: '#e8594f',
+    backgroundColor: "#e8594f",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 20,
-    width: '35%',
+    width: "35%",
   },
   buttonOutline: {
     backgroundColor: "white",
@@ -940,16 +1148,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   imgContainer: {
-    justifyContent: 'space-between',
-    flexDirection: 'row',
+    justifyContent: "space-between",
+    flexDirection: "row",
     width: "100%",
     paddingHorizontal: 30,
     paddingTop: 15,
-    position: 'relative',
-    alignItems: 'center',
+    position: "relative",
+    alignItems: "center",
   },
   imageWrapper: {
-    position: 'relative',
+    position: "relative",
     width: 60,
     height: 60,
   },
