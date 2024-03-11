@@ -49,10 +49,6 @@ function Profile() {
     navigation.navigate("UpdateProfile", { profileData: profileData });
   };
 
-  const handleListing = () => {
-    navigation.navigate("CreateListing", { profileData: profileData });
-  };
-
   return (
     <View style={styles.container}>
       {/* Profile Image moved up */}
@@ -76,10 +72,6 @@ function Profile() {
       {/* Sign out button */}
       <TouchableOpacity onPress={handleSignOut} style={styles.button}>
         <Text style={styles.buttonText}>Sign Out</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={handleListing} style={[styles.button, styles.buttonOutline]}>
-        <Text style={styles.buttonOutlineText}>Listing</Text>
       </TouchableOpacity>
 
     </View>
