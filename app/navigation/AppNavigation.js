@@ -122,7 +122,12 @@ export default function AppNavigation() {
           },
         })}
       >
-        <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Home" 
+          component={Home} 
+          options={{
+            headerShown: false,
+          }}
+          />
         <Tab.Screen name="Wishlist" component={Wishlist} />
         <Tab.Screen
           name="CreateListing"
