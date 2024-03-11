@@ -17,7 +17,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 
 const CreateListing = ({ route }) => { // Receive profile data as props
     
-    
+    //Used for identifying the image button selected. Mainly used for deleting images
     const [selectedImageNumber, setSelectedImageNumber] = useState("");
 
 
@@ -37,6 +37,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     const bottomSheetRefCourse = useRef(null);
     const bottomSheetRefCat = useRef(null);
 
+    //Close the bottom sheets
     const handleClosePress = () => {
       bottomSheetRefImg.current?.close();
       bottomSheetRefCon.current?.close();
@@ -46,6 +47,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       setAnimatedIndex(-1);
     };
     
+    //Open the bottom sheets
     const handleOpenPress = () => {
       bottomSheetRefImg.current?.expand();
       bottomSheetRefCon.current?.expand();
@@ -55,9 +57,11 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       setAnimatedIndex(1);
     };
 
+    //Could be used later for editing listings
     const [listingID, setListingID] = useState("");
     const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
 
+    //All document fields for the listing
     const [price, setPrice] = useState("");
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -66,6 +70,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     const [subject, setSubject] = useState("");
     const [course, setCourse] = useState("");
 
+    //URLs for the listing images
     const [listingImg1, setListingImg1] = useState("");
     const [listingImg2, setListingImg2] = useState("");
     const [listingImg3, setListingImg3] = useState("");
@@ -79,8 +84,10 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
     //const[progress, setProgress] = useState(0);
 
+    //Navigator
     const navigation = useNavigation();
 
+    //Set the condition and close the bottom sheet
     const handleCondition = (selectedCondition) => {
       setCondition(selectedCondition);
       if (bottomSheetRefCon.current) {
@@ -88,6 +95,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       }
     };
 
+    //Set the subject and close the bottom sheet
     const handleSubject = (selectedSubject) => {
       setSubject(selectedSubject);
       if (bottomSheetRefSubj.current) {
@@ -95,6 +103,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       }
     };
 
+    //Set the category and close the bottom sheet
     const handleCategory = (selectedCategory) => {
       setCategory(selectedCategory);
       if (bottomSheetRefCat.current) {
@@ -102,6 +111,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       }
     };
 
+    //Creates the listing document in the DB
     const handleCreation = async () => {
       try {
         const email = auth.currentUser ? auth.currentUser.email: null;
@@ -125,8 +135,6 @@ const CreateListing = ({ route }) => { // Receive profile data as props
             listingImg4: listingImg4,
             listingImg5: listingImg5,
         });
-
-       
 
         const newListingId = newListingDocRef.id;
 
@@ -221,6 +229,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     }
   }
 
+  //Gets the picture taken with the camera
   async function takePicture() {
     let { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
@@ -254,6 +263,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       await uploadImage(result.assets[0].uri, "image");
     }
   }
+
 
   async function uploadImage (uri, fileType) {
     try {
