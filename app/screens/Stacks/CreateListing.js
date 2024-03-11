@@ -159,7 +159,7 @@ const CreateListing = ({ route }) => {
 
       // resets all form input fields to blank after listing is created
       resetForm();
-      navigation.goBack();
+      //navigation.goBack();
     } catch (error) {
       console.error(error.message);
     }
