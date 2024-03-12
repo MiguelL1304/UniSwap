@@ -8,7 +8,7 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerBar}>
           <View style={styles.searchContainer}>
@@ -22,7 +22,12 @@ const Home = () => {
           </View>
         </View>
       </View>
-    </View>
+
+      <View style={styles.mainContainer}>
+        {/* Rest of the content here */}
+      </View>
+
+    </SafeAreaView>
   );
 };
 
@@ -31,14 +36,15 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#e6f2ff",
   },
   header: {
-    paddingTop: 40,
+    paddingTop: 10,
     backgroundColor: "#e6f2ff", // Color for the header bar
+    paddingBottom: 10,
   },
   headerBar: {
     //paddingHorizontal: 10,
-    paddingVertical: 15,
   },
   // searchIcon: {
   //   marginRight: 10,
@@ -52,7 +58,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 5,
     margin: 10,
   },
   searchInput: {
@@ -63,5 +68,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 10,
     paddingLeft: 40,
+  },
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "#fff", // White background
   }
 });
