@@ -41,10 +41,11 @@ const Home = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.mainContainer}>
+      <View>
+        {/* display of search bar + header */}
         <HomeHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-        {/* // display  of listings */}
+        {/* display  of listings */}
         <FlatList
           style={styles.listings}
           data={listings}
@@ -75,9 +76,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#e6f2ff",
-  },
-  mainContainer: {
-    flex: 1,
   },
   listingsContainer: {
     paddingHorizontal: 10,
