@@ -29,10 +29,7 @@ const wishlistName = "Wishlist";
 const meetupsName = "Meetups";
 const postListing = "CreateListing";
 
-
-
 export default function AppNavigation() {
-
   function MyStack() {
     return (
       <Stack.Navigator
@@ -91,7 +88,6 @@ export default function AppNavigation() {
   }
 
   function MyTabs() {
-
     const navigation = useNavigation();
 
     return (
@@ -122,12 +118,13 @@ export default function AppNavigation() {
           },
         })}
       >
-        <Tab.Screen name="Home" 
-          component={Home} 
+        <Tab.Screen
+          name="Home"
+          component={Home}
           options={{
             headerShown: false,
           }}
-          />
+        />
         <Tab.Screen name="Wishlist" component={Wishlist} />
         <Tab.Screen
           name="CreateListing"

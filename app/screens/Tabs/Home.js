@@ -40,32 +40,28 @@ const Home = () => {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.mainContainer}>
-        <HomeHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+    <View style={styles.container}>
+      <HomeHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-        {/* // display  of listings */}
-        <FlatList
-          style={styles.listings}
-          data={listings}
-          numColumns={2}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.listingItem}>
-              <Image
-                source={
-                  item.listingImg1 ? { uri: item.listingImg1 } : defaultImg
-                }
-                style={styles.listingImage}
-              />
-              <Text style={styles.listingTitle}>{item.title}</Text>
-              <Text style={styles.listingPrice}>${item.price}</Text>
-            </View>
-          )}
-          contentContainerStyle={styles.listingsContainer}
-        />
-      </View>
-    </SafeAreaView>
+      {/* // display  of listings */}
+      <FlatList
+        style={styles.listings}
+        data={listings}
+        numColumns={2}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.listingItem}>
+            <Image
+              source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+              style={styles.listingImage}
+            />
+            <Text style={styles.listingTitle}>{item.title}</Text>
+            <Text style={styles.listingPrice}>${item.price}</Text>
+          </View>
+        )}
+        contentContainerStyle={styles.listingsContainer}
+      />
+    </View>
   );
 };
 
@@ -75,9 +71,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#e6f2ff",
-  },
-  mainContainer: {
-    flex: 1,
   },
   listingsContainer: {
     paddingHorizontal: 10,
