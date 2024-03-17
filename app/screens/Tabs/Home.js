@@ -13,6 +13,7 @@ import HomeHeader from "../Components/HomeHeader";
 
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
+import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 
 const Home = () => {
   // search bar
@@ -40,28 +41,44 @@ const Home = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    // header area + search bar
+    
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerBar}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search-outline" size={24} color="#3f9eeb" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Seach here!"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+        </View>
+      </View>
+      
       <HomeHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
       {/* // display  of listings */}
-      <FlatList
-        style={styles.listings}
-        data={listings}
-        numColumns={2}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.listingItem}>
-            <Image
-              source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
-              style={styles.listingImage}
-            />
-            <Text style={styles.listingTitle}>{item.title}</Text>
-            <Text style={styles.listingPrice}>${item.price}</Text>
-          </View>
-        )}
-        contentContainerStyle={styles.listingsContainer}
-      />
-    </View>
+        <FlatList
+          style={styles.listings}
+          data={listings}
+          numColumns={2}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.listingItem}>
+                <Image 
+                source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+                style={styles.listingImage}
+                />
+              <Text style={styles.listingTitle}>{item.title}</Text>
+              <Text style={styles.listingPrice}>${item.price}</Text>
+            </View>
+          )}
+          contentContainerStyle={styles.listingsContainer}
+        />
+    </SafeAreaView>
   );
 };
 

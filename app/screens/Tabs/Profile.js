@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Image } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from "react-native";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { signOut } from "firebase/auth";
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 
 function Profile() {
@@ -14,12 +14,15 @@ function Profile() {
     firstName: "First Name: NA",
     lastName: "Last Name: NA",
     college: "College: NA",
-    profilePic: "https://via.placeholder.com/100",
+    profilePic: "https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg",
   }); // Default values for the profile data
+
+  const [userListings, setUserListings] = useState({});
 
   useEffect(() => {
     if (isFocused) {
       fetchProfile(); // Fetch profile data when screen is focused
+      fetchUserListings();
     }
   }, [isFocused]);
 
@@ -45,8 +48,36 @@ function Profile() {
     }
   };
 
+  //Fetch the user document in the userListing collection. TO BE DELETED LATER
+  const fetchUserListings = async () => {
+    try {
+      const email = auth.currentUser ? auth.currentUser.email : null;
+      if (!email) {
+        throw new Error("Current user is null or email is undefined.");
+      }
+
+      const userListingRef = doc(firestoreDB, "userListing", email);
+      const userListingSnapshot = await getDoc(userListingRef);
+
+      if (userListingSnapshot.exists()) {
+        const userListingData = userListingSnapshot.data();
+        const listingNames = Object.keys(userListingData);
+        setUserListings(listingNames);
+        console.log(userListings);
+      } else {
+        console.log("User listing document does not exist");
+      }
+    } catch (error) {
+      console.error('Error fetching user listings:', error);
+    }
+  };
+
   const handleUpdate = () => {
     navigation.navigate("UpdateProfile", { profileData: profileData });
+  };
+
+  const handleListing = (listingDoc) => {
+    navigation.navigate("EditListing", { listingDoc: listingDoc });
   };
 
   return (
@@ -54,7 +85,7 @@ function Profile() {
       {/* Profile Image moved up */}
       <View style={styles.profileImgContainer}>
         <Image
-          source={{ uri: profileData.profilePic ? profileData.profilePic : 'https://via.placeholder.com/100' }}
+          source={{ uri: profileData.profilePic ? profileData.profilePic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
           style={styles.profileImg}
         />
       </View>
@@ -64,6 +95,18 @@ function Profile() {
       <Text style={styles.userInfoText}>{profileData.lastName}</Text>
       <Text style={styles.userInfoText}>{profileData.college}</Text>
       <Text style={styles.userInfoText}>{profileData.bio}</Text>
+
+      {/* Fetch the user document in the userListing collection. TO BE DELETED LATER */}
+      <Text style={styles.userInfoText}>User Listings:</Text>
+      <FlatList
+        data={userListings}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => handleListing(item)}>
+            <Text>{item}</Text>
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
       
       {/* Update Profile button */}
       <TouchableOpacity onPress={handleUpdate} style={[styles.button, styles.buttonOutline]}>
