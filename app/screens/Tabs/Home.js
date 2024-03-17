@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   StyleSheet,
   Text,
-  SafeAreaView,
   View,
   FlatList,
   Image,
@@ -10,9 +9,12 @@ import {
 import { firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import "react-native-gesture-handler";
 
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
+
 
 const Home = () => {
   // search bar
@@ -20,6 +22,14 @@ const Home = () => {
 
   // getting & setting listings from firestore
   const [listings, setListings] = useState([]);
+
+  // filter bottom sheet
+  const bottomSheetModalRef = useRef(null);
+  const snapPoints = useMemo(() => ["50%", "90%"], []);
+
+  function handlePresentModal() {
+    bottomSheetModalRef.current?.present();
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,7 +51,12 @@ const Home = () => {
 
   return (
     <View style={styles.container}>
-      <HomeHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <HomeHeader 
+        searchQuery={searchQuery} 
+        setSearchQuery={setSearchQuery} 
+        //onFilterPress={() => setBottomSheetPosition(0)}
+        handlePresentModal={handlePresentModal}
+        />
 
       {/* // display  of listings */}
       <FlatList
@@ -61,6 +76,16 @@ const Home = () => {
         )}
         contentContainerStyle={styles.listingsContainer}
       />
+
+      <BottomSheetModal
+        ref={bottomSheetModalRef}
+        index={0}
+        snapPoints={snapPoints}
+      >
+        <View>
+          <Text>HELLO I AM BOTTOM SHEET MODAL</Text>
+        </View>
+      </BottomSheetModal>
     </View>
   );
 };

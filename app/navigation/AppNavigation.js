@@ -2,6 +2,8 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TouchableOpacity } from "react-native";
 import Login from "../screens/Stacks/Login";
@@ -167,8 +169,12 @@ export default function AppNavigation() {
   }
 
   return (
-    <NavigationContainer>
-      <MyStack />
-    </NavigationContainer>
+    <GestureHandlerRootView style={{ flex:1 }}>
+      <BottomSheetModalProvider>
+        <NavigationContainer>
+          <MyStack />
+        </NavigationContainer>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>  
   );
 }
