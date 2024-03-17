@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -10,7 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
-const HomeHeader = ({ searchQuery, setSearchQuery }) => {
+const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, handlePresentModal }) => {
   const categories = [
     {
       name: "Condition",
@@ -28,7 +28,6 @@ const HomeHeader = ({ searchQuery, setSearchQuery }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* THE PINK AREA */}
       <View style={styles.headerBar}>
         <View style={styles.searchContainer}>
           <Ionicons
@@ -45,11 +44,10 @@ const HomeHeader = ({ searchQuery, setSearchQuery }) => {
             onChangeText={setSearchQuery}
           />
         </View>
-        <TouchableOpacity style={styles.filterButton}>
+        <TouchableOpacity style={styles.filterButton} onPress={handlePresentModal}>
           <Ionicons name="options-outline" size={25} color="grey"></Ionicons>
         </TouchableOpacity>
       </View>
-      {/*END OF PINK AREA*/}
 
       <ScrollView
         horizontal
@@ -61,7 +59,8 @@ const HomeHeader = ({ searchQuery, setSearchQuery }) => {
         }}
       >
         {categories.map((item, index) => (
-          <TouchableOpacity style={styles.tagButtons} key={index}>
+          <TouchableOpacity style={styles.tagButtons} key={index}
+          >
             {/* <Ionicons size="20" name={item.icon} /> */}
             <Text style={styles.tagText}>{item.name}</Text>
           </TouchableOpacity>
