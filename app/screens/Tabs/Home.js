@@ -6,7 +6,9 @@ import {
   View,
   FlatList,
   Image,
+  TextInput,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
@@ -44,20 +46,7 @@ const Home = () => {
     // header area + search bar
     
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerBar}>
-          <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={24} color="#3f9eeb" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Seach here!"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
-        </View>
-      </View>
-      
+       
       <HomeHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
       {/* // display  of listings */}
