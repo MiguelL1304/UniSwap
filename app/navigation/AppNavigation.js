@@ -16,6 +16,7 @@ import OnboardingScreen from "../screens/Stacks/OnboardingScreen";
 import UpdateProfile from "../screens/Stacks/UpdateProfile";
 import ForgotPassword from "../screens/Stacks/ForgotPassword";
 import CreateListing from "../screens/Stacks/CreateListing";
+import EditListing from "../screens/Stacks/EditListing";
 import { View } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 
@@ -83,6 +84,14 @@ export default function AppNavigation() {
           component={CreateListing}
           options={{
             headerTitle: "Create Listing",
+            headerBackVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="EditListing"
+          component={EditListing}
+          options={{
+            headerTitle: "Edit Listing",
             headerBackVisible: false,
           }}
         />

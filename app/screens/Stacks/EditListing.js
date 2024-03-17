@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Keyboard } 
 import { TextInput } from "react-native";
 import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
 import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
@@ -17,6 +17,65 @@ import * as ImageManipulator from 'expo-image-manipulator';
 
 const CreateListing = ({ route }) => { // Receive profile data as props
     
+    const { listingDoc } = route.params;
+
+    const [listingData, setListingData] = useState({
+        category: "",
+        condition: "",
+        course: "",
+        description: "",
+        listingImg1: "",
+        listingImg2: "",
+        listingImg3: "",
+        listingImg4: "",
+        listingImg5: "",
+        price: "",
+        subject: "",
+        title: "",
+    }); // Default values for the profile data
+
+    const fetchListing = async () => {
+      try {
+        const docRef = doc(firestoreDB, 'listing', listingDoc);
+        const docSnapshot = await getDoc(docRef);
+    
+        if (docSnapshot.exists()) {
+          const data = docSnapshot.data();
+          setListingData(data); // Update profile data state
+        }
+      } catch (error) {
+        console.error('Error fetching document:', error);
+      }
+    };
+
+    const setAllStateValues = (data) => {
+      setPrice(data.price);
+      setTitle(data.title);
+      setDescription(data.description);
+      setCondition(data.condition);
+      setCategory(data.category);
+      setSubject(data.subject);
+      setCourse(data.course);
+      setListingImg1(data.listingImg1);
+      setListingImg2(data.listingImg2);
+      setListingImg3(data.listingImg3);
+      setListingImg4(data.listingImg4);
+      setListingImg5(data.listingImg5);
+    };
+
+    useEffect(() => {
+    if (isFocused) {
+      fetchListing();
+    }
+    }, [isFocused]);
+
+    useEffect(() => {
+      if (listingData) { // Check if listingData is not null
+        setAllStateValues(listingData); // Update state with fetched data
+      }
+    }, [listingData]);
+
+
     //Used for identifying the image button selected. Mainly used for deleting images
     const [selectedImageNumber, setSelectedImageNumber] = useState("");
 
@@ -77,15 +136,9 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     const [listingImg4, setListingImg4] = useState("");
     const [listingImg5, setListingImg5] = useState("");
 
-    //Handles cleanup
-    useEffect(() => {
-    
-    }, []);
-
-    //const[progress, setProgress] = useState(0);
-
     //Navigator
     const navigation = useNavigation();
+    const isFocused = useIsFocused();
 
     //Set the condition and close the bottom sheet
     const handleCondition = (selectedCondition) => {
@@ -112,73 +165,38 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     };
 
     //Creates the listing document in the DB
-    const handleCreation = async () => {
+    const handleUpdate = async () => {
       try {
-        const email = auth.currentUser ? auth.currentUser.email: null;
-        if (!email) {
-          throw new Error("Current user is null or email is undefined.");
-        }
-
-        const listingRef = collection(firestoreDB, "listing");
-
-        const newListingDocRef = await addDoc(listingRef, {
-            title: title,
-            description: description,
-            price: price,
-            category: category,
-            subject: subject,
-            course: course,
-            condition: condition,
-            listingImg1: listingImg1,
-            listingImg2: listingImg2,
-            listingImg3: listingImg3,
-            listingImg4: listingImg4,
-            listingImg5: listingImg5,
-        });
-
-        const newListingId = newListingDocRef.id;
-
-        const docName = `${email}_${newListingId}`;
-
-        await setDoc(doc(firestoreDB, "listing", docName), {
-          title: title,
-          description: description,
-          price: price,
-          category: category,
-          subject: subject,
-          course: course,
-          condition: condition,
-          listingImg1: listingImg1,
-          listingImg2: listingImg2,
-          listingImg3: listingImg3,
-          listingImg4: listingImg4,
-          listingImg5: listingImg5,
-        });
-
-        await deleteDoc(doc(firestoreDB, "listing", newListingId));
-        
-        const userListingRef = collection(firestoreDB, "userListing");
-        const userListingDocRef = doc(userListingRef, email);
-        const userListingDocSnap = await getDoc(userListingDocRef);
-        const userListingData = userListingDocSnap.data();
-
-        if (userListingDocSnap.exists()) {
-          // If the document exists, update it
-          await setDoc(userListingDocRef, {
-            ...userListingData,
-            [docName]: true,
-          }, { merge: true });
-        } else {
-          // If the document doesn't exist, create it
-          await setDoc(userListingDocRef, {
-            [docName]: true,
-          });
-        }
-
-        navigation.goBack();
-      } catch (error) {
-        console.error(error.message);
+      // Ensure the user is authenticated
+      const email = auth.currentUser ? auth.currentUser.email : null;
+      if (!email) {
+        throw new Error("Current user is null or email is undefined.");
       }
+
+      // Get a reference to the listing document
+      const listingDocRef = doc(firestoreDB, "listing", listingDoc);
+
+      // Update the document in the database with the new values
+      await updateDoc(listingDocRef, {
+        title: title,
+        description: description,
+        price: price,
+        category: category,
+        subject: subject,
+        course: course,
+        condition: condition,
+        listingImg1: listingImg1,
+        listingImg2: listingImg2,
+        listingImg3: listingImg3,
+        listingImg4: listingImg4,
+        listingImg5: listingImg5,
+      });
+
+      // Navigate back after updating the document
+      navigation.goBack();
+    } catch (error) {
+      console.error(error.message);
+    }
     };
 
   const handleImagePress = (imageNumber) => {
@@ -344,19 +362,19 @@ const CreateListing = ({ route }) => { // Receive profile data as props
   }
 
   const handleCancel = async () => {
-    if (!(listingImg1 === "")) {
+    if ((!(listingImg1 === "")) && (!(listingImg1 === listingData.listingImg1))) {
       deletePics(listingImg1)
     }
-    if (!(listingImg2 === "")) {
+    if ((!(listingImg2 === "")) && (!(listingImg2 === listingData.listingImg2))) {
       deletePics(listingImg2)
     }
-    if (!(listingImg3 === "")) {
+    if ((!(listingImg3 === "")) && (!(listingImg3 === listingData.listingImg3))) {
       deletePics(listingImg3)
     }
-    if (!(listingImg4 === "")) {
+    if ((!(listingImg4 === "")) && (!(listingImg4 === listingData.listingImg4))) {
       deletePics(listingImg4)
     }
-    if (!(listingImg5 === "")) {
+    if ((!(listingImg5 === "")) && (!(listingImg5 === listingData.listingImg5))) {
       deletePics(listingImg5)
     }
 
@@ -421,6 +439,12 @@ const CreateListing = ({ route }) => { // Receive profile data as props
       
       const storageRef = ref(firebaseStorage, "ListingPic/" + documentName);
       await deleteObject(storageRef);
+
+      // Update the listingImg field in the Firestore document to an empty string
+      const listingDocRef = doc(firestoreDB, "listing", listingDoc);
+      await updateDoc(listingDocRef, {
+        [`listingImg${selectedImageNumber}`]: ""
+      });
   
       console.log("Picture deleted successfully!");
 
@@ -569,6 +593,8 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         </View>
       </View>
 
+
+
       <View style={styles.titleContainer}>
         <Text style={styles.titleText}>Title:</Text>
         <TextInput
@@ -631,8 +657,8 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleCreation} style={styles.button}>
-          <Text style={styles.buttonText}>Create Listing</Text>
+        <TouchableOpacity onPress={handleUpdate} style={[styles.button, styles.buttonOutline]}>
+          <Text style={styles.buttonOutlineText2}>Update Listing</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
@@ -1059,6 +1085,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
+  buttonOutline: {
+    backgroundColor: "white",
+    borderColor: "#3f9eeb",
+    borderWidth: 2,
+    marginTop: 50,
+  },
   picButton: {
     backgroundColor: '#3f9eeb',
     paddingVertical: 10,
@@ -1102,15 +1134,20 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 18,
   },
-  cancelText: {
-    color: "#e8594f",
-    fontWeight: "700",
-    fontSize: 18,
-  },
   buttonOutlineText: {
     color: "#3f9eeb",
     fontWeight: "700",
     fontSize: 16,
+  },
+  buttonOutlineText2: {
+    color: "#3f9eeb",
+    fontWeight: "700",
+    fontSize: 20,
+  },
+  cancelText: {
+    color: "#e8594f",
+    fontWeight: "700",
+    fontSize: 18,
   },
   imgContainer: {
     justifyContent: 'space-between',
