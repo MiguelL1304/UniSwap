@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, SafeAreaView, View, TextInput, FlatList, Image } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import {
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  View,
+  FlatList,
+  Image,
+} from "react-native";
 import { firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
+import HomeHeader from "../Components/HomeHeader";
 
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
@@ -14,25 +21,24 @@ const Home = () => {
 
   // getting & setting listings from firestore
   const [listings, setListings] = useState([]);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const querySnapshot = await getDocs(collection(firestoreDB, "listing"));
-        const documents = querySnapshot.docs.map(doc => ({
+        const documents = querySnapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         }));
-        console.log(documents);
+        //console.log(documents);
         setListings(documents);
       } catch (error) {
-        console.error('Error fetching data: ', error);
+        console.error("Error fetching data: ", error);
       }
     };
-  
+
     fetchData();
   }, []);
-
 
   return (
     // header area + search bar
@@ -51,10 +57,12 @@ const Home = () => {
           </View>
         </View>
       </View>
+      
+      <HomeHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
       {/* // display  of listings */}
         <FlatList
-          style={{backgroundColor:"white"}}
+          style={styles.listings}
           data={listings}
           numColumns={2}
           keyExtractor={(item) => item.id}
@@ -71,7 +79,6 @@ const Home = () => {
           contentContainerStyle={styles.listingsContainer}
         />
     </SafeAreaView>
-    
   );
 };
 
@@ -82,50 +89,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#e6f2ff",
   },
-  header: {
-    paddingTop: 10,
-    backgroundColor: "#e6f2ff", // Color for the header bar
-    paddingBottom: 10,
-  },
-  headerBar: {
-    //paddingHorizontal: 10,
-  },
-  // searchIcon: {
-  //   marginRight: 10,
-  // },
-  searchIcon: {
-    position: "absolute",
-    marginLeft: 25,
-  },
-  searchContainer: {
-    position: "relative",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    margin: 10,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    backgroundColor: "transparent",
-    borderColor: "#3f9eeb",
-    borderWidth: 2,
-    borderRadius: 10,
-    paddingLeft: 40,
-  },
-  mainContainer: {
-    flex: 1,
-    //backgroundColor: "red", 
-  },
   listingsContainer: {
     paddingHorizontal: 10,
-    //backgroundColor: "white",
+    backgroundColor: "white",
   },
   listingItem: {
     flex: 1,
     flexDirection: "column",
     padding: 15,
-    //alignItems: "center",
   },
   listingTitle: {
     fontSize: 18,
@@ -136,9 +107,9 @@ const styles = StyleSheet.create({
     color: "green",
   },
   listingImage: {
-    width: 120, 
-    height: 120, 
-    resizeMode: "cover", 
+    width: 120,
+    height: 120,
+    resizeMode: "cover",
     margin: 15,
     borderRadius: 15,
   },
