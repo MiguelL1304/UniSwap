@@ -5,7 +5,9 @@ import {
   View,
   FlatList,
   Image,
+  TextInput,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
@@ -14,6 +16,7 @@ import "react-native-gesture-handler";
 
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
+import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
 
 
 const Home = () => {
@@ -50,6 +53,7 @@ const Home = () => {
   }, []);
 
   return (
+
     <View style={styles.container}>
       <HomeHeader 
         searchQuery={searchQuery} 
