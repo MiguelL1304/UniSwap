@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   StyleSheet,
   Text,
-  SafeAreaView,
   View,
   FlatList,
   Image,
@@ -14,9 +13,14 @@ import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import "react-native-gesture-handler";
+
+
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
 import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
+
 
 const Home = () => {
   const navigation = useNavigation();
@@ -27,6 +31,14 @@ const Home = () => {
 
   // getting & setting listings from firestore
   const [listings, setListings] = useState([]);
+
+  // filter bottom sheet
+  const bottomSheetModalRef = useRef(null);
+  const snapPoints = useMemo(() => ["50%", "90%"], []);
+
+  function handlePresentModal() {
+    bottomSheetModalRef.current?.present();
+  }
 
   useEffect(() => {
     if (isFocused) {
@@ -51,31 +63,44 @@ const Home = () => {
   }, [isFocused]);
 
   return (
-    // header area + search bar
-    
-    <SafeAreaView style={styles.container}>
-       
-      <HomeHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+
+    <View style={styles.container}>
+      <HomeHeader 
+        searchQuery={searchQuery} 
+        setSearchQuery={setSearchQuery} 
+        //onFilterPress={() => setBottomSheetPosition(0)}
+        handlePresentModal={handlePresentModal}
+        />
 
       {/* // display  of listings */}
-        <FlatList
-          style={styles.listings}
-          data={listings}
-          numColumns={2}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.listingItem}>
-                <Image 
-                source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
-                style={styles.listingImage}
-                />
-              <Text style={styles.listingTitle}>{item.title}</Text>
-              <Text style={styles.listingPrice}>${item.price}</Text>
-            </View>
-          )}
-          contentContainerStyle={styles.listingsContainer}
-        />
-    </SafeAreaView>
+      <FlatList
+        style={styles.listings}
+        data={listings}
+        numColumns={2}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={styles.listingItem}>
+            <Image
+              source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+              style={styles.listingImage}
+            />
+            <Text style={styles.listingTitle}>{item.title}</Text>
+            <Text style={styles.listingPrice}>${item.price}</Text>
+          </View>
+        )}
+        contentContainerStyle={styles.listingsContainer}
+      />
+
+      <BottomSheetModal
+        ref={bottomSheetModalRef}
+        index={0}
+        snapPoints={snapPoints}
+      >
+        <View>
+          <Text>HELLO I AM BOTTOM SHEET MODAL</Text>
+        </View>
+      </BottomSheetModal>
+    </View>
   );
 };
 

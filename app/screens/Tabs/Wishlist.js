@@ -1,147 +1,211 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, SafeAreaView, Alert } from "react-native";
+import { firestoreDB } from "../../../Firebase/firebase";
+import { collection, getDocs } from "firebase/firestore";
 import { Checkbox } from "expo-checkbox";
 
-const Wishlist = () => {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      name: "Item 1",
-      image: "https://fakeimg.pl/100x100/ff0000/000000?text=Book+1",
-      checked: false,
-    },
-    {
-      id: 2,
-      name: "Item 2",
-      image: "https://fakeimg.pl/100x100/00ff0d/000000?text=Book+2",
-      checked: false,
-    },
-    {
-      id: 3,
-      name: "Item 3",
-      image: "https://fakeimg.pl/100x100/ff5500/000000?text=Book+3",
-      checked: false,
-    },
-    {
-      id: 4,
-      name: "Item 4",
-      image: "https://fakeimg.pl/100x100/9d00ff/000000?text=Book+4",
-      checked: false,
-    },
-    {
-      id: 5,
-      name: "Item 5",
-      image: "https://fakeimg.pl/100x100/00d0ff/000000?text=Book+5",
-      checked: false,
-    },
-    {
-      id: 6,
-      name: "Item 6",
-      image: "https://fakeimg.pl/100x100/fffb00/000000?text=Book+6",
-      checked: false,
-    },
-  ]);
+//default img if no img posted with listing
+import defaultImg from "../../assets/defaultImg.png";
 
-  const toggleItem = (itemId) => {
-    setItems(
-      items.map((item) => {
-        if (item.id === itemId) {
-          return { ...item, checked: !item.checked };
-        }
-        return item;
-      })
+const Wishlist = () => {
+  const [listings, setListings] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isSelecting, setIsSelecting] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(firestoreDB, "listing"));
+        const documents = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          selected: false,
+        }));
+        //console.log(documents);
+        setListings(documents);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleListingPress = (listingId) => {
+    if (isSelecting) {
+    // Toggle the selected state of the item
+    const updatedListings = listings.map((item) =>
+      item.id === listingId ? { ...item, selected: !item.selected } : item
+    );
+    setListings(updatedListings);
+
+    // Update the selectedItems state with the selected item's ID
+    const selectedItemIds = updatedListings
+      .filter((item) => item.selected)
+      .map((item) => item.id);
+    setSelectedItems(selectedItemIds);
+    }
+  };
+
+  const toggleSelection = () => {
+    setIsSelecting(!isSelecting);
+    if (!isSelecting) {
+      // Unselect all checkboxes
+      const updatedListings = listings.map((item) => ({
+        ...item,
+        selected: false,
+      }));
+      setListings(updatedListings);
+      setSelectedItems([]);
+    }
+  };
+
+  const handleRemoveSelected = () => {
+    if (selectedItems.length === 0) {
+      Alert.alert("No Items Selected", "Please select items to delete.");
+      return;
+    }
+
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete the selected items?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            const updatedListings = listings.filter(
+              (item) => !selectedItems.includes(item.id)
+            );
+            setListings(updatedListings);
+            setSelectedItems([]);
+            setIsSelecting(false);
+          },
+        },
+      ]
     );
   };
 
-  const removeCheckedItems = () => {
-    setItems(items.filter((item) => !item.checked));
-  };
-
-  const renderWishlistItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => toggleItem(item.id)}
-      style={[styles.item, { borderBottomWidth: 1 }]}
-    >
-      <Checkbox
-        value={item.checked}
-        onValueChange={() => toggleItem(item.id)}
-        color={item.checked ? '#3f9eeb' : undefined}
-      />
-      <View style={styles.itemImageContainer}>
-        <Image source={{ uri: item.image }} style={styles.itemImage} />
+  const renderItem = ({ item }) => (
+    <TouchableOpacity onPress={() => handleListingPress(item.id)}>
+      <View style={styles.listingItem}>
+        {isSelecting && (
+        <Checkbox
+          value={item.selected}
+          onValueChange={() => handleListingPress(item.id)}
+          color={item.selected ? '#3f9eeb' : undefined}
+        />
+        )}
+        <Image
+          source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+          style={styles.listingImage}
+        />
+        <Text style={styles.listingTitle}>{item.title}</Text>
+        <Text style={styles.listingPrice}>${item.price}</Text>
       </View>
-      <Text style={styles.itemText}>{item.name}</Text>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Wishlist</Text>
-      <FlatList
-        data={items}
-        renderItem={renderWishlistItem}
-        keyExtractor={(item) => item.id.toString()}
-        style={styles.list}
-      />
-      <TouchableOpacity
-        onPress={removeCheckedItems}
-        style={styles.removeButton}
-      >
-        <Text style={styles.removeButtonText}>Remove Checked Items</Text>
-      </TouchableOpacity>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={toggleSelection} style={styles.selectButton}>
+          <Text style={styles.selectButtonText}>
+            {isSelecting ? "Cancel" : "Select"}
+          </Text>
+        </TouchableOpacity>
+        {isSelecting && (
+          <TouchableOpacity
+            onPress={handleRemoveSelected}
+            style={styles.deleteButton}
+          >
+            <Text style={styles.deleteButtonText}>Remove Selected</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <View style={styles.mainContainer}>
+        {/* display of listings */}
+        <FlatList
+          style={styles.listings}
+          data={listings}
+          numColumns={2}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listingsContainer}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
+
+export default Wishlist;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: "#e6f2ff",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  list: {
-    marginTop: 10,
-  },
-  item: {
+  header: {
     flexDirection: "row",
+    justifyContent: "flex-end",
     alignItems: "center",
+    paddingHorizontal: 10,
     paddingVertical: 5,
-    borderBottomColor: "black",
   },
-  itemImageContainer: {
-    marginLeft: 10,
-  },
-  itemImage: {
-    width: 100,
-    height: 100,
-    marginLeft: 40,
-  },
-  itemText: {
-    fontSize: 16,
-    marginLeft: 70,
-  },
-  removeButton: {
+  selectButton: {
     backgroundColor: "#3f9eeb",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     borderRadius: 5,
-    padding: 10,
-    alignItems: "center",
-    marginTop: 10,
+    margin: 5,
   },
-  removeButtonText: {
+  selectButtonText: {
     color: "white",
+    fontSize: 16,
     fontWeight: "bold",
+  },
+  deleteButton: {
+    backgroundColor: "red",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  deleteButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  mainContainer: {
+    flex: 1,
+  },
+  listingsContainer: {
+    paddingHorizontal: 10,
+    backgroundColor: "white",
+  },
+  listingItem: {
+    flex: 1,
+    flexDirection: "column",
+    padding: 15,
+    marginBottom: 10,
+    alignItems: "center",
+  },
+  listingTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  listingPrice: {
+    fontSize: 16,
+    color: "green",
+  },
+  listingImage: {
+    width: 120,
+    height: 120,
+    resizeMode: "cover",
+    margin: 15,
+    borderRadius: 15,
   },
 });
-
-export default Wishlist;
