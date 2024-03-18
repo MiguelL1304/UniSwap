@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -13,7 +13,7 @@ import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import BottomSheet, { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import "react-native-gesture-handler";
 
 
@@ -62,6 +62,11 @@ const Home = () => {
    
   }, [isFocused]);
 
+  const renderBackdrop = useCallback(
+    (props) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />,
+    []
+  );
+
   return (
 
     <View style={styles.container}>
@@ -84,8 +89,11 @@ const Home = () => {
               source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
               style={styles.listingImage}
             />
-            <Text style={styles.listingTitle}>{item.title}</Text>
-            <Text style={styles.listingPrice}>${item.price}</Text>
+            <View style={styles.textContainer}>
+              <Text style={styles.listingTitle}>{item.title}</Text>
+              <Text style={styles.listingPrice}>${item.price}</Text>
+            </View>
+            
           </View>
         )}
         contentContainerStyle={styles.listingsContainer}
@@ -95,6 +103,9 @@ const Home = () => {
         ref={bottomSheetModalRef}
         index={0}
         snapPoints={snapPoints}
+        enablePanDownToClose={true}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        backdropComponent={renderBackdrop}
       >
         <View>
           <Text>HELLO I AM BOTTOM SHEET MODAL</Text>
@@ -112,21 +123,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#e6f2ff",
   },
   listingsContainer: {
-    paddingHorizontal: 10,
     backgroundColor: "white",
   },
   listingItem: {
     flex: 1,
     flexDirection: "column",
     padding: 15,
+    alignItems: 'center',   
+  },
+  textContainer: {
+    flex: 1,
+    width: '100%',
+    
   },
   listingTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    paddingLeft: 5,
   },
   listingPrice: {
     fontSize: 16,
     color: "green",
+    paddingLeft: 5,
   },
   listingImage: {
     width: 120,
