@@ -11,8 +11,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
+
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import "react-native-gesture-handler";
+
 
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
@@ -20,6 +23,9 @@ import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler
 
 
 const Home = () => {
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
+
   // search bar
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -35,22 +41,26 @@ const Home = () => {
   }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(firestoreDB, "listing"));
-        const documents = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        //console.log(documents);
-        setListings(documents);
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      }
-    };
+    if (isFocused) {
+      const fetchData = async () => {
+        try {
+          const querySnapshot = await getDocs(collection(firestoreDB, "listing"));
+          const documents = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          //console.log(documents);
+          setListings(documents);
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        }
+      };
 
-    fetchData();
-  }, []);
+      fetchData();
+    }
+
+   
+  }, [isFocused]);
 
   return (
 
