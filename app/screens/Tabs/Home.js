@@ -119,19 +119,19 @@ const Home = () => {
         numColumns={2}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity>
-            <View style={styles.listingItem}>
-              <Image
-                source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
-                style={styles.listingImage}
-              />
-              <View style={styles.textContainer}>
-                <Text style={styles.listingTitle}>{item.title}</Text>
-                <Text style={styles.listingPrice}>${item.price}</Text>
-              </View>
-              
+          <View style={styles.listingItem}>
+            <TouchableOpacity>
+            <Image
+              source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+              style={styles.listingImage}
+            />
+            </TouchableOpacity>
+            <View style={styles.textContainer}>
+              <Text style={styles.listingTitle}>{item.title}</Text>
+              <Text style={styles.listingPrice}>${item.price}</Text>
             </View>
-          </TouchableOpacity>
+            
+          </View>
         )}
         contentContainerStyle={styles.listingsContainer}
       />
