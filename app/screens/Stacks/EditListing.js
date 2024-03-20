@@ -5,7 +5,7 @@ import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
-import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDoc, FieldValue, deleteField } from 'firebase/firestore';
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import ProgressBar from "../Components/ProgressBar";
@@ -167,36 +167,107 @@ const CreateListing = ({ route }) => { // Receive profile data as props
     //Creates the listing document in the DB
     const handleUpdate = async () => {
       try {
-      // Ensure the user is authenticated
-      const email = auth.currentUser ? auth.currentUser.email : null;
-      if (!email) {
-        throw new Error("Current user is null or email is undefined.");
+        // Ensure the user is authenticated
+        const email = auth.currentUser ? auth.currentUser.email : null;
+        if (!email) {
+          throw new Error("Current user is null or email is undefined.");
+        }
+
+        // Get a reference to the listing document
+        const listingDocRef = doc(firestoreDB, "listing", listingDoc);
+
+        // Update the document in the database with the new values
+        await updateDoc(listingDocRef, {
+          title: title,
+          description: description,
+          price: price,
+          category: category,
+          subject: subject,
+          course: course,
+          condition: condition,
+          listingImg1: listingImg1,
+          listingImg2: listingImg2,
+          listingImg3: listingImg3,
+          listingImg4: listingImg4,
+          listingImg5: listingImg5,
+        });
+
+        // Navigate back after updating the document
+        navigation.goBack();
+      } catch (error) {
+        console.error(error.message);
       }
+    };
 
-      // Get a reference to the listing document
-      const listingDocRef = doc(firestoreDB, "listing", listingDoc);
+    const handleDeleteListing = async () => {
+      try {
+        const email = auth.currentUser ? auth.currentUser.email : null;
+        if (!email) {
+          throw new Error("Current user is null or email is undefined.");
+        }
 
-      // Update the document in the database with the new values
-      await updateDoc(listingDocRef, {
-        title: title,
-        description: description,
-        price: price,
-        category: category,
-        subject: subject,
-        course: course,
-        condition: condition,
-        listingImg1: listingImg1,
-        listingImg2: listingImg2,
-        listingImg3: listingImg3,
-        listingImg4: listingImg4,
-        listingImg5: listingImg5,
-      });
+        // Delete the listing document from the "listing" collection
+        const listingDocRef = doc(firestoreDB, "listing", listingDoc);
+        await deleteDoc(listingDocRef);
+        
+        
+        const userListingRef = collection(firestoreDB, "userListing");
+        const userListingDocRef = doc(userListingRef, email);
 
-      // Navigate back after updating the document
-      navigation.goBack();
-    } catch (error) {
-      console.error(error.message);
-    }
+        const userListingDocSnapshot = await getDoc(userListingDocRef);
+
+        if (userListingDocSnapshot.exists()) {
+          // Get the data from the snapshot
+          const userData = userListingDocSnapshot.data();
+      
+          if (userData.hasOwnProperty(listingDoc)) {
+            // Remove the specific field you want to delete
+            delete userData[listingDoc];
+    
+            // Update the document with the modified data
+            await setDoc(userListingDocRef, userData)
+                .then(() => { 
+                    console.log("Code Field has been deleted successfully"); 
+                })
+                .catch((error) => { 
+                    console.error("Error deleting code field:", error); 
+                });
+        } else {
+            console.error("Field to delete does not exist in the document.");
+        }
+        } else {
+            console.error("Document does not exist.");
+        }
+
+        //const data = { [listingDoc]: deleteField() }; 
+        //await updateDoc(userListingDocRef, data)
+        //.then(() => { console.log("Code Field has been deleted successfully"); }) 
+        //.catch(() => { console.log(error); })
+
+
+
+        // Delete any pictures stored in the database related to that listing
+        if (listingData.listingImg1) {
+          await deletePics(listingData.listingImg1);
+        }
+        if (listingData.listingImg2) {
+          await deletePics(listingData.listingImg2);
+        }
+        if (listingData.listingImg3) {
+          await deletePics(listingData.listingImg3);
+        }
+        if (listingData.listingImg4) {
+          await deletePics(listingData.listingImg4);
+        }
+        if (listingData.listingImg5) {
+          await deletePics(listingData.listingImg5);
+        }
+    
+        // Does cleanup on any images just uploaded to the listing and goes back with the navigator
+        handleCancel();
+      } catch (error) {
+        console.error("Error deleting listing:", error);
+      }
     };
 
   const handleImagePress = (imageNumber) => {
@@ -657,8 +728,12 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleUpdate} style={[styles.button, styles.buttonOutline]}>
-          <Text style={styles.buttonOutlineText2}>Update Listing</Text>
+        <TouchableOpacity onPress={handleUpdate} style={[styles.mainButton]}>
+          <Text style={[styles.buttonText, {fontSize: 20}]}>Update Listing</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleDeleteListing} style={[styles.mainButton, styles.deleteOutline]}>
+          <Text style={[styles.buttonText, {fontSize: 20}]}>Delete</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
@@ -679,10 +754,12 @@ const CreateListing = ({ route }) => { // Receive profile data as props
           <TouchableOpacity onPress={pickImage} style={[styles.picButton, styles.buttonOutline]}>
             <Text style={styles.buttonOutlineText}>Choose From Library</Text>
           </TouchableOpacity>
+          
           {/* Take a pic button */}
           <TouchableOpacity onPress={takePicture} style={styles.picButton}>
             <Text style={styles.buttonText}>Take a Picture</Text>
           </TouchableOpacity>
+
           <TouchableOpacity onPress={handleDeletePic} style={styles.deleteButton}>
             <Text style={styles.buttonText}>Delete</Text>
           </TouchableOpacity>
@@ -1075,7 +1152,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     width: "100%",
-    paddingHorizontal: 20,
+    paddingHorizontal: 68,
     paddingBottom: 10,
   },
   button: {
@@ -1085,12 +1162,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-  buttonOutline: {
-    backgroundColor: "white",
-    borderColor: "#3f9eeb",
-    borderWidth: 2,
-    marginTop: 50,
+  mainButton: {
+    backgroundColor: "#3f9eeb",
+    width: "100%",
+    padding: 10,
+    borderRadius: 10,
+    alignItems: "center",
   },
+  
   picButton: {
     backgroundColor: '#3f9eeb',
     paddingVertical: 10,
@@ -1128,6 +1207,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
     borderColor: "#3f9eeb",
     borderWidth: 2,
+  },
+  deleteOutline: {
+    backgroundColor: "#e8594f",
+    borderColor: "red",
+    borderWidth: 2,
+    marginTop: 5,
   },
   buttonText: {
     color: "white",

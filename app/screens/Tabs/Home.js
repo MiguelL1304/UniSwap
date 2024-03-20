@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -13,8 +13,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
+
+import BottomSheet, { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import "react-native-gesture-handler";
+
 
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
@@ -22,6 +25,9 @@ import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler
 
 
 const Home = () => {
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
+
   // search bar
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -70,22 +76,31 @@ const Home = () => {
 
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(firestoreDB, "listing"));
-        const documents = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        //console.log(documents);
-        setListings(documents);
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      }
-    };
+    if (isFocused) {
+      const fetchData = async () => {
+        try {
+          const querySnapshot = await getDocs(collection(firestoreDB, "listing"));
+          const documents = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          //console.log(documents);
+          setListings(documents);
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        }
+      };
 
-    fetchData();
-  }, []);
+      fetchData();
+    }
+
+   
+  }, [isFocused]);
+
+  const renderBackdrop = useCallback(
+    (props) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />,
+    []
+  );
 
   return (
 
@@ -109,8 +124,11 @@ const Home = () => {
               source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
               style={styles.listingImage}
             />
-            <Text style={styles.listingTitle}>{item.title}</Text>
-            <Text style={styles.listingPrice}>${item.price}</Text>
+            <View style={styles.textContainer}>
+              <Text style={styles.listingTitle}>{item.title}</Text>
+              <Text style={styles.listingPrice}>${item.price}</Text>
+            </View>
+            
           </View>
         )}
         contentContainerStyle={styles.listingsContainer}
@@ -121,6 +139,9 @@ const Home = () => {
         index={0}
         snapPoints={snapPoints}
         backgroundStyle={{ borderRadius:50 }}
+        enablePanDownToClose={true}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        backdropComponent={renderBackdrop}
       >
         <View style={styles.bottomSheetModal}>
           {renderBottomSheetContent()}
@@ -288,21 +309,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#e6f2ff",
   },
   listingsContainer: {
-    paddingHorizontal: 10,
     backgroundColor: "white",
   },
   listingItem: {
     flex: 1,
     flexDirection: "column",
     padding: 15,
+    alignItems: 'center',   
+  },
+  textContainer: {
+    flex: 1,
+    width: '100%',
+    
   },
   listingTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    paddingLeft: 5,
   },
   listingPrice: {
     fontSize: 16,
     color: "green",
+    paddingLeft: 5,
   },
   listingImage: {
     width: 120,
