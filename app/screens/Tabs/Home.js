@@ -97,6 +97,10 @@ const Home = () => {
    
   }, [isFocused]);
 
+  const handleListing = (listing) => {
+    navigation.navigate("Listing", { listing: listing });
+  };
+
   const renderBackdrop = useCallback(
     (props) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />,
     []
@@ -120,11 +124,11 @@ const Home = () => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.listingItem}>
-            <TouchableOpacity>
-            <Image
-              source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
-              style={styles.listingImage}
-            />
+            <TouchableOpacity onPress={() => handleListing(item)}>
+              <Image
+                source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+                style={styles.listingImage}
+              />
             </TouchableOpacity>
             <View style={styles.textContainer}>
               <Text style={styles.listingTitle}>{item.title}</Text>
@@ -389,3 +393,4 @@ const styles = StyleSheet.create({
     //backgroundColor: "#e6f2ff",
   }
 });
+
