@@ -14,7 +14,6 @@ import { firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
-
 import BottomSheet, { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import "react-native-gesture-handler";
 
@@ -33,10 +32,82 @@ const Home = () => {
 
   // getting & setting listings from firestore
   const [listings, setListings] = useState([]);
+  const [originalListings, setOriginalListings] = useState([]);
 
   // filter bottom sheet
   const bottomSheetModalRef = useRef(null);
-  const snapPoints = useMemo(() => ["50%", "90%"], []);
+  const snapPoints = useMemo(() => ["90%"], []);
+
+  // State variable to track bottom sheet visibility
+  const [bottomSheetVisible, setBottomSheetVisible] = useState(false);
+
+  const [filters, setFilters] = useState({
+    category: [],
+    condition: [],
+    subject: [],
+    course: [],
+  });
+
+  const [filtersHistory, setFiltersHistory] = useState([]);
+
+  function filterListings(listings, filters) {
+    return listings.filter((listing) => {
+      // Check for each category in filters
+      return Object.keys(filters).every((category) => {
+        // If no filter is selected in the category, do not filter out the item
+        if (filters[category].length === 0) return true;
+
+        // Otherwise, check if the listing's category matches any of the selected filters
+        // Adjust this logic based on your data structure, especially if a listing can have multiple values for a filter category
+        return filters[category].includes(listing[category]);
+      });
+    });
+  };
+
+  const addSubject = (subject) => {
+    if (filters.subject.length < 3 && !filters.subject.includes(subject)) {
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        subject: [...prevFilters.subject, subject]
+      }));
+    } else {
+    // Remove the subject from the selected subjects if already selected
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        subject: prevFilters.subject.filter((s) => s !== subject)
+      }));
+    }
+  };
+
+  const addCategory = (category) => {
+    if (filters.category.length < 3 && !filters.category.includes(category)) {
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        category: [...prevFilters.category, category]
+      }));
+    } else {
+      // Remove the category if already selected
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        category: prevFilters.category.filter((c) => c !== category)
+      }));
+    }
+  };
+
+  const addCondition = (condition) => {
+    if (filters.condition.length < 3 && !filters.condition.includes(condition)) {
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        condition: [...prevFilters.condition, condition]
+      }));
+    } else {
+      // Remove the condition if already selected
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        condition: prevFilters.condition.filter((c) => c !== condition)
+      }));
+    }
+  };
 
   const [filterStack, setFilterStack] = useState(["main"]);
   const [currentFilter, setCurrentFilter] = useState("main");
@@ -57,13 +128,31 @@ const Home = () => {
       case "main":
         return <FilterContent onSelectFilter={onSelectFilter} />;
       case "Category":
-        return <CategoryContent onBack={onBack} />;
+        return (
+          <CategoryContent
+            onBack={onBack}
+            selectedCategories={filters.category}
+            addCategory={addCategory}
+          />
+        );
         break; 
       case "Subject":
-        return <SubjectContent onBack={onBack} />;
+        return (
+          <SubjectContent
+            onBack={onBack}
+            selectedSubjects={filters.subject}
+            addSubject={addSubject}
+          />
+        );
         break;
       case "Condition":
-        return <ConditionContent onBack={onBack} />;
+        return (
+          <ConditionContent
+            onBack={onBack}
+            selectedConditions={filters.condition}
+            addCondition={addCondition}
+          />
+        );
         break;     
       default:
         return <FilterContent onSelectFilter={onSelectFilter} />;  
@@ -72,30 +161,68 @@ const Home = () => {
 
   function handlePresentModal() {
     bottomSheetModalRef.current?.present();
+    setBottomSheetVisible(true);
   }
 
+  function handleDismissModal() {
+    bottomSheetModalRef.current?.dismiss();
+    // Set bottom sheet visibility to false when dismissing
+    setBottomSheetVisible(false);
 
+    // Call filterListings when the bottom sheet is dismissed
+    const filteredListings = filterListings(listings, filters);
+    setListings(filteredListings);
+
+    // Update filter history
+    setFiltersHistory((prevHistory) => [...prevHistory, filters]);
+
+    console.log(filters);
+  }
+
+  const fetchData = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(firestoreDB, "listing"));
+      const documents = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+       }));
+
+      setOriginalListings(documents);
+          
+      const filteredListings = filterListings(documents, filters); // Apply filtering
+      setListings(filteredListings);
+      
+
+      console.log(filters);
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    }
+  }
+
+  //Fetch data everytime you come back to the screen
   useEffect(() => {
     if (isFocused) {
-      const fetchData = async () => {
-        try {
-          const querySnapshot = await getDocs(collection(firestoreDB, "listing"));
-          const documents = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          //console.log(documents);
-          setListings(documents);
-        } catch (error) {
-          console.error("Error fetching data: ", error);
-        }
-      };
-
       fetchData();
-    }
-
-   
+    } 
   }, [isFocused]);
+
+  // Function to handle filtering when filters change
+  useEffect(() => {
+    if (filtersHistory.length > 0) {
+      const anyFilterRemoved = Object.keys(filters).some((category) => {
+        const currentFilterLength = filters[category].length;
+        const previousFilterLength = filtersHistory[filtersHistory.length - 1][category].length;
+        return currentFilterLength < previousFilterLength;
+      });
+
+      if (anyFilterRemoved) {
+        setListings(originalListings);
+      } else {
+        const filteredListings = filterListings(originalListings, filters);
+        setListings(filteredListings);
+      }
+    }
+  }, [filters]);
 
   const handleListing = (listing) => {
     navigation.navigate("Listing", { listing: listing });
@@ -148,6 +275,7 @@ const Home = () => {
         enablePanDownToClose={true}
         handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
         backdropComponent={renderBackdrop}
+        onDismiss={handleDismissModal}
       >
         <View style={styles.bottomSheetModal}>
           {renderBottomSheetContent()}
@@ -173,138 +301,191 @@ const FilterContent = ({ onSelectFilter }) => (
   </View>
 )
 
-const CategoryContent = ({ onBack }) => (
-  <View>
+const CategoryContent = ({ onBack, selectedCategories, addCategory }) => (
+  <ScrollView style={styles.scrollViewContainer}>
     <TouchableOpacity onPress={onBack} style={styles.backButton}>
-      <Ionicons name="arrow-back-circle" size="40" color="#3f9eeb"/>
+      <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
     </TouchableOpacity>
-    <Text>Category stuff</Text>
-  </View>
+    
+    {/* CATEGORIES */}
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addCategory("Books")}>
+      <Text style={[
+          styles.filterSubjectOptions,
+          selectedCategories.includes("Books") && { color: "red" }
+        ]}>Books</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addCategory("Clothes")}>
+      <Text style={[
+          styles.filterSubjectOptions,
+          selectedCategories.includes("Clothes") && { color: "red" }
+        ]}>Clothes</Text>
+    </TouchableOpacity>
+  </ScrollView>
 )
 
-const SubjectContent = ({ onBack }) => (
+const SubjectContent = ({ onBack, selectedSubjects, addSubject }) => (
   <ScrollView style={styles.scrollViewContainer}>
 
     <TouchableOpacity onPress={onBack} style={styles.backButton}>
-      <Ionicons name="arrow-back-circle" size="40" color="#3f9eeb"/>
+      <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
     </TouchableOpacity>
 
     {/* SUBJECTS */}
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Accounting")}>
       <Text style={styles.filterSubjectOptions}>Accounting</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("African American Studies")}>
       <Text style={styles.filterSubjectOptions}>African American Studies</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Anthropology")}>
       <Text style={styles.filterSubjectOptions}>Anthropology</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Art")}>
       <Text style={styles.filterSubjectOptions}>Art</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Biochemistry")}>
       <Text style={styles.filterSubjectOptions}>Biochemistry</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Biology")}>
       <Text style={styles.filterSubjectOptions}>Biology</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Business Administration")}>
       <Text style={styles.filterSubjectOptions}>Business Administration</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
-      <Text style={styles.filterSubjectOptions}>Chemistry</Text>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Chemistry")}>
+      <Text style={[
+          styles.filterSubjectOptions,
+          selectedSubjects.includes("Chemistry") && { color: "red" }
+        ]}>Chemistry</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Cinema Media")}>
       <Text style={styles.filterSubjectOptions}>Cinema Media</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Communications")}>
       <Text style={styles.filterSubjectOptions}>Communications</Text>
-    </TouchableOpacity >
-    <TouchableOpacity style={styles.subjectBox}>
+    </TouchableOpacity>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Computer Science")}>
       <Text style={styles.filterSubjectOptions}>Computer Science</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Economics")}>
       <Text style={styles.filterSubjectOptions}>Economics</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Education")}>
       <Text style={styles.filterSubjectOptions}>Education</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("English")}>
       <Text style={styles.filterSubjectOptions}>English</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Environmental Science")}>
       <Text style={styles.filterSubjectOptions}>Environmental Science</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Film")}>
       <Text style={styles.filterSubjectOptions}>Film</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Finance")}>
       <Text style={styles.filterSubjectOptions}>Finance</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("French")}>
       <Text style={styles.filterSubjectOptions}>French</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Geography")}>
       <Text style={styles.filterSubjectOptions}>Geography</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Health Science")}>
       <Text style={styles.filterSubjectOptions}>Health Science</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Honors")}>
       <Text style={styles.filterSubjectOptions}>Honors</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Human Services")}>
       <Text style={styles.filterSubjectOptions}>Human Services</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Information Technology")}>
       <Text style={styles.filterSubjectOptions}>Information Technology</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Management")}>
       <Text style={styles.filterSubjectOptions}>Management</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Marketing")}>
       <Text style={styles.filterSubjectOptions}>Marketing</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Mathematics")}>
       <Text style={styles.filterSubjectOptions}>Mathematics</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Music")}>
       <Text style={styles.filterSubjectOptions}>Music</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Nursing")}>
       <Text style={styles.filterSubjectOptions}>Nursing</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Philosophy")}>
       <Text style={styles.filterSubjectOptions}>Philosophy</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Physical Education")}>
       <Text style={styles.filterSubjectOptions}>Physical Education</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Political Science")}>
       <Text style={styles.filterSubjectOptions}>Political Science</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Psychology")}>
       <Text style={styles.filterSubjectOptions}>Psychology</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Sociology")}>
       <Text style={styles.filterSubjectOptions}>Sociology</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Spanish")}>
       <Text style={styles.filterSubjectOptions}>Spanish</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox}>
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Theatre")}>
       <Text style={styles.filterSubjectOptions}>Theatre</Text>
     </TouchableOpacity>
   </ScrollView>
 )
 
-const ConditionContent = ({ onBack }) => (
-  <View>
+const ConditionContent = ({ onBack, selectedConditions, addCondition }) => (
+  <ScrollView style={styles.scrollViewContainer}>
     <TouchableOpacity onPress={onBack} style={styles.backButton}>
-      <Ionicons name="arrow-back-circle" size="40" color="#3f9eeb"/>
+      <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
     </TouchableOpacity>
-    <Text>Condition stuff</Text>
-  </View>
+    
+    {/* CONDITIONS */}
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Brand New")}>
+      <Text style={[
+          styles.filterSubjectOptions,
+          selectedConditions.includes("Brand New") && { color: "red" }
+        ]}>Brand New</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Like New")}>
+      <Text style={[
+          styles.filterSubjectOptions,
+          selectedConditions.includes("Like New") && { color: "red" }
+        ]}>Like New</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Excellent")}>
+      <Text style={[
+          styles.filterSubjectOptions,
+          selectedConditions.includes("Used - Excellent") && { color: "red" }
+        ]}>Used - Excellent</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Good")}>
+      <Text style={[
+          styles.filterSubjectOptions,
+          selectedConditions.includes("Used - Good") && { color: "red" }
+        ]}>Used - Good</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Fair")}>
+      <Text style={[
+          styles.filterSubjectOptions,
+          selectedConditions.includes("Used - Fair") && { color: "red" }
+        ]}>Used - Fair</Text>
+    </TouchableOpacity>
+
+    
+  </ScrollView>
 )
 
 export default Home;

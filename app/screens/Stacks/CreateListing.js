@@ -622,7 +622,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
 
         <TouchableOpacity style={styles.menuButton} onPress={handleConditionPress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={styles.titleTextMenu}> Condition:</Text>
+            <Text style={styles.titleTextMenu}> Condition</Text>
             <Text style={styles.menuSelection}> {condition}</Text>
           </View>  
         </TouchableOpacity>
