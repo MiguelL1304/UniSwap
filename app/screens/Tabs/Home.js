@@ -36,10 +36,7 @@ const Home = () => {
 
   // filter bottom sheet
   const bottomSheetModalRef = useRef(null);
-  const snapPoints = useMemo(() => ["90%"], []);
-
-  // State variable to track bottom sheet visibility
-  const [bottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const snapPoints = useMemo(() => ["50", "90%"], []);
 
   const [filters, setFilters] = useState({
     category: [],
@@ -77,6 +74,7 @@ const Home = () => {
         subject: prevFilters.subject.filter((s) => s !== subject)
       }));
     }
+    setFiltersHistory((prevHistory) => [...prevHistory, filters]);
   };
 
   const addCategory = (category) => {
@@ -92,6 +90,7 @@ const Home = () => {
         category: prevFilters.category.filter((c) => c !== category)
       }));
     }
+    setFiltersHistory((prevHistory) => [...prevHistory, filters]);
   };
 
   const addCondition = (condition) => {
@@ -107,6 +106,7 @@ const Home = () => {
         condition: prevFilters.condition.filter((c) => c !== condition)
       }));
     }
+    setFiltersHistory((prevHistory) => [...prevHistory, filters]);
   };
 
   const [filterStack, setFilterStack] = useState(["main"]);
@@ -161,22 +161,6 @@ const Home = () => {
 
   function handlePresentModal() {
     bottomSheetModalRef.current?.present();
-    setBottomSheetVisible(true);
-  }
-
-  function handleDismissModal() {
-    bottomSheetModalRef.current?.dismiss();
-    // Set bottom sheet visibility to false when dismissing
-    setBottomSheetVisible(false);
-
-    // Call filterListings when the bottom sheet is dismissed
-    const filteredListings = filterListings(listings, filters);
-    setListings(filteredListings);
-
-    // Update filter history
-    setFiltersHistory((prevHistory) => [...prevHistory, filters]);
-
-    console.log(filters);
   }
 
   const fetchData = async () => {
@@ -211,7 +195,12 @@ const Home = () => {
     if (filtersHistory.length > 0) {
       const anyFilterRemoved = Object.keys(filters).some((category) => {
         const currentFilterLength = filters[category].length;
+        console.log("currentFilterLength");
+        console.log(currentFilterLength);
         const previousFilterLength = filtersHistory[filtersHistory.length - 1][category].length;
+        console.log("previousFilterLength");
+        console.log(previousFilterLength);
+        console.log("-----------");
         return currentFilterLength < previousFilterLength;
       });
 
@@ -275,7 +264,6 @@ const Home = () => {
         enablePanDownToClose={true}
         handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
         backdropComponent={renderBackdrop}
-        onDismiss={handleDismissModal}
       >
         <View style={styles.bottomSheetModal}>
           {renderBottomSheetContent()}
