@@ -408,6 +408,12 @@ const Home = () => {
 
   function handleClear() {
     setSearchQuery("");
+    setFilters({
+      category: [],
+      condition: [],
+      subject: [],
+      course: [],
+    });
     setListings(originalListings);
     Keyboard.dismiss();
   }
@@ -420,14 +426,21 @@ const Home = () => {
         ...doc.data(),
        }));
 
-      setOriginalListings(documents);
+      await setOriginalListings(documents);
+      console.log(originalListings);
+      console.log("---------------------");
           
-      const filteredListings = filterListings(documents, filters); // Apply filtering
-      setListings(filteredListings);
+      const filteredListings = await filterListings(documents, filters); // Apply filtering
+      await setListings(filteredListings);
+      console.log(listings);
+      console.log("---------------------");
 
-      const transformedTitles = transformListingTitles(listings);
-      setListingTitles(transformedTitles)
-      
+      const transformedTitles = transformListingTitles(filteredListings);
+      await setListingTitles(transformedTitles);
+      console.log(listingTitles);
+      console.log("---------------------");
+
+    
 
     } catch (error) {
       console.error("Error fetching data: ", error);
@@ -446,19 +459,23 @@ const Home = () => {
     if (filtersHistory.length > 0) {
       const anyFilterRemoved = Object.keys(filters).some((category) => {
         const currentFilterLength = filters[category].length;
-        console.log("currentFilterLength");
-        console.log(currentFilterLength);
+        //console.log("currentFilterLength");
+        //console.log(currentFilterLength);
         const previousFilterLength = filtersHistory[filtersHistory.length - 1][category].length;
-        console.log("previousFilterLength");
-        console.log(previousFilterLength);
-        console.log("-----------");
+        //console.log("previousFilterLength");
+        //console.log(previousFilterLength);
+        //console.log("-----------");
         return currentFilterLength < previousFilterLength;
       });
 
       if (anyFilterRemoved) {
-        setListings(originalListings);
+        if (searchQuery.trim() !== "") {
+          setListings(searchListings(searchQuery, listingTitles, originalListings));
+        } else {
+          setListings(originalListings);
+        }
       } else {
-        const filteredListings = filterListings(originalListings, filters);
+        const filteredListings = filterListings(listings, filters);
         setListings(filteredListings);
       }
     }

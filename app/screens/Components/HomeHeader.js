@@ -6,6 +6,7 @@ import {
   TextInput,
   Text,
   ScrollView,
+  Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
@@ -26,6 +27,15 @@ const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, handlePresentM
     },
   ];
 
+  const isSearchEmpty = searchQuery.trim() === "";
+
+  const onSubmitEditing = () => {
+    if (!isSearchEmpty) {
+      handleSearch();
+      Keyboard.dismiss();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerBar}>
@@ -44,17 +54,20 @@ const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, handlePresentM
             placeholder="Seach here!"
             value={searchQuery}
             onChangeText={setSearchQuery}
+            onSubmitEditing={onSubmitEditing}
           />
 
-          <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
-            <Ionicons
-              name="close-outline"
-              size={24}
-              //color="#3f9eeb"
-              color="grey"
-              style={styles.searchIcon}
-            />
-          </TouchableOpacity>
+          {!isSearchEmpty && (
+            <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
+              <Ionicons
+                name="close-outline"
+                size={24}
+                //color="#3f9eeb"
+                color="grey"
+                style={styles.searchIcon}
+              />
+            </TouchableOpacity>
+          )}  
         </View>
         <TouchableOpacity style={styles.filterButton} onPress={handlePresentModal}>
           <Ionicons name="options-outline" size={25} color="grey"></Ionicons>
