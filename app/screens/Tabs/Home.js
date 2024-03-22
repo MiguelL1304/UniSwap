@@ -38,6 +38,14 @@ const Home = () => {
   const bottomSheetModalRef = useRef(null);
   const snapPoints = useMemo(() => ["50", "90%"], []);
 
+
+  //
+  //
+  // Filter Logic
+  //
+  //
+
+
   const [filters, setFilters] = useState({
     category: [],
     condition: [],
@@ -108,6 +116,108 @@ const Home = () => {
     }
     setFiltersHistory((prevHistory) => [...prevHistory, filters]);
   };
+
+  //
+  //
+  // Search logic.
+  //
+  //
+
+  function transformTitle(input) {
+    let transformedTitle = ' ' + input.toUpperCase() + ' ';
+
+    transformedTitle = transformedTitle.replace(/[^\x00-\x7F]/g, function (char) {
+        switch (char) {
+            case 'Ö':
+                return 'O';
+            case 'Ü':
+                return 'U';
+            case 'Ä':
+                return 'A';
+            case 'É':
+                return 'E';
+            case 'Ñ':
+                return 'N';
+            case 'Ç':
+                return 'C';
+            case 'ß':
+                return 'SS';
+            case 'À':
+                return 'A';
+            case 'Ô':
+                return 'O';
+            default:
+                return '';
+        }
+    });
+
+    // Delete common characters
+    const commonChar = [',', '.', '@', '%', '!', '?', '&', '(', ')', ':'];
+    for (let i = 0; i < commonChar.length; i++) {
+      const word = commonChar[i];
+      const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape special characters
+      const regex = new RegExp(escapedWord, 'g');
+      transformedTitle = transformedTitle.replace(regex, "");
+    }
+
+    // Remove common words
+    const commonWords = [' THE ', ' OF ', ' AND ', ' A ', ' TO ', ' IN ', ' ON ', ' FOR ', ' WITH '];
+    for (let i = 0; i < commonWords.length; i++) {
+        const word = commonWords[i];
+        transformedTitle = transformedTitle.replace(word, "");
+    }
+
+    // Change Roman numerals to Arabic
+    const romanNumerals = {
+        'I': 1,
+        'II': 2,
+        'III': 3,
+        'IV': 4,
+        'V': 5,
+        'VI': 6,
+        'VII': 7,
+        'VIII': 8,
+        'IX': 9,
+        'X': 10
+    };
+    transformedTitle = transformedTitle.replace(/(?:\b|\s)(I{1,3}|IV|V|VI{0,3}|IX|X)(?:\b|\s)/g, function (match, roman) {
+        return romanNumerals[roman];
+    });
+
+    // Remove whitespace
+    transformedTitle = transformedTitle.replace(/\s/g, '');
+
+    return transformedTitle;
+  }
+
+
+  // Example usage
+  function testTransformationAlgorithm() {
+    const testCases = [
+        "Blue Öyster Cult",
+        "Amos, Tori",
+        "The Red Hot Chili Peppers"
+    ];
+
+    testCases.forEach(testCase => {
+        const transformedTitle = transformTitle(testCase);
+        console.log(`Original title: ${testCase}, Transformed title: ${transformedTitle}`);
+    });
+
+    originalListings.forEach(item => {
+        const transformedTitle = transformTitle(item.title);
+        console.log(`Original title: ${item.title}, Transformed title: ${transformedTitle}`);
+    });
+  }
+
+  // Call the test function
+  //testTransformationAlgorithm();
+  
+  //
+  //
+  // UI Components
+  //
+  //
 
   const [filterStack, setFilterStack] = useState(["main"]);
   const [currentFilter, setCurrentFilter] = useState("main");
