@@ -239,11 +239,6 @@ const Home = () => {
     return matrix[len1][len2];
   }
 
-  function compareStrings(str1, str2) {
-    const distance = levenshteinDistance(str1, str2);
-    return distance;
-  }
-
   function searchListings(userInput, listingTitles, listings) {
     const transformedInput = transformTitle(userInput); // Transform user input
 
@@ -426,12 +421,12 @@ const Home = () => {
        }));
 
       setOriginalListings(documents);
-
-      const transformedTitles = transformListingTitles(originalListings);
-      setListingTitles(transformedTitles)
           
       const filteredListings = filterListings(documents, filters); // Apply filtering
       setListings(filteredListings);
+
+      const transformedTitles = transformListingTitles(listings);
+      setListingTitles(transformedTitles)
       
 
     } catch (error) {
