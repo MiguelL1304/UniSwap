@@ -7,7 +7,8 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Button
+  Button,
+  Keyboard
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { firestoreDB } from "../../../Firebase/firebase";
@@ -33,6 +34,7 @@ const Home = () => {
   // getting & setting listings from firestore
   const [listings, setListings] = useState([]);
   const [originalListings, setOriginalListings] = useState([]);
+  const [listingTitles, setListingTitles] = useState([]);
 
   // filter bottom sheet
   const bottomSheetModalRef = useRef(null);
@@ -124,7 +126,8 @@ const Home = () => {
   //
 
   function transformTitle(input) {
-    let transformedTitle = ' ' + input.toUpperCase() + ' ';
+    let transformedTitle = input.toUpperCase();
+    //let transformedTitle = ' ' + input.toUpperCase() + ' ';
 
     transformedTitle = transformedTitle.replace(/[^\x00-\x7F]/g, function (char) {
         switch (char) {
@@ -160,14 +163,14 @@ const Home = () => {
       transformedTitle = transformedTitle.replace(regex, "");
     }
 
-    // Remove common words
-    const commonWords = [' THE ', ' OF ', ' AND ', ' A ', ' TO ', ' IN ', ' ON ', ' FOR ', ' WITH '];
-    for (let i = 0; i < commonWords.length; i++) {
-        const word = commonWords[i];
-        transformedTitle = transformedTitle.replace(word, "");
-    }
+    // Split the transformedTitle into an array of words
+    const wordsArray = transformedTitle.split(/\s+/);
 
-    // Change Roman numerals to Arabic
+    // Remove common words
+    const commonWords = ['THE', 'OF', 'AND', 'A', 'TO', 'IN', 'ON', 'FOR', 'WITH'];
+    const filteredWordsArray = wordsArray.filter(word => !commonWords.includes(word));
+
+    // Change Roman numerals
     const romanNumerals = {
         'I': 1,
         'II': 2,
@@ -180,39 +183,162 @@ const Home = () => {
         'IX': 9,
         'X': 10
     };
-    transformedTitle = transformedTitle.replace(/(?:\b|\s)(I{1,3}|IV|V|VI{0,3}|IX|X)(?:\b|\s)/g, function (match, roman) {
-        return romanNumerals[roman];
+    const transformedArray = filteredWordsArray.map(word => {
+        return romanNumerals[word] ? romanNumerals[word] : word;
     });
 
-    // Remove whitespace
-    transformedTitle = transformedTitle.replace(/\s/g, '');
+    return transformedArray;
+  }
 
-    return transformedTitle;
+  function transformListingTitles(originalListings) {
+    const listingTitles = originalListings.map((originalListings) => {
+      return transformTitle(originalListings.title);
+    });
+    return listingTitles;
   }
 
 
   // Example usage
-  function testTransformationAlgorithm() {
-    const testCases = [
-        "Blue Öyster Cult",
-        "Amos, Tori",
-        "The Red Hot Chili Peppers"
-    ];
-
-    testCases.forEach(testCase => {
-        const transformedTitle = transformTitle(testCase);
-        console.log(`Original title: ${testCase}, Transformed title: ${transformedTitle}`);
-    });
-
-    originalListings.forEach(item => {
-        const transformedTitle = transformTitle(item.title);
-        console.log(`Original title: ${item.title}, Transformed title: ${transformedTitle}`);
-    });
-  }
+  // function testTransformationAlgorithm() {
+  //   originalListings.forEach(item => {
+  //       const transformedTitle = transformTitle(item.title);
+  //       console.log(`Original title: ${item.title}, Transformed title: ${transformedTitle}`);
+  //   });
+  // }
 
   // Call the test function
   //testTransformationAlgorithm();
   
+  function levenshteinDistance(str1, str2) {
+    const len1 = str1.length;
+    const len2 = str2.length;
+    const matrix = [];
+  
+    // Initialize matrix with 0s
+    for (let i = 0; i <= len1; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= len2; j++) {
+      matrix[0][j] = j;
+    }
+  
+    // Fill in the rest of the matrix
+    for (let i = 1; i <= len1; i++) {
+      for (let j = 1; j <= len2; j++) {
+        const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[i] ??= [];
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1, // Deletion
+          matrix[i][j - 1] + 1, // Insertion
+          matrix[i - 1][j - 1] + cost // Substitution
+        );
+      }
+    }
+  
+    // Return the bottom-right cell of the matrix
+    return matrix[len1][len2];
+  }
+
+  function compareStrings(str1, str2) {
+    const distance = levenshteinDistance(str1, str2);
+    return distance;
+  }
+
+  function searchListings(userInput, listingTitles, listings) {
+    const transformedInput = transformTitle(userInput); // Transform user input
+
+    const searchResults = [];
+
+    // Iterate over each transformed title in listingTitles
+    listingTitles.forEach((transformedTitle, index) => {
+        let totalDistance = 0;
+        let matchCount = 0;
+
+        // Iterate over each word in transformedInput
+        transformedInput.forEach(inputWord => {
+            let minDistance = Infinity; // Initialize minDistance for each input word
+            // Find the closest matching word in transformedTitle
+            transformedTitle.forEach(titleWord => {
+                const distance = levenshteinDistance(inputWord, titleWord);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                }
+            });
+
+            // Add the closest matching word distance to totalDistance
+            totalDistance += minDistance;
+            matchCount++;
+        });
+
+        // Calculate average distance for the title based on matching words only
+        const averageDistance = matchCount === 0 ? Infinity : totalDistance / matchCount;
+
+        // Define a threshold value for average distance
+        const averageDistanceThreshold = 3.5; // Example threshold value, adjust as needed
+
+        // If average distance is below the threshold, consider it a relevant result
+        if (averageDistance <= averageDistanceThreshold) {
+            // Add the corresponding listing to the searchResults
+            searchResults.push(listings[index]);
+        }
+    });
+
+    return searchResults;
+  } 
+
+  function sortSearchResults(searchResults, userInput) {
+    // Transform user input
+    const transformedInput = transformTitle(userInput);
+
+    // Calculate average distance for each item based on matching words
+    const resultsWithAvgDistance = searchResults.map(item => {
+        const titleWords = transformTitle(item.title);
+        let totalDistance = 0;
+        let matchingWordsCount = 0;
+
+        // Calculate total distance and count of matching words
+        titleWords.forEach(titleWord => {
+            let minDistance = Infinity;
+            transformedInput.forEach(inputWord => { // Iterate over transformed input
+                const distance = levenshteinDistance(inputWord, titleWord);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                }
+            });
+            if (minDistance <= 2) { // Threshold for considering a match
+                totalDistance += minDistance;
+                matchingWordsCount++;
+            }
+        });
+
+        // Calculate average distance
+        const averageDistance = matchingWordsCount === 0 ? Infinity : totalDistance / matchingWordsCount;
+
+        return { item, averageDistance, matchingWordsCount }; // Also store matchingWordsCount
+    });
+
+    // Sort search results by average distance from lowest to highest
+    resultsWithAvgDistance.sort((a, b) => {
+        if (a.averageDistance !== b.averageDistance) {
+            return a.averageDistance - b.averageDistance;
+        } else {
+            // If average distances are equal, sort by number of matching words
+            return b.matchingWordsCount - a.matchingWordsCount; // Sort by descending matching words count
+        }
+    });
+
+    // Return sorted search results
+    return resultsWithAvgDistance.map(result => result.item);
+  }
+  
+   //Example usage
+  //  const userInput = "chemistry book"; // Example user input
+  //  const searchResults = searchListings(userInput, listingTitles, listings);
+  //  const sortedResults = sortSearchResults(searchResults, userInput); // Pass userInput here
+  //  console.log(sortedResults.map(item => item.title));
+
+
+
   //
   //
   // UI Components
@@ -273,6 +399,24 @@ const Home = () => {
     bottomSheetModalRef.current?.present();
   }
 
+  function handleSearch() {
+    if(searchQuery.trim() !== "") {
+      const userInput = searchQuery;
+      const searchResults = searchListings(userInput, listingTitles, originalListings);
+      const sortedResults = sortSearchResults(searchResults, userInput);
+
+      // Update the listings state with the search results
+      setListings(sortedResults);
+      Keyboard.dismiss();
+    }
+  }
+
+  function handleClear() {
+    setSearchQuery("");
+    setListings(originalListings);
+    Keyboard.dismiss();
+  }
+
   const fetchData = async () => {
     try {
       const querySnapshot = await getDocs(collection(firestoreDB, "listing"));
@@ -282,12 +426,14 @@ const Home = () => {
        }));
 
       setOriginalListings(documents);
+
+      const transformedTitles = transformListingTitles(originalListings);
+      setListingTitles(transformedTitles)
           
       const filteredListings = filterListings(documents, filters); // Apply filtering
       setListings(filteredListings);
       
 
-      console.log(filters);
     } catch (error) {
       console.error("Error fetching data: ", error);
     }
@@ -340,7 +486,9 @@ const Home = () => {
         setSearchQuery={setSearchQuery} 
         //onFilterPress={() => setBottomSheetPosition(0)}
         handlePresentModal={handlePresentModal}
-        />
+        handleSearch={handleSearch}
+        handleClear={handleClear}
+      />
 
       {/* // display  of listings */}
       <FlatList
