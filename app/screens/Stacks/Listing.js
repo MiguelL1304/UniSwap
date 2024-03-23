@@ -183,6 +183,7 @@ const Listing = ({ route }) => {
     const styles = StyleSheet.create({
       container: {
         flex: 1,
+        backgroundColor: "white",
       },
       contentContainer: {
         alignItems: 'center',

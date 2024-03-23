@@ -40,7 +40,7 @@ const Home = () => {
 
   // filter bottom sheet
   const bottomSheetModalRef = useRef(null);
-  const snapPoints = useMemo(() => ["50", "90%"], []);
+  const snapPoints = useMemo(() => ["65", "90%"], []);
 
 
   //
@@ -374,7 +374,7 @@ const Home = () => {
 
     switch (currentFilter) {
       case "main":
-        return <FilterContent onSelectFilter={onSelectFilter} />;
+        return <FilterContent onSelectFilter={onSelectFilter} handleClearFilters={handleClearFilters}/>;
       case "Category":
         return (
           <CategoryContent
@@ -417,7 +417,7 @@ const Home = () => {
           />
         )     
       default:
-        return <FilterContent onSelectFilter={onSelectFilter} />;  
+        return <FilterContent onSelectFilter={onSelectFilter} handleClearFilters={handleClearFilters}/>;  
     }
   }
 
@@ -487,15 +487,16 @@ const Home = () => {
 
   // Function to handle filtering when filters change
   useEffect(() => {
+    console.log("Filters:", filters);
+    console.log("Filters History:", filtersHistory);
+
     if (filtersHistory.length > 0) {
       const anyFilterRemoved = Object.keys(filters).some((category) => {
+
         const currentFilterLength = filters[category].length;
-        //console.log("currentFilterLength");
-        //console.log(currentFilterLength);
+        
         const previousFilterLength = filtersHistory[filtersHistory.length - 1][category].length;
-        //console.log("previousFilterLength");
-        //console.log(previousFilterLength);
-        //console.log("-----------");
+      
         return currentFilterLength < previousFilterLength;
       });
 
@@ -509,11 +510,30 @@ const Home = () => {
         const filteredListings = filterListings(listings, filters);
         setListings(filteredListings);
       }
+    } else {
+      // If filtersHistory is empty, set the listings to the original listings
+      setListings(originalListings);
     }
   }, [filters]);
 
   const handleListing = (listing) => {
     navigation.navigate("Listing", { listing: listing });
+  };
+
+  const handleClearFilters = () => {
+    setFilters(prevFilters => {
+      let updatedFilters = { ...prevFilters };
+      for (const key in updatedFilters) {
+        if (Array.isArray(updatedFilters[key])) {
+          updatedFilters[key] = [];
+        } else {
+          updatedFilters[key] = "";
+        }
+      }
+      return updatedFilters;
+    });
+
+    setFiltersHistory(prevHistory => [...prevHistory, filters]);
   };
 
   const renderBackdrop = useCallback(
@@ -581,7 +601,7 @@ const FilterOption = ({ title, onPress}) => (
   </TouchableOpacity>
 );
 
-const FilterContent = ({ onSelectFilter }) => (
+const FilterContent = ({ onSelectFilter, handleClearFilters }) => (
   <View style={styles.filterContent}>
     <FilterOption title="Category" onPress={() => onSelectFilter("Category")} />
     {/* <Ionicons name="chevron-forward" /> */}
@@ -589,7 +609,15 @@ const FilterContent = ({ onSelectFilter }) => (
     <FilterOption title="Condition" onPress={() => onSelectFilter("Condition")}/>
     <FilterOption title="Course" onPress={() => onSelectFilter("Course")} />
     <FilterOption title="Price" onPress={() => onSelectFilter("Price")} />
+
+    <View style={styles.buttonContainer}>
+      <TouchableOpacity onPress={handleClearFilters} style={[styles.button, styles.buttonOutline]}>
+        <Text style={styles.buttonOutlineText}>Clear Filters</Text>
+      </TouchableOpacity>
+    </View>
+    
   </View>
+  
 )
 
 const CategoryContent = ({ onBack, selectedCategories, addCategory }) => (
@@ -921,6 +949,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
+  buttonContainer: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   filterContent: {
     //backgroundColor: "pink",
     //flexDirection: "row",
@@ -983,6 +1016,27 @@ const styles = StyleSheet.create({
     padding: 8,
     marginRight: 10,
     width: 60, // Set a fixed width for the input field
+  },
+  button: {
+    backgroundColor: '#3f9eeb',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    width: '70%',
+  },
+  buttonOutline: {
+    backgroundColor: "white",
+    borderColor: "#3f9eeb",
+    borderWidth: 2,
+    marginTop: 50,
+  },
+  buttonOutlineText: {
+    color: "#3f9eeb",
+    fontWeight: "700",
+    fontSize: 16,
   },
 });
 
