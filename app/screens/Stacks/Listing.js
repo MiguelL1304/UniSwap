@@ -1,13 +1,20 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Keyboard } from "react-native";
+import {
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    TouchableOpacity,
+    ScrollView,
+  } from "react-native";
 import { TextInput } from "react-native";
-import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
+import { TouchableWithoutFeedback } from "react-native";
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
 import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDoc, FieldValue, deleteField } from 'firebase/firestore';
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
-import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ProgressBar from "../Components/ProgressBar";
 import Uploading from "../Components/Uploading";
 import * as ImagePicker from "expo-image-picker";
@@ -15,32 +22,34 @@ import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebas
 import { Camera } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import defaultImg from "../../assets/defaultImg.png";
+import ImageCarousel from '../Components/ImageCarousel';
+import WishlistButton from '../Components/WishlistButton';
+import { Picker } from '@react-native-picker/picker';
 
-const Listing = ({ route }) => { // Receive profile data as props
 
+const Listing = ({ route }) => {
     const { listing } = route.params;
-
     const {
-        id, 
-        price, 
-        title, 
-        description, 
-        condition, 
-        category, 
-        subject, 
-        course,
-        listingImg1,
-        listingImg2,
-        listingImg3,
-        listingImg4,
-        listingImg5 
+      id,
+      price,
+      title,
+      listingImg1,
+      firstName,
+      lastName,
     } = listing;
-
-    const [isInWishlist, setIsInWishlist] = useState(false);
+  
+    // Declarations for state hooks
+    const [isInWishlist, setIsInWishlist] = useState(false); // Ensure unique declaration
+    const [selectedDate, setSelectedDate] = useState(""); // Ensure unique declaration
+    const [selectedLocation, setSelectedLocation] = useState(""); // Additional state hook for location
+  
 
     //Navigator
     const navigation = useNavigation();
     const isFocused = useIsFocused();
+
+    
+
 
     useEffect(() => {
         const checkWishlist = async () => {
@@ -140,63 +149,101 @@ const Listing = ({ route }) => { // Receive profile data as props
 
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+          <View style={styles.listedByContainer}>
+            <Text style={styles.listedBy}>Listed by: {`${firstName} ${lastName}`}</Text>
+          </View>
           <Image
-            source={{ uri: listingImg1 || "https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" }}
+            source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
             style={styles.image}
           />
-          <View style={styles.detailContainer}>
-            <Text style={styles.title}>Title: {title}</Text>
-            <Text style={styles.text}>Description: {description}</Text>
-            <Text style={styles.text}>Price: ${price}</Text>
-            <Text style={styles.text}>Condition: {condition}</Text>
-            <Text style={styles.text}>Category: {category}</Text>
-            <Text style={styles.text}>Subject: {subject}</Text>
-            <Text style={styles.text}>Course: {course}</Text>
-            <Text style={styles.text}>Document Name: {id}</Text>
-            <TouchableOpacity 
-                onPress={isInWishlist ? handleRemoveWishlist : handleAddWishlist} 
-                style={styles.heartButton}
-            >
-                <Text style={[styles.heartText, { color: isInWishlist ? "red" : "black" }]}>{"<3"}</Text>
-            </TouchableOpacity> 
+          <Text style={styles.price}>${price}</Text>
+          <Text style={styles.title}>{title}</Text>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Buy</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Trade</Text>
+            </TouchableOpacity>
           </View>
+          <TouchableOpacity 
+            onPress={() => setIsInWishlist(!isInWishlist)} 
+            style={styles.heartButton}
+          >
+            <Text style={[styles.heart, { color: isInWishlist ? "red" : "grey" }]}>
+              {isInWishlist ? "♥" : "♡"}
+            </Text>
+          </TouchableOpacity>
+          {/* Add Picker components for date/time and location selections here */}
         </ScrollView>
       );
     };
     
-    
-const styles = StyleSheet.create({
-    container: {
+    const styles = StyleSheet.create({
+      container: {
         flex: 1,
-        backgroundColor: "#fff",
-    },
-    image: {
-        width: "100%",
-        height: 300,
-        resizeMode: "cover",
-    },
-    detailContainer: {
-        padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 10,
-    },
-    text: {
+      },
+      contentContainer: {
+        alignItems: 'center',
+        paddingTop: 50,
+      },
+      listedByContainer: {
+        alignSelf: 'flex-start',
+        marginLeft: 15,
+        position: 'absolute',
+        top: 10,
+      },
+      listedBy: {
         fontSize: 16,
-        marginBottom: 10,
-    },
-    heartButton: {
-        alignItems: "center",
-        marginTop: 10,
-    },
-    heartText: {
+        fontWeight: 'bold',
+      },
+      image: {
+        width: '80%',
+        aspectRatio: 1, // Keep the aspect ratio of the image
+        borderRadius: 10,
+      },
+      price: {
         fontSize: 24,
-        color: "black",
-    },
-});
-
-export default Listing;
-
+        fontWeight: 'bold',
+        marginVertical: 8,
+        alignSelf: 'center',
+      },
+      title: {
+        textAlign: 'center',
+        fontSize: 18,
+        marginVertical: 8,
+      },
+      buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+        padding: 10,
+      },
+      button: {
+        backgroundColor: "#e6f2ff",
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        flexGrow: 1, // Buttons take equal space
+        marginHorizontal: 5, // Add some space between the buttons
+      },
+      buttonText: {
+        textAlign: 'center',
+        fontWeight: 'bold',
+      },
+      heartButton: {
+        marginVertical: 8,
+        alignSelf: 'center',
+      },
+      heart: {
+        fontSize: 24,
+      },
+      picker: {
+        width: 200,
+        height: 50,
+      },
+      // ... your other styles
+    });
+    
+    export default Listing;
