@@ -6,11 +6,12 @@ import {
   TextInput,
   Text,
   ScrollView,
+  Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
-const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, handlePresentModal }) => {
+const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, handlePresentModal, handleSearch, handleClear }) => {
   const categories = [
     {
       name: "Condition",
@@ -26,23 +27,47 @@ const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, handlePresentM
     },
   ];
 
+  const isSearchEmpty = searchQuery.trim() === "";
+
+  const onSubmitEditing = () => {
+    if (!isSearchEmpty) {
+      handleSearch();
+      Keyboard.dismiss();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerBar}>
-        <View style={styles.searchContainer}>
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
           <Ionicons
             name="search-outline"
             size={24}
             //color="#3f9eeb"
-            color="black"
+            color="grey"
             style={styles.searchIcon}
           />
+        </TouchableOpacity>
+        <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
             placeholder="Seach here!"
             value={searchQuery}
             onChangeText={setSearchQuery}
+            onSubmitEditing={onSubmitEditing}
           />
+
+          {!isSearchEmpty && (
+            <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
+              <Ionicons
+                name="close-outline"
+                size={24}
+                //color="#3f9eeb"
+                color="grey"
+                style={styles.searchIcon}
+              />
+            </TouchableOpacity>
+          )}  
         </View>
         <TouchableOpacity style={styles.filterButton} onPress={handlePresentModal}>
           <Ionicons name="options-outline" size={25} color="grey"></Ionicons>
@@ -84,9 +109,7 @@ const styles = StyleSheet.create({
     height: 80,
   },
   searchIcon: {
-    position: "absolute",
-    marginLeft: 25,
-    gap: 10,
+    marginRight: 0,
   },
   searchContainer: {
     //position: "relative",
@@ -96,7 +119,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 10,
     borderRadius: 25,
-    marginLeft: 15,
+    marginLeft: 0,
     //backgroundColor: "transparent",
     //backgroundColor: "pink",
     backgroundColor: "#e6f2ff",
@@ -113,8 +136,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     backgroundColor: "transparent",
-    //borderColor: "#3f9eeb",
-    //borderWidth: 2,
+    // borderColor: "#3f9eeb",
+    // borderWidth: 2,
     borderRadius: 10,
     paddingLeft: 55,
   },
@@ -123,6 +146,19 @@ const styles = StyleSheet.create({
     margin: 10,
     borderWidth: 1,
     borderColor: "grey",
+    borderRadius: 30,
+    //backgroundColor: "yellow",
+  },
+  searchButton: {
+    padding: 10,
+    margin: 10,
+    borderWidth: 1,
+    borderColor: "grey",
+    borderRadius: 30,
+    //backgroundColor: "yellow",
+  },
+  clearButton: {
+    padding: 10,
     borderRadius: 30,
     //backgroundColor: "yellow",
   },

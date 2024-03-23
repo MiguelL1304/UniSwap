@@ -7,7 +7,8 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Button
+  Button,
+  Keyboard
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { firestoreDB } from "../../../Firebase/firebase";
@@ -16,7 +17,9 @@ import HomeHeader from "../Components/HomeHeader";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import BottomSheet, { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import "react-native-gesture-handler";
-
+//import Slider from "@react-native-community/slider";
+//import RangeSlider from 'react-native-range-slider';
+import MultiSlider from '@ptomasroos/react-native-multi-slider';
 
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
@@ -33,6 +36,7 @@ const Home = () => {
   // getting & setting listings from firestore
   const [listings, setListings] = useState([]);
   const [originalListings, setOriginalListings] = useState([]);
+  const [listingTitles, setListingTitles] = useState([]);
 
   // filter bottom sheet
   const bottomSheetModalRef = useRef(null);
@@ -50,7 +54,7 @@ const Home = () => {
     category: [],
     condition: [],
     subject: [],
-    course: [],
+    course: "",
   });
 
   const [filtersHistory, setFiltersHistory] = useState([]);
@@ -59,6 +63,10 @@ const Home = () => {
     return listings.filter((listing) => {
       // Check for each category in filters
       return Object.keys(filters).every((category) => {
+        if (category === "course") {
+          if (!filters.course) return true;
+          return listing.course && listing.course.toString() === filters.course.toString();
+        }
         // If no filter is selected in the category, do not filter out the item
         if (filters[category].length === 0) return true;
 
@@ -117,6 +125,17 @@ const Home = () => {
     setFiltersHistory((prevHistory) => [...prevHistory, filters]);
   };
 
+  const addCourseNum = (courseNumber) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      course: courseNumber.toString() // Directly setting the course number
+    }));
+
+    setFiltersHistory((prevHistory) => [...prevHistory, {
+      ...filters,
+      course: courseNumber
+    }]);
+  };
   //
   //
   // Search logic.
@@ -124,7 +143,8 @@ const Home = () => {
   //
 
   function transformTitle(input) {
-    let transformedTitle = ' ' + input.toUpperCase() + ' ';
+    let transformedTitle = input.toUpperCase();
+    //let transformedTitle = ' ' + input.toUpperCase() + ' ';
 
     transformedTitle = transformedTitle.replace(/[^\x00-\x7F]/g, function (char) {
         switch (char) {
@@ -160,14 +180,14 @@ const Home = () => {
       transformedTitle = transformedTitle.replace(regex, "");
     }
 
-    // Remove common words
-    const commonWords = [' THE ', ' OF ', ' AND ', ' A ', ' TO ', ' IN ', ' ON ', ' FOR ', ' WITH '];
-    for (let i = 0; i < commonWords.length; i++) {
-        const word = commonWords[i];
-        transformedTitle = transformedTitle.replace(word, "");
-    }
+    // Split the transformedTitle into an array of words
+    const wordsArray = transformedTitle.split(/\s+/);
 
-    // Change Roman numerals to Arabic
+    // Remove common words
+    const commonWords = ['THE', 'OF', 'AND', 'A', 'TO', 'IN', 'ON', 'FOR', 'WITH'];
+    const filteredWordsArray = wordsArray.filter(word => !commonWords.includes(word));
+
+    // Change Roman numerals
     const romanNumerals = {
         'I': 1,
         'II': 2,
@@ -180,39 +200,157 @@ const Home = () => {
         'IX': 9,
         'X': 10
     };
-    transformedTitle = transformedTitle.replace(/(?:\b|\s)(I{1,3}|IV|V|VI{0,3}|IX|X)(?:\b|\s)/g, function (match, roman) {
-        return romanNumerals[roman];
+    const transformedArray = filteredWordsArray.map(word => {
+        return romanNumerals[word] ? romanNumerals[word] : word;
     });
 
-    // Remove whitespace
-    transformedTitle = transformedTitle.replace(/\s/g, '');
+    return transformedArray;
+  }
 
-    return transformedTitle;
+  function transformListingTitles(originalListings) {
+    const listingTitles = originalListings.map((originalListings) => {
+      return transformTitle(originalListings.title);
+    });
+    return listingTitles;
   }
 
 
   // Example usage
-  function testTransformationAlgorithm() {
-    const testCases = [
-        "Blue Öyster Cult",
-        "Amos, Tori",
-        "The Red Hot Chili Peppers"
-    ];
-
-    testCases.forEach(testCase => {
-        const transformedTitle = transformTitle(testCase);
-        console.log(`Original title: ${testCase}, Transformed title: ${transformedTitle}`);
-    });
-
-    originalListings.forEach(item => {
-        const transformedTitle = transformTitle(item.title);
-        console.log(`Original title: ${item.title}, Transformed title: ${transformedTitle}`);
-    });
-  }
+  // function testTransformationAlgorithm() {
+  //   originalListings.forEach(item => {
+  //       const transformedTitle = transformTitle(item.title);
+  //       console.log(`Original title: ${item.title}, Transformed title: ${transformedTitle}`);
+  //   });
+  // }
 
   // Call the test function
   //testTransformationAlgorithm();
   
+  function levenshteinDistance(str1, str2) {
+    const len1 = str1.length;
+    const len2 = str2.length;
+    const matrix = [];
+  
+    // Initialize matrix with 0s
+    for (let i = 0; i <= len1; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= len2; j++) {
+      matrix[0][j] = j;
+    }
+  
+    // Fill in the rest of the matrix
+    for (let i = 1; i <= len1; i++) {
+      for (let j = 1; j <= len2; j++) {
+        const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[i] ??= [];
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1, // Deletion
+          matrix[i][j - 1] + 1, // Insertion
+          matrix[i - 1][j - 1] + cost // Substitution
+        );
+      }
+    }
+  
+    // Return the bottom-right cell of the matrix
+    return matrix[len1][len2];
+  }
+
+  function searchListings(userInput, listingTitles, listings) {
+    const transformedInput = transformTitle(userInput); // Transform user input
+
+    const searchResults = [];
+
+    // Iterate over each transformed title in listingTitles
+    listingTitles.forEach((transformedTitle, index) => {
+        let totalDistance = 0;
+        let matchCount = 0;
+
+        // Iterate over each word in transformedInput
+        transformedInput.forEach(inputWord => {
+            let minDistance = Infinity; // Initialize minDistance for each input word
+            // Find the closest matching word in transformedTitle
+            transformedTitle.forEach(titleWord => {
+                const distance = levenshteinDistance(inputWord, titleWord);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                }
+            });
+
+            // Add the closest matching word distance to totalDistance
+            totalDistance += minDistance;
+            matchCount++;
+        });
+
+        // Calculate average distance for the title based on matching words only
+        const averageDistance = matchCount === 0 ? Infinity : totalDistance / matchCount;
+
+        // Define a threshold value for average distance
+        const averageDistanceThreshold = 3.5; // Example threshold value, adjust as needed
+
+        // If average distance is below the threshold, consider it a relevant result
+        if (averageDistance <= averageDistanceThreshold) {
+            // Add the corresponding listing to the searchResults
+            searchResults.push(listings[index]);
+        }
+    });
+
+    return searchResults;
+  } 
+
+  function sortSearchResults(searchResults, userInput) {
+    // Transform user input
+    const transformedInput = transformTitle(userInput);
+
+    // Calculate average distance for each item based on matching words
+    const resultsWithAvgDistance = searchResults.map(item => {
+        const titleWords = transformTitle(item.title);
+        let totalDistance = 0;
+        let matchingWordsCount = 0;
+
+        // Calculate total distance and count of matching words
+        titleWords.forEach(titleWord => {
+            let minDistance = Infinity;
+            transformedInput.forEach(inputWord => { // Iterate over transformed input
+                const distance = levenshteinDistance(inputWord, titleWord);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                }
+            });
+            if (minDistance <= 2) { // Threshold for considering a match
+                totalDistance += minDistance;
+                matchingWordsCount++;
+            }
+        });
+
+        // Calculate average distance
+        const averageDistance = matchingWordsCount === 0 ? Infinity : totalDistance / matchingWordsCount;
+
+        return { item, averageDistance, matchingWordsCount }; // Also store matchingWordsCount
+    });
+
+    // Sort search results by average distance from lowest to highest
+    resultsWithAvgDistance.sort((a, b) => {
+        if (a.averageDistance !== b.averageDistance) {
+            return a.averageDistance - b.averageDistance;
+        } else {
+            // If average distances are equal, sort by number of matching words
+            return b.matchingWordsCount - a.matchingWordsCount; // Sort by descending matching words count
+        }
+    });
+
+    // Return sorted search results
+    return resultsWithAvgDistance.map(result => result.item);
+  }
+  
+   //Example usage
+  //  const userInput = "chemistry book"; // Example user input
+  //  const searchResults = searchListings(userInput, listingTitles, listings);
+  //  const sortedResults = sortSearchResults(searchResults, userInput); // Pass userInput here
+  //  console.log(sortedResults.map(item => item.title));
+
+
+
   //
   //
   // UI Components
@@ -263,7 +401,21 @@ const Home = () => {
             addCondition={addCondition}
           />
         );
-        break;     
+        break;    
+      case "Course":
+        return (
+          <CourseNumContent 
+            onBack={onBack}
+            addCourseNum={addCourseNum}
+          />
+        );
+        break;
+      case "Price":
+        return (
+          <PriceContent 
+            onBack={onBack}
+          />
+        )     
       default:
         return <FilterContent onSelectFilter={onSelectFilter} />;  
     }
@@ -271,6 +423,30 @@ const Home = () => {
 
   function handlePresentModal() {
     bottomSheetModalRef.current?.present();
+  }
+
+  function handleSearch() {
+    if(searchQuery.trim() !== "") {
+      const userInput = searchQuery;
+      const searchResults = searchListings(userInput, listingTitles, originalListings);
+      const sortedResults = sortSearchResults(searchResults, userInput);
+
+      // Update the listings state with the search results
+      setListings(sortedResults);
+      Keyboard.dismiss();
+    }
+  }
+
+  function handleClear() {
+    setSearchQuery("");
+    setFilters({
+      category: [],
+      condition: [],
+      subject: [],
+      course: [],
+    });
+    setListings(originalListings);
+    Keyboard.dismiss();
   }
 
   const fetchData = async () => {
@@ -281,13 +457,22 @@ const Home = () => {
         ...doc.data(),
        }));
 
-      setOriginalListings(documents);
+      await setOriginalListings(documents);
+      console.log(originalListings);
+      console.log("---------------------");
           
-      const filteredListings = filterListings(documents, filters); // Apply filtering
-      setListings(filteredListings);
-      
+      const filteredListings = await filterListings(documents, filters); // Apply filtering
+      await setListings(filteredListings);
+      console.log(listings);
+      console.log("---------------------");
 
-      console.log(filters);
+      const transformedTitles = transformListingTitles(filteredListings);
+      await setListingTitles(transformedTitles);
+      console.log(listingTitles);
+      console.log("---------------------");
+
+    
+
     } catch (error) {
       console.error("Error fetching data: ", error);
     }
@@ -305,19 +490,23 @@ const Home = () => {
     if (filtersHistory.length > 0) {
       const anyFilterRemoved = Object.keys(filters).some((category) => {
         const currentFilterLength = filters[category].length;
-        console.log("currentFilterLength");
-        console.log(currentFilterLength);
+        //console.log("currentFilterLength");
+        //console.log(currentFilterLength);
         const previousFilterLength = filtersHistory[filtersHistory.length - 1][category].length;
-        console.log("previousFilterLength");
-        console.log(previousFilterLength);
-        console.log("-----------");
+        //console.log("previousFilterLength");
+        //console.log(previousFilterLength);
+        //console.log("-----------");
         return currentFilterLength < previousFilterLength;
       });
 
       if (anyFilterRemoved) {
-        setListings(originalListings);
+        if (searchQuery.trim() !== "") {
+          setListings(searchListings(searchQuery, listingTitles, originalListings));
+        } else {
+          setListings(originalListings);
+        }
       } else {
-        const filteredListings = filterListings(originalListings, filters);
+        const filteredListings = filterListings(listings, filters);
         setListings(filteredListings);
       }
     }
@@ -340,7 +529,9 @@ const Home = () => {
         setSearchQuery={setSearchQuery} 
         //onFilterPress={() => setBottomSheetPosition(0)}
         handlePresentModal={handlePresentModal}
-        />
+        handleSearch={handleSearch}
+        handleClear={handleClear}
+      />
 
       {/* // display  of listings */}
       <FlatList
@@ -396,195 +587,279 @@ const FilterContent = ({ onSelectFilter }) => (
     {/* <Ionicons name="chevron-forward" /> */}
     <FilterOption title="Subject" onPress={() => onSelectFilter("Subject")}/>
     <FilterOption title="Condition" onPress={() => onSelectFilter("Condition")}/>
+    <FilterOption title="Course" onPress={() => onSelectFilter("Course")} />
+    <FilterOption title="Price" onPress={() => onSelectFilter("Price")} />
   </View>
 )
 
 const CategoryContent = ({ onBack, selectedCategories, addCategory }) => (
-  <ScrollView style={styles.scrollViewContainer}>
-    <TouchableOpacity onPress={onBack} style={styles.backButton}>
-      <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
-    </TouchableOpacity>
-    
-    {/* CATEGORIES */}
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addCategory("Books")}>
-      <Text style={[
-          styles.filterSubjectOptions,
-          selectedCategories.includes("Books") && { color: "red" }
-        ]}>Books</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addCategory("Clothes")}>
-      <Text style={[
-          styles.filterSubjectOptions,
-          selectedCategories.includes("Clothes") && { color: "red" }
-        ]}>Clothes</Text>
-    </TouchableOpacity>
-  </ScrollView>
+  <View>
+    <View style={styles.headerContainer}>
+      <TouchableOpacity onPress={onBack} style={styles.backButton}>
+        <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
+      </TouchableOpacity>
+      <Text style={styles.headerTitle}>Category</Text>
+    </View>
+
+    <ScrollView>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addCategory("Books")}>
+        <Text style={[
+            styles.filterSubjectOptions,
+            selectedCategories.includes("Books") && { color: "red" }
+          ]}>Books</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addCategory("Clothes")}>
+        <Text style={[
+            styles.filterSubjectOptions,
+            selectedCategories.includes("Clothes") && { color: "red" }
+          ]}>Clothes</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  </View>  
 )
 
 const SubjectContent = ({ onBack, selectedSubjects, addSubject }) => (
-  <ScrollView style={styles.scrollViewContainer}>
-
-    <TouchableOpacity onPress={onBack} style={styles.backButton}>
-      <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
-    </TouchableOpacity>
-
-    {/* SUBJECTS */}
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Accounting")}>
-      <Text style={styles.filterSubjectOptions}>Accounting</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("African American Studies")}>
-      <Text style={styles.filterSubjectOptions}>African American Studies</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Anthropology")}>
-      <Text style={styles.filterSubjectOptions}>Anthropology</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Art")}>
-      <Text style={styles.filterSubjectOptions}>Art</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Biochemistry")}>
-      <Text style={styles.filterSubjectOptions}>Biochemistry</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Biology")}>
-      <Text style={styles.filterSubjectOptions}>Biology</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Business Administration")}>
-      <Text style={styles.filterSubjectOptions}>Business Administration</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Chemistry")}>
-      <Text style={[
-          styles.filterSubjectOptions,
-          selectedSubjects.includes("Chemistry") && { color: "red" }
-        ]}>Chemistry</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Cinema Media")}>
-      <Text style={styles.filterSubjectOptions}>Cinema Media</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Communications")}>
-      <Text style={styles.filterSubjectOptions}>Communications</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Computer Science")}>
-      <Text style={styles.filterSubjectOptions}>Computer Science</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Economics")}>
-      <Text style={styles.filterSubjectOptions}>Economics</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Education")}>
-      <Text style={styles.filterSubjectOptions}>Education</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("English")}>
-      <Text style={styles.filterSubjectOptions}>English</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Environmental Science")}>
-      <Text style={styles.filterSubjectOptions}>Environmental Science</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Film")}>
-      <Text style={styles.filterSubjectOptions}>Film</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Finance")}>
-      <Text style={styles.filterSubjectOptions}>Finance</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("French")}>
-      <Text style={styles.filterSubjectOptions}>French</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Geography")}>
-      <Text style={styles.filterSubjectOptions}>Geography</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Health Science")}>
-      <Text style={styles.filterSubjectOptions}>Health Science</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Honors")}>
-      <Text style={styles.filterSubjectOptions}>Honors</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Human Services")}>
-      <Text style={styles.filterSubjectOptions}>Human Services</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Information Technology")}>
-      <Text style={styles.filterSubjectOptions}>Information Technology</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Management")}>
-      <Text style={styles.filterSubjectOptions}>Management</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Marketing")}>
-      <Text style={styles.filterSubjectOptions}>Marketing</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Mathematics")}>
-      <Text style={styles.filterSubjectOptions}>Mathematics</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Music")}>
-      <Text style={styles.filterSubjectOptions}>Music</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Nursing")}>
-      <Text style={styles.filterSubjectOptions}>Nursing</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Philosophy")}>
-      <Text style={styles.filterSubjectOptions}>Philosophy</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Physical Education")}>
-      <Text style={styles.filterSubjectOptions}>Physical Education</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Political Science")}>
-      <Text style={styles.filterSubjectOptions}>Political Science</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Psychology")}>
-      <Text style={styles.filterSubjectOptions}>Psychology</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Sociology")}>
-      <Text style={styles.filterSubjectOptions}>Sociology</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Spanish")}>
-      <Text style={styles.filterSubjectOptions}>Spanish</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Theatre")}>
-      <Text style={styles.filterSubjectOptions}>Theatre</Text>
-    </TouchableOpacity>
-  </ScrollView>
+  <View>
+    
+    <View style={styles.headerContainer}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Subjects</Text>
+      </View>
+    <ScrollView>
+      
+      {/* SUBJECTS */}
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Accounting")}>
+        <Text style={styles.filterSubjectOptions}>Accounting</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("African American Studies")}>
+        <Text style={styles.filterSubjectOptions}>African American Studies</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Anthropology")}>
+        <Text style={styles.filterSubjectOptions}>Anthropology</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Art")}>
+        <Text style={styles.filterSubjectOptions}>Art</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Biochemistry")}>
+        <Text style={styles.filterSubjectOptions}>Biochemistry</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Biology")}>
+        <Text style={styles.filterSubjectOptions}>Biology</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Business Administration")}>
+        <Text style={styles.filterSubjectOptions}>Business Administration</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Chemistry")}>
+        <Text style={[
+            styles.filterSubjectOptions,
+            selectedSubjects.includes("Chemistry") && { color: "red" }
+          ]}>Chemistry</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Cinema Media")}>
+        <Text style={styles.filterSubjectOptions}>Cinema Media</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Communications")}>
+        <Text style={styles.filterSubjectOptions}>Communications</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Computer Science")}>
+        <Text style={styles.filterSubjectOptions}>Computer Science</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Economics")}>
+        <Text style={styles.filterSubjectOptions}>Economics</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Education")}>
+        <Text style={styles.filterSubjectOptions}>Education</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("English")}>
+        <Text style={styles.filterSubjectOptions}>English</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Environmental Science")}>
+        <Text style={styles.filterSubjectOptions}>Environmental Science</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Film")}>
+        <Text style={styles.filterSubjectOptions}>Film</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Finance")}>
+        <Text style={styles.filterSubjectOptions}>Finance</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("French")}>
+        <Text style={styles.filterSubjectOptions}>French</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Geography")}>
+        <Text style={styles.filterSubjectOptions}>Geography</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Health Science")}>
+        <Text style={styles.filterSubjectOptions}>Health Science</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Honors")}>
+        <Text style={styles.filterSubjectOptions}>Honors</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Human Services")}>
+        <Text style={styles.filterSubjectOptions}>Human Services</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Information Technology")}>
+        <Text style={styles.filterSubjectOptions}>Information Technology</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Management")}>
+        <Text style={styles.filterSubjectOptions}>Management</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Marketing")}>
+        <Text style={styles.filterSubjectOptions}>Marketing</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Mathematics")}>
+        <Text style={styles.filterSubjectOptions}>Mathematics</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Music")}>
+        <Text style={styles.filterSubjectOptions}>Music</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Nursing")}>
+        <Text style={styles.filterSubjectOptions}>Nursing</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Philosophy")}>
+        <Text style={styles.filterSubjectOptions}>Philosophy</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Physical Education")}>
+        <Text style={styles.filterSubjectOptions}>Physical Education</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Political Science")}>
+        <Text style={styles.filterSubjectOptions}>Political Science</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Psychology")}>
+        <Text style={styles.filterSubjectOptions}>Psychology</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Sociology")}>
+        <Text style={styles.filterSubjectOptions}>Sociology</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Spanish")}>
+        <Text style={styles.filterSubjectOptions}>Spanish</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Theatre")}>
+        <Text style={styles.filterSubjectOptions}>Theatre</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  </View>
 )
 
 const ConditionContent = ({ onBack, selectedConditions, addCondition }) => (
-  <ScrollView style={styles.scrollViewContainer}>
-    <TouchableOpacity onPress={onBack} style={styles.backButton}>
-      <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
-    </TouchableOpacity>
-    
-    {/* CONDITIONS */}
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Brand New")}>
-      <Text style={[
-          styles.filterSubjectOptions,
-          selectedConditions.includes("Brand New") && { color: "red" }
-        ]}>Brand New</Text>
-    </TouchableOpacity>
+  //<View style={styles.headerContainer}>
+  <View>
+    <View style={styles.headerContainer}>
+      <TouchableOpacity onPress={onBack} style={styles.backButton}>
+        <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
+      </TouchableOpacity>
+      <Text style={styles.headerTitle}>Condition</Text>
+    </View>
 
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Like New")}>
-      <Text style={[
-          styles.filterSubjectOptions,
-          selectedConditions.includes("Like New") && { color: "red" }
-        ]}>Like New</Text>
-    </TouchableOpacity>
+      <ScrollView>
+        {/* CONDITIONS */}
+        <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Brand New")}>
+          <Text style={[
+              styles.filterSubjectOptions,
+              selectedConditions.includes("Brand New") && { color: "red" }
+            ]}>Brand New</Text>
+        </TouchableOpacity>
 
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Excellent")}>
-      <Text style={[
-          styles.filterSubjectOptions,
-          selectedConditions.includes("Used - Excellent") && { color: "red" }
-        ]}>Used - Excellent</Text>
-    </TouchableOpacity>
+        <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Like New")}>
+          <Text style={[
+              styles.filterSubjectOptions,
+              selectedConditions.includes("Like New") && { color: "red" }
+            ]}>Like New</Text>
+        </TouchableOpacity>
 
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Good")}>
-      <Text style={[
-          styles.filterSubjectOptions,
-          selectedConditions.includes("Used - Good") && { color: "red" }
-        ]}>Used - Good</Text>
-    </TouchableOpacity>
+        <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Excellent")}>
+          <Text style={[
+              styles.filterSubjectOptions,
+              selectedConditions.includes("Used - Excellent") && { color: "red" }
+            ]}>Used - Excellent</Text>
+        </TouchableOpacity>
 
-    <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Fair")}>
-      <Text style={[
-          styles.filterSubjectOptions,
-          selectedConditions.includes("Used - Fair") && { color: "red" }
-        ]}>Used - Fair</Text>
-    </TouchableOpacity>
+        <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Good")}>
+          <Text style={[
+              styles.filterSubjectOptions,
+              selectedConditions.includes("Used - Good") && { color: "red" }
+            ]}>Used - Good</Text>
+        </TouchableOpacity>
 
-    
-  </ScrollView>
+        <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Fair")}>
+          <Text style={[
+              styles.filterSubjectOptions,
+              selectedConditions.includes("Used - Fair") && { color: "red" }
+            ]}>Used - Fair</Text>
+        </TouchableOpacity>  
+      </ScrollView>
+    </View>
 )
+
+const CourseNumContent = ({ onBack, selectedConditions, addCourseNum }) => {
+  const [courseNumber, setCourseNumber] = useState('');
+
+  const handleCourseNumberChange = (number) => {
+    setCourseNumber(number);
+  };
+
+  const applyCourseFilter = () => {
+    // Convert courseNumber to a number if needed or keep as string based on your data
+    addCourseNum(courseNumber);
+  };
+
+  return (
+    <View>
+      <TouchableOpacity onPress={onBack} style={styles.backButton}>
+        <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
+      </TouchableOpacity>
+      <View style={styles.courseNumberContainer}>
+        <Text>Course Number:</Text>
+        <TextInput 
+          value={courseNumber}
+          onChangeText={handleCourseNumberChange}
+          keyboardType="numeric"
+          maxLength={4}
+          style={styles.courseNumberInput}
+        />
+        <Button title="Apply" onPress={applyCourseFilter} />
+      </View>
+    </View>
+  );
+};
+
+const PriceContent = ({ onBack }) => {
+  const [sliderValues, setSliderValues] = useState([0, 100]);
+
+  const sliderOneValuesChangeStart = () => {
+    // You can implement any onStart behavior here
+  };
+
+  const sliderOneValuesChange = (values) => {
+    setSliderValues(values);
+  };
+
+  return (
+    <View>
+      <View style={styles.headerContainer}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Price</Text>
+      </View>
+      <View style={styles.valueLabels}>
+        <Text>{`$${sliderValues[0]} up to $${sliderValues[1]}+`}</Text>
+      </View>
+      <View style={styles.slider}>
+        <MultiSlider 
+          values={sliderValues}
+          sliderLength={325} 
+          onValuesChangeStart={sliderOneValuesChangeStart}
+          onValuesChange={sliderOneValuesChange}
+          min={0}
+          max={250}
+          step={5}
+        />
+      </View>
+    </View>
+  );
+};
 
 export default Home;
 
@@ -630,6 +905,22 @@ const styles = StyleSheet.create({
     padding: 10,
     marginLeft: 10,
   },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: 15,
+    //backgroundColor: "yellow",
+    width: "100%",
+    // borderBottomWidth: 1,
+    // borderBottomColor: "black",
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 25,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
   filterContent: {
     //backgroundColor: "pink",
     //flexDirection: "row",
@@ -647,7 +938,6 @@ const styles = StyleSheet.create({
     //backgroundColor: "red",
     //flexDirection: "row",
     alignSelf: "flex-start",
-    marginBottom: 15,
   },
   scrollViewContainer: {
     alignSelf: "stretch",
@@ -670,6 +960,29 @@ const styles = StyleSheet.create({
     padding: 5,
     color: "#3f9eeb",
     //backgroundColor: "#e6f2ff",
-  }
+  },
+  valueLabels: {
+    marginTop: 15,
+    //backgroundColor: "yellow",
+  },
+  slider: {
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  courseNumberContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+    alignItems: 'center',
+  },
+  courseNumberInput: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+    padding: 8,
+    marginRight: 10,
+    width: 60, // Set a fixed width for the input field
+  },
 });
 
