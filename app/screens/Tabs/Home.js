@@ -50,19 +50,33 @@ const Home = () => {
   //
 
 
+  const [filtersHistory, setFiltersHistory] = useState([]);
+  //const [priceRange, setPriceRange] = useState([0, 100]);
+  const [sliderValues, setSliderValues] = useState([0, 100]);
+
   const [filters, setFilters] = useState({
     category: [],
     condition: [],
     subject: [],
     course: "",
+    price: { min: 0, max: 50000 },
   });
 
-  const [filtersHistory, setFiltersHistory] = useState([]);
+  // refetches data after filters have been reset
+  useEffect(() => {
+    fetchData();
+  }, [filters]);
 
   function filterListings(listings, filters) {
     return listings.filter((listing) => {
       // Check for each category in filters
-      return Object.keys(filters).every((category) => {
+      const listingPrice = Number(listing.price);
+      const priceMatch = listingPrice >= filters.price.min && listingPrice <= filters.price.max;
+
+      return priceMatch && Object.keys(filters).every((category) => {
+        if (category === "price") {
+          return true;
+        }
         if (category === "course") {
           if (!filters.course) return true;
           return listing.course && listing.course.toString() === filters.course.toString();
@@ -136,6 +150,14 @@ const Home = () => {
       course: courseNumber
     }]);
   };
+
+  const addPrice = (minPrice, maxPrice) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      price: { min: minPrice, max: maxPrice },
+    }));
+    setFiltersHistory((prevHistory) => [...prevHistory, filters]);
+  }
   //
   //
   // Search logic.
@@ -414,6 +436,10 @@ const Home = () => {
         return (
           <PriceContent 
             onBack={onBack}
+            addPrice={addPrice}
+            sliderValues={sliderValues}
+            setSliderValues={setSliderValues}
+            handleClearFilters={handleClearFilters}
           />
         )     
       default:
@@ -444,6 +470,7 @@ const Home = () => {
       condition: [],
       subject: [],
       course: [],
+      price: { min: 0, max: 50000 }
     });
     setListings(originalListings);
     Keyboard.dismiss();
@@ -463,7 +490,7 @@ const Home = () => {
           
       const filteredListings = await filterListings(documents, filters); // Apply filtering
       await setListings(filteredListings);
-      console.log(listings);
+      //console.log(listings);
       console.log("---------------------");
 
       const transformedTitles = transformListingTitles(filteredListings);
@@ -487,6 +514,7 @@ const Home = () => {
 
   // Function to handle filtering when filters change
   useEffect(() => {
+    console.log("REFETCHING FILTERS")
     console.log("Filters:", filters);
     console.log("Filters History:", filtersHistory);
 
@@ -521,11 +549,14 @@ const Home = () => {
   };
 
   const handleClearFilters = () => {
+    console.log("clearing filters");
     setFilters(prevFilters => {
-      let updatedFilters = { ...prevFilters };
+      const updatedFilters = { ...prevFilters };
       for (const key in updatedFilters) {
         if (Array.isArray(updatedFilters[key])) {
           updatedFilters[key] = [];
+        } else if (key === "price") {
+          updatedFilters[key] = { min: 0, max: 50000 };
         } else {
           updatedFilters[key] = "";
         }
@@ -534,6 +565,7 @@ const Home = () => {
     });
 
     setFiltersHistory(prevHistory => [...prevHistory, filters]);
+    setSliderValues([0, 50000]);
   };
 
   const renderBackdrop = useCallback(
@@ -852,16 +884,17 @@ const CourseNumContent = ({ onBack, selectedConditions, addCourseNum }) => {
   );
 };
 
-const PriceContent = ({ onBack }) => {
-  const [sliderValues, setSliderValues] = useState([0, 100]);
-
-  const sliderOneValuesChangeStart = () => {
-    // You can implement any onStart behavior here
-  };
+const PriceContent = ({ onBack, addPrice, handleClearFilters, sliderValues, setSliderValues }) => {
 
   const sliderOneValuesChange = (values) => {
     setSliderValues(values);
   };
+
+  const applyPriceFilter = () => {
+    addPrice(sliderValues[0], sliderValues[1]);
+  }
+
+  const maxPriceText = sliderValues[1] >= 250 ? "Any" : `$${sliderValues[1]}`
 
   return (
     <View>
@@ -872,18 +905,27 @@ const PriceContent = ({ onBack }) => {
         <Text style={styles.headerTitle}>Price</Text>
       </View>
       <View style={styles.valueLabels}>
-        <Text>{`$${sliderValues[0]} up to $${sliderValues[1]}+`}</Text>
+        <Text>{`$${sliderValues[0]} up to ${maxPriceText}`}</Text>
       </View>
       <View style={styles.slider}>
         <MultiSlider 
           values={sliderValues}
           sliderLength={325} 
-          onValuesChangeStart={sliderOneValuesChangeStart}
           onValuesChange={sliderOneValuesChange}
           min={0}
           max={250}
           step={5}
         />
+      </View>
+      <View>
+        <TouchableOpacity onPress={applyPriceFilter}>
+          <Text>Apply</Text>
+        </TouchableOpacity>
+      </View>
+      <View>
+        <TouchableOpacity onPress={handleClearFilters}>
+          <Text>Reset</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
