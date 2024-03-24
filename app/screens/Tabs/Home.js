@@ -59,28 +59,22 @@ const Home = () => {
     condition: [],
     subject: [],
     course: "",
-    price: { min: 0, max: 50000 },
   });
 
-  // refetches data after filters have been reset
-  useEffect(() => {
-    fetchData();
-  }, [filters]);
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(50000);
+
+  function filterByPrice(listings, minPrice, maxPrice) {
+    return listings.filter((listing) => {
+      const listingPrice = Number(listing.price);
+      return listingPrice >= minPrice && listingPrice <= maxPrice;
+    });
+  }
 
   function filterListings(listings, filters) {
     return listings.filter((listing) => {
       // Check for each category in filters
-      const listingPrice = Number(listing.price);
-      const priceMatch = listingPrice >= filters.price.min && listingPrice <= filters.price.max;
-
-      return priceMatch && Object.keys(filters).every((category) => {
-        if (category === "price") {
-          return true;
-        }
-        if (category === "course") {
-          if (!filters.course) return true;
-          return listing.course && listing.course.toString() === filters.course.toString();
-        }
+      return Object.keys(filters).every((category) => {
         // If no filter is selected in the category, do not filter out the item
         if (filters[category].length === 0) return true;
 
@@ -152,12 +146,41 @@ const Home = () => {
   };
 
   const addPrice = (minPrice, maxPrice) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      price: { min: minPrice, max: maxPrice },
-    }));
-    setFiltersHistory((prevHistory) => [...prevHistory, filters]);
-  }
+    setMinPrice(minPrice);
+    if (maxPrice === 250) {
+      setMaxPrice(50000);
+      applyFilters(filterByPrice(originalListings, minPrice, 50000)); // Apply additional filters and search query
+    } else {
+      setMaxPrice(maxPrice);
+      applyFilters(filterByPrice(originalListings, minPrice, maxPrice)); // Apply additional filters and search query
+    }
+  };
+    
+  function applyFilters(filteredListings) {
+    let filteredListingsAfterFilters = filteredListings;
+  
+    // Apply other filters if any
+    Object.keys(filters).forEach((category) => {
+      if (category !== "price" && filters[category].length > 0) {
+        filteredListingsAfterFilters = filteredListingsAfterFilters.filter((listing) =>
+          filters[category].includes(listing[category])
+        );
+      }
+    });
+
+    // Apply search query if present
+    if (searchQuery.trim() !== "" ) {
+      const userInput = searchQuery;
+      const transformedTitlesPrices = transformListingTitles(filteredListingsAfterFilters);
+      
+      const searchResults = searchListings(userInput, transformedTitlesPrices, filteredListingsAfterFilters);
+      const sortedResults = sortSearchResults(searchResults, userInput);
+
+      setListings(sortedResults);
+    } else {
+      setListings(filteredListingsAfterFilters);
+    }
+  };
   //
   //
   // Search logic.
@@ -454,7 +477,8 @@ const Home = () => {
   function handleSearch() {
     if(searchQuery.trim() !== "") {
       const userInput = searchQuery;
-      const searchResults = searchListings(userInput, listingTitles, originalListings);
+      const transformedTitles = transformListingTitles(listings);
+      const searchResults = searchListings(userInput, transformedTitles, listings);
       const sortedResults = sortSearchResults(searchResults, userInput);
 
       // Update the listings state with the search results
@@ -465,14 +489,8 @@ const Home = () => {
 
   function handleClear() {
     setSearchQuery("");
-    setFilters({
-      category: [],
-      condition: [],
-      subject: [],
-      course: [],
-      price: { min: 0, max: 50000 }
-    });
-    setListings(originalListings);
+    const filteredListings = filterListings(originalListings, filters);
+    setListings(filteredListings);
     Keyboard.dismiss();
   }
 
@@ -485,19 +503,22 @@ const Home = () => {
        }));
 
       await setOriginalListings(documents);
-      console.log(originalListings);
-      console.log("---------------------");
+      // console.log(originalListings);
+      // console.log("---------------------");
           
       const filteredListings = await filterListings(documents, filters); // Apply filtering
       await setListings(filteredListings);
-      //console.log(listings);
-      console.log("---------------------");
 
-      const transformedTitles = transformListingTitles(filteredListings);
-      await setListingTitles(transformedTitles);
-      console.log(listingTitles);
-      console.log("---------------------");
+      handleSearch();
+      // console.log(listings);
+      // console.log("---------------------");
 
+      // const transformedTitles = transformListingTitles(filteredListings);
+      // await setListingTitles(transformedTitles);
+      // console.log(listingTitles);
+      // console.log("---------------------");
+
+      //setSearchQuery("");
     
 
     } catch (error) {
@@ -555,8 +576,6 @@ const Home = () => {
       for (const key in updatedFilters) {
         if (Array.isArray(updatedFilters[key])) {
           updatedFilters[key] = [];
-        } else if (key === "price") {
-          updatedFilters[key] = { min: 0, max: 50000 };
         } else {
           updatedFilters[key] = "";
         }
@@ -565,7 +584,10 @@ const Home = () => {
     });
 
     setFiltersHistory(prevHistory => [...prevHistory, filters]);
+    setMinPrice(0);
+    setMaxPrice(50000);
     setSliderValues([0, 50000]);
+    addPrice(0, 50000);
   };
 
   const renderBackdrop = useCallback(
@@ -643,7 +665,7 @@ const FilterContent = ({ onSelectFilter, handleClearFilters }) => (
     <FilterOption title="Price" onPress={() => onSelectFilter("Price")} />
 
     <View style={styles.buttonContainer}>
-      <TouchableOpacity onPress={handleClearFilters} style={[styles.button, styles.buttonOutline]}>
+      <TouchableOpacity onPress={handleClearFilters} style={[styles.clearButton, styles.buttonOutline]}>
         <Text style={styles.buttonOutlineText}>Clear Filters</Text>
       </TouchableOpacity>
     </View>
@@ -922,11 +944,6 @@ const PriceContent = ({ onBack, addPrice, handleClearFilters, sliderValues, setS
           <Text>Apply</Text>
         </TouchableOpacity>
       </View>
-      <View>
-        <TouchableOpacity onPress={handleClearFilters}>
-          <Text>Reset</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -992,11 +1009,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   buttonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    width: '100%',
+    marginTop: -20,
   },
   filterContent: {
+    width: '100%',
     //backgroundColor: "pink",
     //flexDirection: "row",
     //margin: 2,
@@ -1059,7 +1079,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     width: 60, // Set a fixed width for the input field
   },
-  button: {
+  clearButton: {
     backgroundColor: '#3f9eeb',
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -1067,10 +1087,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
-    width: '70%',
+    width: '60%',
   },
   buttonOutline: {
     backgroundColor: "white",
+    color: "#3f9eeb",
     borderColor: "#3f9eeb",
     borderWidth: 2,
     marginTop: 50,
