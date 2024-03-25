@@ -708,6 +708,9 @@ const Home = () => {
         handleClear={handleClear}
         onFilterPress={onFilterPress}
         onFilterClearPress={onFilterClearPress}
+        filters={filters}
+        minPrice={minPrice}
+        maxPrice={maxPrice}
       />
 
       {/* // display  of listings */}
