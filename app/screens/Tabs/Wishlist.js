@@ -11,7 +11,6 @@ import { useIsFocused, useNavigation } from "@react-navigation/native";
 
 const Wishlist = () => {
 
-  //const [wishlistNames, setWishlistNames] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
@@ -64,8 +63,8 @@ const Wishlist = () => {
   }, []);
 
   const handleListingPress = (listingId) => {
-    if (isSelecting) {
     // Toggle the selected state of the item
+    if (isSelecting) {
     const updatedWishlistItems = wishlistItems.map((item) =>
       item.id === listingId ? { ...item, selected: !item.selected } : item
     );
@@ -76,8 +75,10 @@ const Wishlist = () => {
       .filter((item) => item.selected)
       .map((item) => item.id);
     setSelectedItems(selectedItemIds);
-    }
-  };
+    } else {
+      navigation.navigate("Listing", { listing: listingId });
+  }
+};
 
   const toggleSelection = () => {
     setIsSelecting(!isSelecting);
@@ -119,33 +120,33 @@ const Wishlist = () => {
           },
         },
       ]
-    );
+    )
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleListingPress(item.id)}>
+    <TouchableOpacity onPress={() => handleListingPress(item)}>
       <View style={styles.listingItem}>
-        {isSelecting && (
-        <Checkbox
-          value={item.selected}
-          onValueChange={() => handleListingPress(item.id)}
-          color={item.selected ? '#3f9eeb' : undefined}
-        />
-        )}
         <View style={styles.imageContainer}>
           <Image
             source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
             style={styles.listingImage}
           />
-        <View style={styles.heartContainer}>
-          <Ionicons name="heart" size={24} color="red" />
-        </View>
+          {isSelecting && (
+            <Checkbox
+              value={item.selected}
+              onValueChange={() => handleListingPress(item.id)}
+              color={item.selected ? "#3f9eeb" : undefined}
+              style={styles.checkbox}
+            />
+          )}
+          <View style={styles.heartContainer}>
+            <Ionicons name="heart" size={24} color="red" />
+          </View>
         </View>
         <View style={styles.textContainer}>
           <Text style={styles.listingTitle}>{item.title}</Text>
           <Text style={styles.listingPrice}>${item.price}</Text>
         </View>
-
       </View>
     </TouchableOpacity>
   );
@@ -171,7 +172,7 @@ const Wishlist = () => {
             onPress={handleRemoveSelected}
             style={styles.deleteButton}
           >
-            <Text style={styles.deleteButtonText}>Remove Selected</Text>
+            <Ionicons name="trash" size={22} color="white" />
           </TouchableOpacity>
         )}
       </View>
@@ -221,6 +222,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,
+    marginLeft: 5,
   },
   deleteButtonText: {
     color: "white",
@@ -232,6 +234,16 @@ const styles = StyleSheet.create({
   },
   listingsContainer: {
     backgroundColor: "white",
+  },
+  imageContainer: {
+    position: "relative",
+  },
+  heartContainer: {
+    position: "absolute",
+    bottom: 5,
+    left: 5,
+    borderRadius: 50,
+    padding: 20,
   },
   listingItem: {
     flex: 1,
@@ -262,6 +274,13 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     margin: 15,
     borderRadius: 15,
+  },
+  checkbox: {
+    position: "absolute",
+    bottom: 5,
+    right: 5,
+    width: 30,
+    height: 30,
   },
   emptyContainer: {
     backgroundColor: "white",
