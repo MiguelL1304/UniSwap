@@ -11,18 +11,26 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
-const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, handlePresentModal, handleSearch, handleClear }) => {
+const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, onFilterClearPress, handlePresentModal, handleSearch, handleClear }) => {
   const categories = [
-    {
-      name: "Condition",
-      //icon: "pricetag-outline",
-    },
     {
       name: "Category",
       //icon: "pricetag-outline",
     },
     {
       name: "Subject",
+      //icon: "pricetag-outline",
+    },
+    {
+      name: "Condition",
+      //icon: "pricetag-outline",
+    },
+    {
+      name: "Course",
+      //icon: "pricetag-outline",
+    },
+    {
+      name: "Price",
       //icon: "pricetag-outline",
     },
   ];
@@ -44,14 +52,14 @@ const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, handlePresentM
             name="search-outline"
             size={24}
             //color="#3f9eeb"
-            color="grey"
+            color="#3f9eeb"
             style={styles.searchIcon}
           />
         </TouchableOpacity>
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
-            placeholder="Seach here!"
+            placeholder="Search here!"
             value={searchQuery}
             onChangeText={setSearchQuery}
             onSubmitEditing={onSubmitEditing}
@@ -63,14 +71,14 @@ const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, handlePresentM
                 name="close-outline"
                 size={24}
                 //color="#3f9eeb"
-                color="grey"
+                color="#3f9eeb"
                 style={styles.searchIcon}
               />
             </TouchableOpacity>
           )}  
         </View>
         <TouchableOpacity style={styles.filterButton} onPress={handlePresentModal}>
-          <Ionicons name="options-outline" size={25} color="grey"></Ionicons>
+          <Ionicons name="options-outline" size={25} color="#3f9eeb"></Ionicons>
         </TouchableOpacity>
       </View>
 
@@ -84,11 +92,35 @@ const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, handlePresentM
         }}
       >
         {categories.map((item, index) => (
-          <TouchableOpacity style={styles.tagButtons} key={index}
-          >
-            {/* <Ionicons size="20" name={item.icon} /> */}
-            <Text style={styles.tagText}>{item.name}</Text>
-          </TouchableOpacity>
+          <View style={{ 
+            flexDirection: "row", 
+            alignItems: "center", 
+            marginRight: index === categories.length - 1 ? 0 : 0, 
+            // borderWidth: 1, 
+            // borderColor: "black", 
+            // borderRadius: 5  
+          }}>
+            <TouchableOpacity style={styles.tagButtons} key={index} onPress={() => onFilterPress(item.name)} >
+              {/* <Ionicons size="20" name={item.icon} /> */}
+              <Text style={styles.tagText}>{item.name}</Text>
+            </TouchableOpacity>
+
+            
+            <TouchableOpacity style={[styles.clearButton, { paddingHorizontal: 0, marginHorizontal: 0 }]} onPress={() => onFilterClearPress(item.name)}>
+              <Ionicons
+                name="close-outline"
+                size={24}
+                //color="#3f9eeb"
+                color="#3f9eeb"
+                style={styles.searchIcon}
+              />
+            </TouchableOpacity>
+            
+            
+          
+          </View>
+          
+
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -145,7 +177,7 @@ const styles = StyleSheet.create({
     padding: 10,
     margin: 10,
     borderWidth: 1,
-    borderColor: "grey",
+    borderColor: "#3f9eeb",
     borderRadius: 30,
     //backgroundColor: "yellow",
   },
@@ -153,7 +185,7 @@ const styles = StyleSheet.create({
     padding: 10,
     margin: 10,
     borderWidth: 1,
-    borderColor: "grey",
+    borderColor: "#3f9eeb",
     borderRadius: 30,
     //backgroundColor: "yellow",
   },
@@ -164,16 +196,16 @@ const styles = StyleSheet.create({
   },
   tagButtons: {
     //backgroundColor: "#3f9eeb",
-    //borderRadius: 10,
-    //borderWidth: 1,
-    padding: 3,
-    margin: 3,
+    // borderRadius: 10,
+    // borderWidth: 1.5,
+    borderColor: "#3f9eeb",
     alignItems: "center",
   },
   tagText: {
-    fontSize: 10,
-    color: "grey",
+    fontSize: 14,
+    color: "#3f9eeb",
     padding: 10,
+    fontWeight: "bold",
   },
 });
 

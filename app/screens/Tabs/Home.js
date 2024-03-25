@@ -52,7 +52,7 @@ const Home = () => {
 
   const [filtersHistory, setFiltersHistory] = useState([]);
   //const [priceRange, setPriceRange] = useState([0, 100]);
-  const [sliderValues, setSliderValues] = useState([0, 100]);
+  const [sliderValues, setSliderValues] = useState([0, 250]);
 
   const [filters, setFilters] = useState({
     category: [],
@@ -181,6 +181,73 @@ const Home = () => {
       setListings(filteredListingsAfterFilters);
     }
   };
+
+  const onFilterPress = (categoryName) => {
+    // Logic to open the bottom sheet corresponding to the category
+    console.log(`Opening bottom sheet for category: ${categoryName}`);
+    // You can implement logic here to determine which bottom sheet to open
+    bottomSheetModalRef.current?.present();
+
+    switch (categoryName) {
+      case "Category":
+        setFilterStack([...filterStack, "Category"]);
+        renderBottomSheetContent();
+        break;
+      case "Subject":
+        setFilterStack([...filterStack, "Subject"]);
+        renderBottomSheetContent();
+        break;
+      case "Condition":
+        setFilterStack([...filterStack, "Condition"]);
+        renderBottomSheetContent();
+        break;
+      case "Course":
+        setFilterStack([...filterStack, "Course"]);
+        renderBottomSheetContent();
+        break;
+      case "Price":
+        setFilterStack([...filterStack, "Price"]);
+        renderBottomSheetContent();
+        break;
+      default:
+        console.log("Invalid category");
+        break;
+    }
+  };
+
+  const onFilterClearPress = (categoryName) => {
+    // Logic to open the bottom sheet corresponding to the category
+    console.log(`Clearing category: ${categoryName}`);
+
+    const updatedFilters = { ...filters };
+    
+    switch (categoryName) {
+      case "Category":
+        // Clear category filters
+        updatedFilters.category = [];
+        break;
+      case "Subject":
+        // Clear subject filters
+        updatedFilters.subject = [];
+        break;
+      case "Condition":
+        // Clear condition filters
+        updatedFilters.condition = [];
+        break;
+      case "Course":
+        updatedFilters.course = "";
+        break;
+      case "Price":
+        setMinPrice(0);
+        setMaxPrice(50000);
+        setSliderValues([0, 50000]);
+        addPrice(0, 50000);
+        break;
+    }
+    setFilters(updatedFilters);
+
+  };
+
   //
   //
   // Search logic.
@@ -409,9 +476,10 @@ const Home = () => {
     setFilterStack([...filterStack, filterName]);
   };
   const onBack = () => {
+    setFilterStack([...filterStack, "main"]);
     const newStack = [...filterStack];
     newStack.pop();
-    setFilterStack(newStack);
+    //setFilterStack(newStack);
   }
 
   const renderBottomSheetContent = () => {
@@ -471,6 +539,7 @@ const Home = () => {
   }
 
   function handlePresentModal() {
+    setFilterStack([...filterStack, "main"]);
     bottomSheetModalRef.current?.present();
   }
 
@@ -486,11 +555,20 @@ const Home = () => {
       Keyboard.dismiss();
     }
   }
+  // function filterByPrice(listings, minPrice, maxPrice) {
+  //   return listings.filter((listing) => {
+  //     const listingPrice = Number(listing.price);
+  //     return listingPrice >= minPrice && listingPrice <= maxPrice;
+  //   });
+  // }
+  
 
   function handleClear() {
     setSearchQuery("");
-    const filteredListings = filterListings(originalListings, filters);
+
+    const filteredListings = filterListings(filterByPrice(originalListings, sliderValues[0], sliderValues[1]), filters);
     setListings(filteredListings);
+
     Keyboard.dismiss();
   }
 
@@ -537,32 +615,55 @@ const Home = () => {
   useEffect(() => {
     console.log("REFETCHING FILTERS")
     console.log("Filters:", filters);
-    console.log("Filters History:", filtersHistory);
 
-    if (filtersHistory.length > 0) {
-      const anyFilterRemoved = Object.keys(filters).some((category) => {
+    // if (filtersHistory.length > 0) {
+    //   const anyFilterRemoved = Object.keys(filters).some((category) => {
 
-        const currentFilterLength = filters[category].length;
+    //     const currentFilterLength = filters[category].length;
         
-        const previousFilterLength = filtersHistory[filtersHistory.length - 1][category].length;
+    //     const previousFilterLength = filtersHistory[filtersHistory.length - 1][category].length;
       
-        return currentFilterLength < previousFilterLength;
-      });
+    //     return currentFilterLength < previousFilterLength;
+    //   });
 
-      if (anyFilterRemoved) {
-        if (searchQuery.trim() !== "") {
-          setListings(searchListings(searchQuery, listingTitles, originalListings));
-        } else {
-          setListings(originalListings);
-        }
-      } else {
-        const filteredListings = filterListings(listings, filters);
-        setListings(filteredListings);
-      }
-    } else {
-      // If filtersHistory is empty, set the listings to the original listings
-      setListings(originalListings);
+    //   if (anyFilterRemoved) {
+    //     if (searchQuery.trim() !== "") {
+    //       setListings(searchListings(searchQuery, listingTitles, originalListings));
+    //     } else {
+    //       const filteredListings = filterListings(originalListings, filters);
+    //       setListings(filteredListings);
+    //     }
+    //   } else {
+    //     const filteredListings = filterListings(listings, filters);
+    //     setListings(filteredListings);
+    //   }
+    // } else {
+    //   // If filtersHistory is empty, set the listings to the original listings
+    //   const filteredListings = filterListings(originalListings, filters);
+    //   setListings(filteredListings);
+    // }
+
+    
+
+    if (searchQuery.trim() !== "") {
+      const filteredListings = filterListings(originalListings, filters);
+
+      const userInput = searchQuery;
+      const transformedTitles = transformListingTitles(filteredListings);
+      const searchResults = searchListings(userInput, transformedTitles, filteredListings);
+      const sortedResults = sortSearchResults(searchResults, userInput);
+
+      // Update the listings state with the search results
+      setListings(filterByPrice(sortedResults, minPrice, maxPrice));
+      
     }
+    else{
+      const filteredListings = filterListings(originalListings, filters);
+      setListings(filterByPrice(filteredListings, minPrice, maxPrice));
+      
+    }
+    
+
   }, [filters]);
 
   const handleListing = (listing) => {
@@ -605,6 +706,8 @@ const Home = () => {
         handlePresentModal={handlePresentModal}
         handleSearch={handleSearch}
         handleClear={handleClear}
+        onFilterPress={onFilterPress}
+        onFilterClearPress={onFilterClearPress}
       />
 
       {/* // display  of listings */}
