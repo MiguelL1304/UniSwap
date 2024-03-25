@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -11,7 +11,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
-const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, onFilterClearPress, handlePresentModal, handleSearch, handleClear }) => {
+const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, onFilterClearPress, handlePresentModal, handleSearch, handleClear, filters, minPrice, maxPrice }) => {
+
   const categories = [
     {
       name: "Category",
@@ -90,38 +91,55 @@ const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, onFilterClearP
           paddingHorizontal: 15,
           //backgroundColor: "red",
         }}
+        scrollEnabled={categories.filter(item => (
+          (item.name === "Category" && filters.category.length > 0) ||
+          (item.name === "Subject" && filters.subject.length > 0) ||
+          (item.name === "Condition" && filters.condition.length > 0) ||
+          (item.name === "Course" && filters.course !== "") ||
+          (item.name === "Price" && (minPrice !== 0 || maxPrice !== 50000))
+        )).length > 3} 
       >
-        {categories.map((item, index) => (
-          <View style={{ 
-            flexDirection: "row", 
-            alignItems: "center", 
-            marginRight: index === categories.length - 1 ? 0 : 0, 
-            // borderWidth: 1, 
-            // borderColor: "black", 
-            // borderRadius: 5  
-          }}>
-            <TouchableOpacity style={styles.tagButtons} key={index} onPress={() => onFilterPress(item.name)} >
-              {/* <Ionicons size="20" name={item.icon} /> */}
-              <Text style={styles.tagText}>{item.name}</Text>
-            </TouchableOpacity>
+        {categories.map((item, index) => {
+          if (
+            (item.name === "Category" && filters.category.length > 0) ||
+            (item.name === "Subject" && filters.subject.length > 0) ||
+            (item.name === "Condition" && filters.condition.length > 0) ||
+            (item.name === "Course" && filters.course !== "") ||
+            (item.name === "Price" && (minPrice !== 0 || maxPrice !== 50000))
+          ) {
+            return (
+              <View key={index} style={{ 
+                flexDirection: "row", 
+                alignItems: "center", 
+                marginRight: index === categories.length - 1 ? 0 : 0, 
+                // borderWidth: 1, 
+                // borderColor: "black", 
+                // borderRadius: 5  
+              }}>
+                <TouchableOpacity style={styles.tagButtons} onPress={() => onFilterPress(item.name)} >
+                  {/* <Ionicons size="20" name={item.icon} /> */}
+                  <Text style={styles.tagText}>{item.name}</Text>
+                </TouchableOpacity>
 
-            
-            <TouchableOpacity style={[styles.clearButton, { paddingHorizontal: 0, marginHorizontal: 0 }]} onPress={() => onFilterClearPress(item.name)}>
-              <Ionicons
-                name="close-outline"
-                size={24}
-                //color="#3f9eeb"
-                color="#3f9eeb"
-                style={styles.searchIcon}
-              />
-            </TouchableOpacity>
-            
-            
-          
-          </View>
-          
-
-        ))}
+                
+                <TouchableOpacity style={[styles.clearButton, { paddingHorizontal: 0, marginHorizontal: 0 }]} onPress={() => onFilterClearPress(item.name)}>
+                  <Ionicons
+                    name="close-outline"
+                    size={24}
+                    //color="#3f9eeb"
+                    color="#3f9eeb"
+                    style={styles.searchIcon}
+                  />
+                </TouchableOpacity>
+                
+                
+              
+              </View>
+          );
+        } else {
+          return null;
+        }
+      })}
       </ScrollView>
     </SafeAreaView>
   );
