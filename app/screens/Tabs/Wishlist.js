@@ -1,61 +1,96 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, SafeAreaView, Alert } from "react-native";
-import { firestoreDB } from "../../../Firebase/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { auth, firestoreDB } from "../../../Firebase/firebase";
+import { collection, deleteDoc, doc, getDoc } from "firebase/firestore";
 import { Checkbox } from "expo-checkbox";
+import { Ionicons } from "@expo/vector-icons";
 
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 
 const Wishlist = () => {
-  const [listings, setListings] = useState([]);
+
+  const [wishlistItems, setWishlistItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
+ //const [LocalOrder, setLocalOrder] = useState([]);
+
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchWishlistItems = async () => {
       try {
-        const querySnapshot = await getDocs(collection(firestoreDB, "listing"));
-        const documents = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          selected: false,
-        }));
-        //console.log(documents);
-        setListings(documents);
+        const email = auth.currentUser ? auth.currentUser.email: null;
+        if (!email) {
+          throw new Error("Current user is null or email is undefined.");
+        }
+
+        const wishlistRef = doc(collection(firestoreDB, "wishlist"), email);
+        const userWishlistSnap = await getDoc(wishlistRef);
+
+          if (userWishlistSnap.exists()) {
+            const data = userWishlistSnap.data();
+            const wishlistItemIds = Object.keys(data);
+
+            const itemsPromises = wishlistItemIds.map(async (itemId) => {
+              const listingDocRef = doc(firestoreDB, "listing", itemId);
+              const listingDocSnap = await getDoc(listingDocRef);
+
+            if (listingDocSnap.exists()) {
+              const listingData = listingDocSnap.data();
+              return { id: itemId, ...listingData };
+            } else {
+              console.log("Listing document not found for:", itemId);
+              return null;
+            }
+        });
+
+        const items = await Promise.all(itemsPromises);
+        console.log("Fetched wishlist items:", items);
+        const filteredItems = items.filter((item) => item !== null);
+        setWishlistItems(filteredItems);
+      } else {
+        console.warn("User wishlist not found.");
+      }
       } catch (error) {
-        console.error("Error fetching data: ", error);
+        console.error("Error fetching wishlist items:", error);
       }
     };
 
-    fetchData();
-  }, []);
+    if (isFocused) {
+    fetchWishlistItems();
+  }
+}, [isFocused]);
 
   const handleListingPress = (listingId) => {
-    if (isSelecting) {
     // Toggle the selected state of the item
-    const updatedListings = listings.map((item) =>
+    if (isSelecting) {
+    const updatedWishlistItems = wishlistItems.map((item) =>
       item.id === listingId ? { ...item, selected: !item.selected } : item
     );
-    setListings(updatedListings);
+    setWishlistItems(updatedWishlistItems);
 
     // Update the selectedItems state with the selected item's ID
-    const selectedItemIds = updatedListings
+    const selectedItemIds = updatedWishlistItems
       .filter((item) => item.selected)
       .map((item) => item.id);
     setSelectedItems(selectedItemIds);
-    }
-  };
+    } else {
+      navigation.navigate("Listing", { listing: listingId });
+  }
+};
 
   const toggleSelection = () => {
     setIsSelecting(!isSelecting);
     if (!isSelecting) {
       // Unselect all checkboxes
-      const updatedListings = listings.map((item) => ({
+      const updatedWishlistItems = wishlistItems.map((item) => ({
         ...item,
         selected: false,
       }));
-      setListings(updatedListings);
+      setWishlistItems(updatedWishlistItems);
       setSelectedItems([]);
     }
   };
@@ -77,13 +112,27 @@ const Wishlist = () => {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => {
-            const updatedListings = listings.filter(
+          onPress: async () => {
+            try {
+              const deletePromises = selectedItems.map(async (itemId) => {
+                console.log("email:", auth.currentUser.email);
+                console.log("item:", itemId);
+                const itemRef = doc(collection(firestoreDB, "wishlist", auth.currentUser.email, itemId));
+                await deleteDoc(itemRef);
+                console.log("Item deleted:", itemId);
+              });
+              await Promise.all(deletePromises);
+
+            const updatedWishlistItems = wishlistItems.filter(
               (item) => !selectedItems.includes(item.id)
             );
-            setListings(updatedListings);
+            setWishlistItems(updatedWishlistItems);
             setSelectedItems([]);
             setIsSelecting(false);
+            } catch (error) {
+              console.error("Error deleting items:", error);
+            }
+            console.log("Updated wishlist items:", wishlistItems);
           },
         },
       ]
@@ -91,24 +140,40 @@ const Wishlist = () => {
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleListingPress(item.id)}>
+    <TouchableOpacity onPress={() => handleListingPress(item)}>
       <View style={styles.listingItem}>
-        {isSelecting && (
-        <Checkbox
-          value={item.selected}
-          onValueChange={() => handleListingPress(item.id)}
-          color={item.selected ? '#3f9eeb' : undefined}
-        />
-        )}
-        <Image
-          source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
-          style={styles.listingImage}
-        />
-        <Text style={styles.listingTitle}>{item.title}</Text>
-        <Text style={styles.listingPrice}>${item.price}</Text>
+        <View style={styles.imageContainer}>
+          <Image
+            source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+            style={styles.listingImage}
+          />
+          {isSelecting && (
+            <Checkbox
+              value={item.selected}
+              onValueChange={() => handleListingPress(item.id)}
+              color={item.selected ? "#3f9eeb" : undefined}
+              style={styles.checkbox}
+            />
+          )}
+          <View style={styles.heartContainer}>
+            <Ionicons name="heart" size={24} color="red" />
+          </View>
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.listingTitle}>{item.title}</Text>
+          <Text style={styles.listingPrice}>${item.price}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
+
+  if (wishlistItems.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Your wishlist is empty. Press "♡" on an item to add it to the wishlist!</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -123,15 +188,15 @@ const Wishlist = () => {
             onPress={handleRemoveSelected}
             style={styles.deleteButton}
           >
-            <Text style={styles.deleteButtonText}>Remove Selected</Text>
+            <Ionicons name="trash" size={22} color="white" />
           </TouchableOpacity>
         )}
       </View>
       <View style={styles.mainContainer}>
         {/* display of listings */}
         <FlatList
-          style={styles.listings}
-          data={listings}
+          style={styles.wishlistItems}
+          data={wishlistItems}
           numColumns={2}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
@@ -173,6 +238,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,
+    marginLeft: 5,
   },
   deleteButtonText: {
     color: "white",
@@ -183,23 +249,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listingsContainer: {
-    paddingHorizontal: 10,
     backgroundColor: "white",
+  },
+  imageContainer: {
+    position: "relative",
+  },
+  heartContainer: {
+    position: "absolute",
+    bottom: 5,
+    left: 5,
+    borderRadius: 50,
+    padding: 20,
   },
   listingItem: {
     flex: 1,
     flexDirection: "column",
     padding: 15,
-    marginBottom: 10,
     alignItems: "center",
+  },
+  textContainer: {
+    flex: 1,
+    width: "100%",
+    flexWrap: "wrap",
   },
   listingTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    paddingLeft: 5,
+    maxWidth: 150,
+    flexWrap: "wrap",
   },
   listingPrice: {
     fontSize: 16,
     color: "green",
+    paddingLeft: 5,
   },
   listingImage: {
     width: 120,
@@ -207,5 +290,25 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     margin: 15,
     borderRadius: 15,
+  },
+  checkbox: {
+    position: "absolute",
+    bottom: 5,
+    right: 5,
+    width: 30,
+    height: 30,
+  },
+  emptyContainer: {
+    backgroundColor: "white",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 18, 
+    fontWeight: "bold",
+    color: "gray",
+    width: 200,
+    flexWrap: "wrap",
   },
 });
