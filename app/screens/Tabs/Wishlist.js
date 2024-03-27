@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, SafeAreaView, Alert } from "react-native";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
-import { collection, doc, getDocs, query, getDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc } from "firebase/firestore";
 import { Checkbox } from "expo-checkbox";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -14,6 +14,7 @@ const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
+ //const [LocalOrder, setLocalOrder] = useState([]);
 
   const navigation = useNavigation();
   const isFocused = useIsFocused();
@@ -26,9 +27,8 @@ const Wishlist = () => {
           throw new Error("Current user is null or email is undefined.");
         }
 
-        const wishlistRef = collection(firestoreDB, "wishlist");
-        const userWishlistRef = doc(wishlistRef, email);
-        const userWishlistSnap = await getDoc(userWishlistRef);
+        const wishlistRef = doc(collection(firestoreDB, "wishlist"), email);
+        const userWishlistSnap = await getDoc(wishlistRef);
 
           if (userWishlistSnap.exists()) {
             const data = userWishlistSnap.data();
@@ -59,8 +59,10 @@ const Wishlist = () => {
       }
     };
 
+    if (isFocused) {
     fetchWishlistItems();
-  }, []);
+  }
+}, [isFocused]);
 
   const handleListingPress = (listingId) => {
     // Toggle the selected state of the item
@@ -110,17 +112,31 @@ const Wishlist = () => {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => {
+          onPress: async () => {
+            try {
+              const deletePromises = selectedItems.map(async (itemId) => {
+                console.log("email:", auth.currentUser.email);
+                console.log("item:", itemId);
+                const itemRef = doc(collection(firestoreDB, "wishlist", auth.currentUser.email, itemId));
+                await deleteDoc(itemRef);
+                console.log("Item deleted:", itemId);
+              });
+              await Promise.all(deletePromises);
+
             const updatedWishlistItems = wishlistItems.filter(
               (item) => !selectedItems.includes(item.id)
             );
             setWishlistItems(updatedWishlistItems);
             setSelectedItems([]);
             setIsSelecting(false);
+            } catch (error) {
+              console.error("Error deleting items:", error);
+            }
+            console.log("Updated wishlist items:", wishlistItems);
           },
         },
       ]
-    )
+    );
   };
 
   const renderItem = ({ item }) => (

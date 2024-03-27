@@ -168,7 +168,11 @@ const Listing = ({ route }) => {
             </TouchableOpacity>
           </View>
           <TouchableOpacity 
-            onPress={() => setIsInWishlist(!isInWishlist)} 
+            onPress={() => { setIsInWishlist(!isInWishlist);
+            if (!isInWishlist) {
+              handleAddWishlist();
+            }
+          }}
             style={styles.heartButton}
           >
             <Text style={[styles.heart, { color: isInWishlist ? "red" : "grey" }]}>
