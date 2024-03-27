@@ -7,10 +7,10 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./app/screens/Stacks/Login";
 // import Listing from "./app/screens/Listing";
 import SignUp from "./app/screens/Stacks/SignUp";
-import Profile from "./app/screens/Tabs/Profile";
+import Profile from "./app/screens/Stacks/Profile";
 import OnboardingScreen from "./app/screens/Stacks/OnboardingScreen";
 import { AsyncStorage } from "@react-native-async-storage/async-storage";
-
+import "react-native-gesture-handler";
 // import * as React from "react";
 // import { StyleSheet, Text, View } from "react-native";
 import AppNavigation from "./app/navigation/AppNavigation";

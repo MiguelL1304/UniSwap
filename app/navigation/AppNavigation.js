@@ -9,7 +9,7 @@ import { TouchableOpacity } from "react-native";
 import Login from "../screens/Stacks/Login";
 import SignUp from "../screens/Stacks/SignUp";
 import Home from "../screens/Tabs/Home";
-import Profile from "../screens/Tabs/Profile";
+import Profile from "../screens/Stacks/Profile";
 import Wishlist from "../screens/Tabs/Wishlist";
 import Meetups from "../screens/Tabs/Meetups";
 //import PostListing from "../screens/Tabs/CreateListing";
@@ -22,6 +22,12 @@ import EditListing from "../screens/Stacks/EditListing";
 import Listing from "../screens/Stacks/Listing";
 import { View } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
+import Overview from "../screens/Tabs/Overview";
+import Selling from "../screens/Stacks/Selling";
+import Bought from "../screens/Stacks/Bought";
+import Trade from "../screens/Stacks/Trade";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -96,6 +102,34 @@ export default function AppNavigation() {
           }}
         />
         <Stack.Screen
+          name="Selling"
+          component={Selling}
+          options={{
+          headerTitle: "Selling",
+          }}
+        />
+         <Stack.Screen
+          name="Bought"
+          component={Bought}
+          options={{
+          headerTitle: "Bought",
+          }}
+        />
+         <Stack.Screen
+          name="Trade"
+          component={Trade}
+          options={{
+          headerTitle: "Settings",
+          }}
+        />
+         <Stack.Screen
+          name="Profile"
+          component={Profile}
+          options={{
+            headerTitle: "Profile",
+         }}
+        />
+         <Stack.Screen
           name="Listing"
           component={Listing}
           options={{
@@ -181,10 +215,30 @@ export default function AppNavigation() {
           {() => null}
         </Tab.Screen>
         <Tab.Screen name="Meetups" component={Meetups} />
-        <Tab.Screen name="Profile" component={Profile} />
+        <Tab.Screen name="Profile" component={Overview} />
       </Tab.Navigator>
     );
   }
+  //TopTabs on Overview
+  // const TopTabs = createMaterialTopTabNavigator(); 
+  //   function TopTabsGroup() {
+  //     return (
+  //       <TopTabs.Navigator
+  //       tabBarOptions={{
+  //         activeTintColor: '#3f9eeb', // Color of the active tab label
+  //         inactiveTintColor: 'black', // Color of inactive tab labels
+  //         labelStyle: { fontSize: 16, fontWeight: 'bold' }, // Style for tab labels
+  //         style: { backgroundColor: '#e6f2ff' }, // Background color of the tab bar
+  //         indicatorStyle: { backgroundColor: '#3f9eeb' }, // Color of the tab indicator
+  //       }}
+  //       >
+  //         <TopTabs.Screen name="Selling" component={Selling}/>
+  //         <TopTabs.Screen name="Bought" component={Bought}/>
+  //         <TopTabs.Screen name="Trade" component={Trade}/>
+  //         <TopTabs.Screen name="Profile" component={Profile}/>
+  //       </TopTabs.Navigator>
+  //     )
+  //   }
 
   return (
     <GestureHandlerRootView style={{ flex:1 }}>

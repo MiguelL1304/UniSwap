@@ -64,6 +64,7 @@ function Profile() {
         const listingNames = Object.keys(userListingData);
         setUserListings(listingNames);
         console.log(userListings);
+
       } else {
         console.log("User listing document does not exist");
       }
@@ -83,21 +84,21 @@ function Profile() {
   return (
     <View style={styles.container}>
       {/* Profile Image moved up */}
-      <View style={styles.profileImgContainer}>
+      {/* <View style={styles.profileImgContainer}>
         <Image
           source={{ uri: profileData.profilePic ? profileData.profilePic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
           style={styles.profileImg}
         />
-      </View>
+      </View> */}
       {/* User Information */}
       <Text style={styles.emailText}>Email: {auth.currentUser?.email}</Text>
-      <Text style={styles.userInfoText}>{profileData.firstName}</Text>
-      <Text style={styles.userInfoText}>{profileData.lastName}</Text>
-      <Text style={styles.userInfoText}>{profileData.college}</Text>
-      <Text style={styles.userInfoText}>{profileData.bio}</Text>
+      {/* <Text style={styles.userInfoText}>{profileData.firstName} {profileData.lastName}</Text>   */}
+      {/* <Text style={styles.userInfoText}>{profileData.lastName}</Text> // Moved first and last name to same line */ }
+      {/* <Text style={styles.userInfoText}>{profileData.college}</Text>
+      <Text style={styles.userInfoText}>{profileData.bio}</Text> */}
 
       {/* Fetch the user document in the userListing collection. TO BE DELETED LATER */}
-      <Text style={styles.userInfoText}>User Listings:</Text>
+      {/* <Text style={styles.userInfoText}>User Listings:</Text>
       <FlatList
         data={userListings}
         renderItem={({ item }) => (
@@ -106,12 +107,13 @@ function Profile() {
           </TouchableOpacity>
         )}
         keyExtractor={(item, index) => index.toString()}
-      />
+      /> */}
       
       {/* Update Profile button */}
       <TouchableOpacity onPress={handleUpdate} style={[styles.button, styles.buttonOutline]}>
         <Text style={styles.buttonOutlineText}>Update Profile</Text>
       </TouchableOpacity>
+
       {/* Sign out button */}
       <TouchableOpacity onPress={handleSignOut} style={styles.button}>
         <Text style={styles.buttonText}>Sign Out</Text>
@@ -154,7 +156,7 @@ const styles = StyleSheet.create({
   },
   emailText: {
     fontSize: 16,
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   button: {
     backgroundColor: '#3f9eeb',
