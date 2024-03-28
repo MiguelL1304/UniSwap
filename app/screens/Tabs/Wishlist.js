@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, SafeAreaView, Alert } from "react-native";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
-import { collection, deleteDoc, doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, setDoc } from "firebase/firestore";
 import { Checkbox } from "expo-checkbox";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -10,33 +10,35 @@ import defaultImg from "../../assets/defaultImg.png";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 
 const Wishlist = () => {
-
   const [wishlistItems, setWishlistItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
- //const [LocalOrder, setLocalOrder] = useState([]);
 
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
+  //fetches items that were "♡" by the user to show up in the wishlist tab
   useEffect(() => {
     const fetchWishlistItems = async () => {
+      //check for user's email 
       try {
-        const email = auth.currentUser ? auth.currentUser.email: null;
+        const email = auth.currentUser ? auth.currentUser.email : null;
         if (!email) {
           throw new Error("Current user is null or email is undefined.");
         }
 
+        //references the wishlist collection tied to the user's email
         const wishlistRef = doc(collection(firestoreDB, "wishlist"), email);
         const userWishlistSnap = await getDoc(wishlistRef);
 
-          if (userWishlistSnap.exists()) {
-            const data = userWishlistSnap.data();
-            const wishlistItemIds = Object.keys(data);
+        if (userWishlistSnap.exists()) {
+          const data = userWishlistSnap.data();
+          const wishlistItemIds = Object.keys(data);
 
-            const itemsPromises = wishlistItemIds.map(async (itemId) => {
-              const listingDocRef = doc(firestoreDB, "listing", itemId);
-              const listingDocSnap = await getDoc(listingDocRef);
+          //uses the item IDs in a wishlist to find their listing page 
+          const itemsPromises = wishlistItemIds.map(async (itemId) => {
+            const listingDocRef = doc(firestoreDB, "listing", itemId);
+            const listingDocSnap = await getDoc(listingDocRef);
 
             if (listingDocSnap.exists()) {
               const listingData = listingDocSnap.data();
@@ -45,47 +47,48 @@ const Wishlist = () => {
               console.log("Listing document not found for:", itemId);
               return null;
             }
-        });
+          });
 
-        const items = await Promise.all(itemsPromises);
-        console.log("Fetched wishlist items:", items);
-        const filteredItems = items.filter((item) => item !== null);
-        setWishlistItems(filteredItems);
-      } else {
-        console.warn("User wishlist not found.");
-      }
+          //returns all the data of associated with an item ID (title, image, price)
+          const items = await Promise.all(itemsPromises);
+          console.log("Fetched wishlist items:", items);
+          const filteredItems = items.filter((item) => item !== null);
+          setWishlistItems(filteredItems);
+        } else {
+          console.warn("User wishlist not found.");
+        }
       } catch (error) {
         console.error("Error fetching wishlist items:", error);
       }
     };
 
     if (isFocused) {
-    fetchWishlistItems();
-  }
-}, [isFocused]);
+      fetchWishlistItems();
+    }
+  }, [isFocused]);
 
   const handleListingPress = (listingId) => {
     // Toggle the selected state of the item
     if (isSelecting) {
-    const updatedWishlistItems = wishlistItems.map((item) =>
-      item.id === listingId ? { ...item, selected: !item.selected } : item
-    );
-    setWishlistItems(updatedWishlistItems);
+      const updatedWishlistItems = wishlistItems.map((item) =>
+        item.id === listingId ? { ...item, selected: !item.selected } : item
+      );
+      setWishlistItems(updatedWishlistItems);
 
-    // Update the selectedItems state with the selected item's ID
-    const selectedItemIds = updatedWishlistItems
-      .filter((item) => item.selected)
-      .map((item) => item.id);
-    setSelectedItems(selectedItemIds);
+      // Update the selectedItems state with the selected item's ID, otherwise pressing an item will lead to its listing page
+      const selectedItemIds = updatedWishlistItems
+        .filter((item) => item.selected)
+        .map((item) => item.id);
+      setSelectedItems(selectedItemIds);
     } else {
       navigation.navigate("Listing", { listing: listingId });
-  }
-};
+    }
+  };
 
   const toggleSelection = () => {
     setIsSelecting(!isSelecting);
     if (!isSelecting) {
-      // Unselect all checkboxes
+      // Unselect all checkboxes 
       const updatedWishlistItems = wishlistItems.map((item) => ({
         ...item,
         selected: false,
@@ -95,6 +98,7 @@ const Wishlist = () => {
     }
   };
 
+  //removes selected items from a user's wishlist
   const handleRemoveSelected = () => {
     if (selectedItems.length === 0) {
       Alert.alert("No Items Selected", "Please select items to delete.");
@@ -112,27 +116,48 @@ const Wishlist = () => {
         {
           text: "Delete",
           style: "destructive",
+          //removes the data of an item ID and checks to make sure deletion was completed or not
           onPress: async () => {
             try {
-              const deletePromises = selectedItems.map(async (itemId) => {
-                console.log("email:", auth.currentUser.email);
-                console.log("item:", itemId);
-                const itemRef = doc(collection(firestoreDB, "wishlist", auth.currentUser.email, itemId));
-                await deleteDoc(itemRef);
-                console.log("Item deleted:", itemId);
-              });
-              await Promise.all(deletePromises);
+              const email = auth.currentUser ? auth.currentUser.email : null;
+              if (!email) {
+                throw new Error("Current user is null or email is undefined.");
+              }
 
-            const updatedWishlistItems = wishlistItems.filter(
-              (item) => !selectedItems.includes(item.id)
-            );
-            setWishlistItems(updatedWishlistItems);
-            setSelectedItems([]);
-            setIsSelecting(false);
+              const wishlistRef = collection(firestoreDB, "wishlist");
+              const wishlistDocRef = doc(wishlistRef, email);
+              const wishlistDocSnap = await getDoc(wishlistDocRef);
+
+              if (wishlistDocSnap.exists()) {
+                const userData = wishlistDocSnap.data();
+
+                selectedItems.forEach((item) => {
+                  if (userData.hasOwnProperty(item)) {
+                    delete userData[item];
+                    console.log("Item deleted from wishlist:", item);
+                  } else {
+                    console.error(
+                      "Item to delete does not exist in wishlist:",
+                      item
+                    );
+                  }
+                });
+
+                await setDoc(wishlistDocRef, userData);
+                console.log("Items deleted from wishlist:", selectedItems);
+
+                const updatedWishlistItems = wishlistItems.filter(
+                  (item) => !selectedItems.includes(item.id)
+                );
+                setWishlistItems(updatedWishlistItems);
+                setSelectedItems([]);
+                setIsSelecting(false);
+              } else {
+                console.error("Wishlist document does not exist.");
+              }
             } catch (error) {
               console.error("Error deleting items:", error);
             }
-            console.log("Updated wishlist items:", wishlistItems);
           },
         },
       ]
@@ -170,7 +195,10 @@ const Wishlist = () => {
   if (wishlistItems.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>Your wishlist is empty. Press "♡" on an item to add it to the wishlist!</Text>
+        <Text style={styles.emptyText}>
+          Your wishlist is empty. Press "♡" on an item to add it to the
+          wishlist!
+        </Text>
       </View>
     );
   }
