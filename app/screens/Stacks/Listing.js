@@ -36,6 +36,10 @@ const Listing = ({ route }) => {
       listingImg1,
       firstName,
       lastName,
+      condition,
+      subject,
+      course,
+      description
     } = listing;
   
     // Declarations for state hooks
@@ -47,6 +51,30 @@ const Listing = ({ route }) => {
     //Navigator
     const navigation = useNavigation();
     const isFocused = useIsFocused();
+
+    const [userName, setUserName] = useState('');
+
+
+
+    const fetchUserProfile = async (listingId) => {
+    const userEmailPrefix = listingId.split('_')[0];
+    const profileDocRef = doc(firestoreDB, 'profile', userEmailPrefix);
+    const profileDocSnap = await getDoc(profileDocRef);
+
+    if (profileDocSnap.exists()) {
+        const profileData = profileDocSnap.data();
+        setUserName(`${profileData.firstName} ${profileData.lastName}`);
+    } else {
+        setUserName("User not found");
+    }
+    };
+
+    useEffect(() => {
+    if (listing && listing.id) {
+        fetchUserProfile(listing.id);
+    }
+    }, [listing, listing.id]);
+
 
     
 
@@ -179,16 +207,28 @@ const Listing = ({ route }) => {
               {isInWishlist ? "♥" : "♡"}
             </Text>
           </TouchableOpacity>
+    
+          {/* Display condition, subject, and course fields */}
+          <Text style={styles.detailText}>Condition: {listing.condition}</Text>
+          <Text style={styles.detailText}>Subject: {listing.subject}</Text>
+          <Text style={styles.detailText}>Course: {listing.course}</Text>
+          <Text style={styles.detailText}>Description: {listing.description}</Text>
+    
           {/* Add Picker components for date/time and location selections here */}
         </ScrollView>
       );
-    };
+        }
     
     const styles = StyleSheet.create({
       container: {
         flex: 1,
         backgroundColor: "white",
       },
+      detailText: {
+        textAlign: 'center',
+        fontSize: 16,
+        marginVertical: 4,
+      },      
       contentContainer: {
         alignItems: 'center',
         paddingTop: 50,
