@@ -17,12 +17,69 @@ function Bought() {
 // click on listing and bring to listing page
 // add edit and delete buttons when you click on your own listing
 // update profile UI
+const navigation = useNavigation();
+    const isFocused = useIsFocused();
+
+    const [userListings, setUserListings] = useState({});
+    useEffect(() => {
+        if (isFocused) {
+        //   fetchProfile(); // Fetch profile data when screen is focused
+          fetchUserListings();
+        }
+      }, [isFocused]);
+
+      //Fetch the user document in the userListing collection. TO BE DELETED LATER
+  const fetchUserListings = async () => {
+    try {
+      const email = auth.currentUser ? auth.currentUser.email : null;
+      if (!email) {
+        throw new Error("Current user is null or email is undefined.");
+      }
+
+      const userListingRef = doc(firestoreDB, "userListing", email);
+      const userListingSnapshot = await getDoc(userListingRef);
+
+      if (userListingSnapshot.exists()) {
+        const userListingData = userListingSnapshot.data();
+        const listingNames = Object.keys(userListingData);
+        setUserListings(listingNames);
+        console.log(userListings);
+
+      } else {
+        console.log("User listing document does not exist");
+      }
+    } catch (error) {
+      console.error('Error fetching user listings:', error);
+    }
+  };
+
+  const handleListing = (listingDoc) => {
+    navigation.navigate("EditListing", { listingDoc: listingDoc });
+  };
+
 
   return (
     
-    <View style={styles.container}>
-      <Text>TESTING PLACEMENT</Text>
+    // <View style={styles.container}>
+    //   <Text>TESTING PLACEMENT</Text>
+     
 
+    // </View>
+    <View>
+      <Text>Items the user has purchased</Text>
+    
+
+      {/* Fetch the user document in the userListing collection. TO BE DELETED LATER */}
+      {/* <Text style={styles.userInfoText}>User Listings:</Text>
+      <FlatList
+        data={userListings}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => handleListing(item)}>
+            <Text>{item}</Text>
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      /> */}
     </View>
 
   );

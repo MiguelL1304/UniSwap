@@ -26,7 +26,8 @@ import Overview from "../screens/Tabs/Overview";
 import Selling from "../screens/Stacks/Selling";
 import Bought from "../screens/Stacks/Bought";
 import Trade from "../screens/Stacks/Trade";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+// import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import PersonalListing from "../screens/Stacks/PersonalListing";
 
 
 const Stack = createNativeStackNavigator();
@@ -137,6 +138,15 @@ export default function AppNavigation() {
             headerBackVisible: true,
           }}
         />
+        <Stack.Screen
+          name="PersonalListing"
+          component={PersonalListing}
+          options={{
+            headerTitle: "Your Listing",
+            headerBackVisible: true,
+          }}
+        />
+        
       </Stack.Navigator>
     );
   }
@@ -215,7 +225,9 @@ export default function AppNavigation() {
           {() => null}
         </Tab.Screen>
         <Tab.Screen name="Meetups" component={Meetups} />
-        <Tab.Screen name="Profile" component={Overview} />
+        <Tab.Screen name="Profile" component={Overview} options={{
+            headerShown: false,
+          }} />
       </Tab.Navigator>
     );
   }

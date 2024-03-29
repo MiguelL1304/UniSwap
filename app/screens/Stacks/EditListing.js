@@ -1197,7 +1197,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    width: '35%',
+    width: '40%',
     marginLeft: 'auto',
     marginRight: 'auto', 
   },
