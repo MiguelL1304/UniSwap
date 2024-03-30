@@ -62,7 +62,7 @@ describe("<SignUp />", () => {
       fireEvent.changeText(collegeInput, "Example University");
 
       const emailInput = getByPlaceholderText("Email");
-      fireEvent.changeText(emailInput, "john.doe@example.edu"); // Valid .edu email
+      fireEvent.changeText(emailInput, "johndoe@ggc.edu"); // Valid .edu email
 
       const passwordInput = getByPlaceholderText("Password");
       fireEvent.changeText(passwordInput, "password123");
