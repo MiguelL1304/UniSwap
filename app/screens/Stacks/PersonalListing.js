@@ -1,29 +1,25 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Image, FlatList } from "react-native";
-import { auth, firestoreDB } from "../../../Firebase/firebase";
-import { doc, getDoc } from 'firebase/firestore';
 import { useNavigation } from "@react-navigation/native";
-import defaultImg from "../../assets/defaultImg.png";
-import { ScrollView } from "react-native-gesture-handler";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Button
+} from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 
-function Selling() {
+const PersonalListing = ({ route }) => {
   const navigation = useNavigation();
-  const [userListings, setUserListings] = useState({});
-  const [numColumns, setNumColumns] = useState(3);
+  // const isFocused = useIsFocused();
+  
 
   const handleListing = (listingDoc) => {
     navigation.navigate("EditListing", { listingDoc: listingDoc });
   };
 
-  // const handleListing = (listing) => {
-  //   navigation.navigate("Listing", { listing: listing });
-  // };
-
-  // const handleListingPress = (listingId) => {
-  //   navigation.navigate("PersonalListing", { listingId : userListings });
-  // };
-
-  
   useEffect(() => {
     const fetchUserListings = async () => {
       try {
@@ -42,20 +38,22 @@ function Selling() {
           if (!Array.isArray(listingIds)) {
             throw new Error("Listing IDs is not an array.");
           }
-          
-          const items = await Promise.all(listingIds.map(async (listingId) => {
+    
+          const itemPromises = listingIds.map(async (listingId) => {
             const listingDocRef = doc(firestoreDB, "listing", listingId);
             const listingDocSnapshot = await getDoc(listingDocRef);
-  
+    
             if (listingDocSnapshot.exists()) {
               const listingData = listingDocSnapshot.data();
-              return { id: listingId, ...listingData };
+              return { id: listingId, ...listingData};
             } else {
               console.log("Listing document not found");
               return null;
             }
-          }));
-  
+          });
+    
+          const items = await Promise.all(itemPromises);
+          console.log("Fetched user listings:", items);
           const filteredItems = items.filter((item) => item !== null);
           setUserListings(filteredItems);
         } else {
@@ -68,54 +66,49 @@ function Selling() {
   fetchUserListings();
 }, []);
 
-// const handleListingPress = (listingId) => {
-//   navigation.navigate("PersonalListing", { listingId });
-// };
 
   
+
   return (
+    // <View style={styles.container}>
+    //   <Text>Your personal Listing</Text>
+    //   <Button title="Edit" onPress={handleListing}/>
+    // </View>
+
     <View style={styles.container}>
-      
+    <ScrollView>
       <FlatList
-        // horizontal
+        horizontal
         data={userListings}
-        numColumns={numColumns}
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => handleListing(item.id)}>
             <View style={styles.imagesWrapper}>
               <Image
                 source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
                 style={styles.galleryImage}
-              />
+              />     
             </View>
           </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
-        
       />
-    </View>
-
+    </ScrollView>
+  </View>
+    
   );
-}
+};
+
+
+
+export default PersonalListing;
 
 const styles = StyleSheet.create({
   container: {
-    // display: 'flex',
     flex: 1,
+    alignItems: 'center',
+    justifyContent: "center",
     backgroundColor: "white",
-    // paddingHorizontal: 0,
-    // paddingTop: 10,
-    alignItems: "center", // Center items horizontally
   },
-  imagesWrapper: {
-    flexDirection: 'row',
-  },
-  galleryImage: {
-    height: 125,
-    width: 125,
-    margin: 1,
-  }
+
+
 });
-
-
-export default Selling;

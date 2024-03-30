@@ -1,87 +1,100 @@
-import { useNavigation, useIsFocused } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, FlatList, View, TouchableOpacity, Image } from "react-native";
-import { auth, firestoreDB } from "../../../Firebase/firebase";
+import { StyleSheet, Text, View, Image, Button, TouchableOpacity } from "react-native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import Selling from "../Stacks/Selling";
 import Bought from "../Stacks/Bought";
 import Trade from "../Stacks/Trade";
 import Profile from "../Stacks/Profile";
-import { BorderlessButton, ScrollView } from "react-native-gesture-handler";
-import { doc, getDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
-// import { View } from "react-native-reanimated/lib/typescript/Animated";
-
-// four tabs
-// selling
-// bought
-// trades
-// settings
-// gallery view
-// click on listing and preview
-// edit and delete
-
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, firestoreDB } from "../../../Firebase/firebase";
+import { signOut } from "firebase/auth";
 
 const Overview = () => {
-    const tabs = createMaterialTopTabNavigator(); 
-    const navigation = useNavigation();
+  const tabs = createMaterialTopTabNavigator(); 
+  const navigation = useNavigation();
   const isFocused = useIsFocused();
 
-    const [profileData, setProfileData] = useState({
-        firstName: "First Name: NA",
-        lastName: "Last Name: NA",
-        college: "College: NA",
-        profilePic: "https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg",
-      }); // Default values for the profile data
+  const [profileData, setProfileData] = useState({
+    firstName: "First Name: NA",
+    lastName: "Last Name: NA",
+    college: "College: NA",
+    bio: "Bio: NA",
+    profilePic: "https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg",
+  });
 
-      useEffect(() => {
-        if (isFocused) {
-          fetchProfile(); // Fetch profile data when screen is focused
-        //   fetchUserListings();
-        }
-      }, [isFocused]);
+  useEffect(() => {
+    if (isFocused) {
+      fetchProfile();
+    }
+  }, [isFocused]);
 
-
-      const fetchProfile = async () => {
-        try {
-          const docRef = doc(firestoreDB, 'profile', auth.currentUser?.email);
-          const docSnapshot = await getDoc(docRef);
-      
-          if (docSnapshot.exists()) {
-            const data = docSnapshot.data();
-            setProfileData(data); // Update profile data state
-          }
-        } catch (error) {
-          console.error('Error fetching document:', error);
-        }
-      };
-
+  const fetchProfile = async () => {
+    try {
+      const docRef = doc(firestoreDB, 'profile', auth.currentUser?.email);
+      const docSnapshot = await getDoc(docRef);
   
-  
+      if (docSnapshot.exists()) {
+        const data = docSnapshot.data();
+        setProfileData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching document:', error);
+    }
+  };
+  const handleUpdate = () => {
+    navigation.navigate("UpdateProfile", { profileData: profileData });
+  };
+
+  const handleSignOut = () => {
+    signOut(auth)
+      .then(() => {
+        navigation.replace("Login");
+      })
+      .catch((error) => alert(error.message));
+  };
 
   return (
-    <View style={{width: '100%', height: '100%', backgroundColor: 'white'}}>
-        <View style={styles.containter}>
+    <View style={styles.container}>
+      <View style={styles.profileContainer}>
+        <View style={styles.profileImgContainer}>
+          <View style={styles.profileImgWrapper}>
 
+          <Image
+            source={{ uri: profileData.profilePic ? profileData.profilePic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
+            style={styles.profileImg}
+          />
+          </View>
+        </View>
 
-    {/* Profile Image moved up */}
-            <View style={styles.profileImgContainer}>
-                <Image
-                source={{ uri: profileData.profilePic ? profileData.profilePic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
-                style={styles.profileImg}
-                />
-            </View>
-            
-            {/* User Information */}
-            {/* <Text style={styles.emailText}>Email: {auth.currentUser?.email}</Text> */}
-            <Text style={styles.userInfoText}>{profileData.firstName} {profileData.lastName}</Text>  
-            {/* <Text style={styles.userInfoText}>{profileData.lastName}</Text> // Moved first and last name to same line */ }
-            <Text style={styles.userInfoText}>{profileData.college}</Text>
-            <Text style={styles.userInfoText}>{profileData.bio}</Text>
+        <View style={styles.profileInfo}>
+          <Text style={styles.userName}>{profileData.firstName} {profileData.lastName}</Text>  
+          <Text style={styles.userUni}>{profileData.college}</Text>
 
-            </View>
+        </View>
+      </View>
 
+      <View style={styles.bioContainer}>
+        <Text style={styles.userBio}>{profileData.bio}</Text>
+      </View>
 
-        <tabs.Navigator
+      <View style={styles.button}>
+  <TouchableOpacity onPress={handleUpdate}>
+    <Text style={styles.buttonText}>Edit Profile</Text>
+  </TouchableOpacity>
+  <TouchableOpacity onPress={handleSignOut}>
+    <Text style={styles.buttonText}>Sign Out</Text>
+  </TouchableOpacity>
+</View>
+
+        {/* <View style={styles.button}>
+          <Button title="Edit Profile" onPress={handleUpdate} />
+          <Button title="Sign Out" onPress={handleSignOut} />
+        </View> */}
+
+      <View style={styles.line} />
+
+      <tabs.Navigator
       tabBarOptions={{
         activeTintColor: '#3f9eeb', // Color of the active tab label
         inactiveTintColor: 'black', // Color of inactive tab labels
@@ -93,59 +106,81 @@ const Overview = () => {
         <tabs.Screen name="Selling" component={Selling}/>
         <tabs.Screen name="Bought" component={Bought}/>
         <tabs.Screen name="Trade" component={Trade}/>
-        <tabs.Screen name="Profile" component={Profile}/>
+        {/* <tabs.Screen name="Profile" component={Profile}/> */}
       </tabs.Navigator>
-
     </View>
-
   );
 }
 
-export default Overview;
-
 const styles = StyleSheet.create({
-    containter: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        // padding: 20,
-        // paddingTop: 80,
-        backgroundColor: 'white',
-    },
-    buttonRow: {
-        flexDirection: 'row',   
-        flex: 1,
-    },
-    button: {
-        backgroundColor: '#3f9eeb',
-        margin: 10,
-        padding: 10,
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 20,
-        width: '20%',
+  container: {
+    flex: 1,
+    backgroundColor: '#e6f2ff',
+    paddingTop: 70,
+  },
+  profileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+  },
+  profileImgContainer: {
+    marginRight: 20,
+  },
+  profileImgWrapper: {
+    borderWidth: 2,
+    borderColor: 'white',
+    borderRadius: 50,
+    overflow: 'hidden',
+  },
+  profileImg: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  profileInfo: {
+    flex: 1,
+    marginLeft: 10, // Add marginLeft to create space between profile picture and text
+    paddingTop: 20,
+  },
+  userUni: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginVertical: 5,
+  },
+  line: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#3f9eeb',
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 5,
+  },
+  bioContainer: {
+    paddingTop: 10,
+    // marginBottom: 30,
+    paddingLeft: 30,
+  },
+  userBio: {
+    fontSize: 17,
+    fontWeight: '500',
+  },
+  button: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    paddingRight: 15,
+    // fontSize: 50
     },
     buttonText: {
-      color: 'white',
-      fontWeight: '700',
-      fontSize: 16,
+      fontSize: 15,
+      fontWeight: 'bold',
+      color: '#3f9eeb',
+      marginRight: 15, // Adjust spacing between buttons 
+      paddingBottom: 10,
     },
-    profileImgContainer: {
-        marginBottom: 40, // Adjusted space above the profile image
-        alignItems: 'right',
-      },
-      profileImg: { // circle for profile picture
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#f5f5f5',
-      },
-      userInfoText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        margin: 3,
-      },
-     
-  });
   
+    
+});
+
+export default Overview;
+
