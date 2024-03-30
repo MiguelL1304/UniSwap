@@ -294,18 +294,17 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     padding: 15,
     alignItems: "center",
+    width: 195,
+    flexWrap: "wrap",
   },
   textContainer: {
     flex: 1,
     width: "100%",
-    flexWrap: "wrap",
   },
   listingTitle: {
     fontSize: 18,
     fontWeight: "bold",
     paddingLeft: 5,
-    maxWidth: 150,
-    flexWrap: "wrap",
   },
   listingPrice: {
     fontSize: 16,
@@ -331,9 +330,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingLeft: 15,
   },
   emptyText: {
-    fontSize: 18, 
+    fontSize: 30,
     fontWeight: "bold",
     color: "gray",
     width: 200,
