@@ -34,8 +34,6 @@ const Listing = ({ route }) => {
       price,
       title,
       listingImg1,
-      firstName,
-      lastName,
       condition,
       subject,
       course,
@@ -53,20 +51,22 @@ const Listing = ({ route }) => {
     const isFocused = useIsFocused();
 
     const [userName, setUserName] = useState('');
+    const [userPic, setUserPic] = useState('')
 
+    const fetchUserProfile = async () => {
+      try {
+        const userEmailPrefix = listing.id.split('_')[0];
+        const profileDocRef = doc(firestoreDB, 'profile', userEmailPrefix);
+        const profileDocSnap = await getDoc(profileDocRef);
 
-
-    const fetchUserProfile = async (listingId) => {
-    const userEmailPrefix = listingId.split('_')[0];
-    const profileDocRef = doc(firestoreDB, 'profile', userEmailPrefix);
-    const profileDocSnap = await getDoc(profileDocRef);
-
-    if (profileDocSnap.exists()) {
-        const profileData = profileDocSnap.data();
-        setUserName(`${profileData.firstName} ${profileData.lastName}`);
-    } else {
-        setUserName("User not found");
-    }
+        if (profileDocSnap.exists()) {
+          const profileData = profileDocSnap.data();
+          setUserName(`${profileData.firstName} ${profileData.lastName}`);
+          setUserPic(`${profileData.profilePic}`);
+        }
+      } catch (error) {
+        console.error('Error fetching document:', error);
+      }
     };
 
     useEffect(() => {
@@ -74,7 +74,6 @@ const Listing = ({ route }) => {
         fetchUserProfile(listing.id);
     }
     }, [listing, listing.id]);
-
 
     
 
@@ -179,7 +178,11 @@ const Listing = ({ route }) => {
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
           <View style={styles.listedByContainer}>
-            <Text style={styles.listedBy}>Listed by: {`${firstName} ${lastName}`}</Text>
+            <Image
+              source={{ uri: userPic ? userPic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
+              style={styles.profileImg}
+            />
+            <Text style={styles.listedBy}>{`${userName}`}</Text>
           </View>
           <Image
             source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
@@ -238,10 +241,13 @@ const Listing = ({ route }) => {
         marginLeft: 15,
         position: 'absolute',
         top: 10,
+        flexDirection: 'row', 
+        alignItems: 'center', 
       },
       listedBy: {
         fontSize: 16,
         fontWeight: 'bold',
+        marginLeft: 15,
       },
       image: {
         width: '80%',
@@ -288,7 +294,13 @@ const Listing = ({ route }) => {
         width: 200,
         height: 50,
       },
-      // ... your other styles
+      profileImg: { // circle for profile picture
+        width: 30,
+        height: 30,
+        borderRadius: 50,
+        backgroundColor: '#f5f5f5',
+        marginLeft: 15,
+      },
     });
     
     export default Listing;
