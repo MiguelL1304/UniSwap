@@ -1,107 +1,121 @@
-import React, { useEffect, useState, useRef } from "react";
-import { StyleSheet, Text, View, TouchableOpacity, Image, FlatList } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, TouchableOpacity, Image, FlatList } from "react-native";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
-import { doc, getDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
-import { useNavigation, useIsFocused } from "@react-navigation/native";
+import { doc, getDoc } from 'firebase/firestore';
+import { useNavigation } from "@react-navigation/native";
 import defaultImg from "../../assets/defaultImg.png";
 import { ScrollView } from "react-native-gesture-handler";
 
 function Bought() {
-        // listingNames is the name of the document data --> list of data links in the profile currently
-        // userListing --> listingNames
-        // listing names in 3rd col userListing is same as 2nd col in listing 
-        // listing names is already fetched (in profile tab)
-        // you need to take that fetched data and reference listingImg1 in listing collection to display the images
-
-// gallery view
-// click on listing and bring to listing page
-// add edit and delete buttons when you click on your own listing
-// update profile UI
-const navigation = useNavigation();
-    const isFocused = useIsFocused();
-
-    const [userListings, setUserListings] = useState({});
-    useEffect(() => {
-        if (isFocused) {
-        //   fetchProfile(); // Fetch profile data when screen is focused
-          fetchUserListings();
-        }
-      }, [isFocused]);
-
-      //Fetch the user document in the userListing collection. TO BE DELETED LATER
-  const fetchUserListings = async () => {
-    try {
-      const email = auth.currentUser ? auth.currentUser.email : null;
-      if (!email) {
-        throw new Error("Current user is null or email is undefined.");
-      }
-
-      const userListingRef = doc(firestoreDB, "userListing", email);
-      const userListingSnapshot = await getDoc(userListingRef);
-
-      if (userListingSnapshot.exists()) {
-        const userListingData = userListingSnapshot.data();
-        const listingNames = Object.keys(userListingData);
-        setUserListings(listingNames);
-        console.log(userListings);
-
-      } else {
-        console.log("User listing document does not exist");
-      }
-    } catch (error) {
-      console.error('Error fetching user listings:', error);
-    }
-  };
+  const navigation = useNavigation();
+  const [userListings, setUserListings] = useState({});
+  const [numColumns, setNumColumns] = useState(3);
 
   const handleListing = (listingDoc) => {
     navigation.navigate("EditListing", { listingDoc: listingDoc });
   };
 
+  // const handleListing = (listing) => {
+  //   navigation.navigate("Listing", { listing: listing });
+  // };
 
+  // const handleListingPress = (listingId) => {
+  //   navigation.navigate("PersonalListing", { listingId : userListings });
+  // };
+
+  
+  useEffect(() => {
+    const fetchUserListings = async () => {
+      try {
+        const email = auth.currentUser ? auth.currentUser.email : null;
+        if (!email) {
+          throw new Error("Current user is null or email is undefined.");
+        }
+    
+        const userListingRef = doc(firestoreDB, "userListing", email);
+        const userListingSnapshot = await getDoc(userListingRef);
+    
+        if (userListingSnapshot.exists()) {
+          const userListingData = userListingSnapshot.data();
+          const listingIds = Object.keys(userListingData);
+    
+          if (!Array.isArray(listingIds)) {
+            throw new Error("Listing IDs is not an array.");
+          }
+          
+          const items = await Promise.all(listingIds.map(async (listingId) => {
+            const listingDocRef = doc(firestoreDB, "listing", listingId);
+            const listingDocSnapshot = await getDoc(listingDocRef);
+  
+            if (listingDocSnapshot.exists()) {
+              const listingData = listingDocSnapshot.data();
+              return { id: listingId, ...listingData };
+            } else {
+              console.log("Listing document not found");
+              return null;
+            }
+          }));
+  
+          const filteredItems = items.filter((item) => item !== null);
+          setUserListings(filteredItems);
+        } else {
+          console.warn("User listing document not found")
+        }
+      } catch (error) {
+        console.error('Error fetching user listings:', error);
+      }
+    };
+  fetchUserListings();
+}, []);
+
+// const handleListingPress = (listingId) => {
+//   navigation.navigate("PersonalListing", { listingId });
+// };
+
+  
   return (
-    
-    // <View style={styles.container}>
-    //   <Text>TESTING PLACEMENT</Text>
-     
-
-    // </View>
-    <View>
-      <Text>Items the user has purchased</Text>
-    
-
-      {/* Fetch the user document in the userListing collection. TO BE DELETED LATER */}
-      {/* <Text style={styles.userInfoText}>User Listings:</Text>
+    <View style={styles.container}>
+      
       <FlatList
+        // horizontal
         data={userListings}
+        numColumns={numColumns}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleListing(item)}>
-            <Text>{item}</Text>
+          <TouchableOpacity onPress={() => handleListing(item.id)}>
+            <View style={styles.imagesWrapper}>
+              <Image
+                source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+                style={styles.galleryImage}
+              />
+            </View>
           </TouchableOpacity>
         )}
-        keyExtractor={(item, index) => index.toString()}
-      /> */}
+        keyExtractor={(item) => item.id}
+        
+      />
     </View>
 
   );
 }
-export default Bought;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: "center",
     // display: 'flex',
+    flex: 1,
     backgroundColor: "white",
+    // paddingHorizontal: 0,
+    // paddingTop: 10,
+    alignItems: "center", // Center items horizontally
   },
   imagesWrapper: {
     flexDirection: 'row',
   },
   galleryImage: {
-    // display: 'flex',
-      flex:1,
-      height: 125,
-      width: 125,
-      margin: 1,
+    height: 125,
+    width: 125,
+    margin: 1,
   }
 });
+
+
+export default Bought;
