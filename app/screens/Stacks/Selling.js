@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Image, FlatList } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Image, FlatList, Dimensions } from "react-native";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { doc, getDoc } from 'firebase/firestore';
 import { useNavigation } from "@react-navigation/native";
 import defaultImg from "../../assets/defaultImg.png";
-import { ScrollView } from "react-native-gesture-handler";
+
+const windowWidth = Dimensions.get("window").width;
 
 function Selling() {
   const navigation = useNavigation();
@@ -15,15 +16,6 @@ function Selling() {
     navigation.navigate("EditListing", { listingDoc: listingDoc });
   };
 
-  // const handleListing = (listing) => {
-  //   navigation.navigate("Listing", { listing: listing });
-  // };
-
-  // const handleListingPress = (listingId) => {
-  //   navigation.navigate("PersonalListing", { listingId : userListings });
-  // };
-
-  
   useEffect(() => {
     const fetchUserListings = async () => {
       try {
@@ -65,57 +57,46 @@ function Selling() {
         console.error('Error fetching user listings:', error);
       }
     };
-  fetchUserListings();
-}, []);
+    fetchUserListings();
+  }, []);
 
-// const handleListingPress = (listingId) => {
-//   navigation.navigate("PersonalListing", { listingId });
-// };
-
-  
   return (
     <View style={styles.container}>
-      
       <FlatList
-        // horizontal
         data={userListings}
         numColumns={numColumns}
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => handleListing(item.id)}>
-            <View style={styles.imagesWrapper}>
-              <Image
-                source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
-                style={styles.galleryImage}
-              />
-            </View>
+            <Image
+              source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+              style={[styles.galleryImage, { width: windowWidth / numColumns }]}
+            />
           </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id}
-        
+        contentContainerStyle={styles.flatListContent}
       />
     </View>
-
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    // display: 'flex',
     flex: 1,
     backgroundColor: "white",
-    // paddingHorizontal: 0,
-    // paddingTop: 10,
-    alignItems: "center", // Center items horizontally
-  },
-  imagesWrapper: {
-    flexDirection: 'row',
   },
   galleryImage: {
-    height: 125,
-    width: 125,
-    margin: 1,
-  }
+    height: 130, // Set height as needed
+    width: 130,
+    margin: 0.5, 
+    resizeMode: "cover", // Maintain aspect ratio and cover the area
+  },
+  flatListContent: {
+    flexGrow: 1,
+    justifyContent: "flex-start", // Align content to the top
+    paddingTop: 1, 
+    
+  },
 });
-
 
 export default Selling;

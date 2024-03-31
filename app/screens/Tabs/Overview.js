@@ -42,6 +42,7 @@ const Overview = () => {
       console.error('Error fetching document:', error);
     }
   };
+  
   const handleUpdate = () => {
     navigation.navigate("UpdateProfile", { profileData: profileData });
   };
@@ -56,14 +57,16 @@ const Overview = () => {
 
   return (
     <View style={styles.container}>
+      {/* Profile Section */}
       <View style={styles.profileContainer}>
         <View style={styles.profileImgContainer}>
+          <View style={styles.profileImgBorder}>
           <View style={styles.profileImgWrapper}>
-
-          <Image
-            source={{ uri: profileData.profilePic ? profileData.profilePic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
-            style={styles.profileImg}
-          />
+            <Image
+              source={{ uri: profileData.profilePic ? profileData.profilePic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
+              style={styles.profileImg}
+            />
+            </View>
           </View>
         </View>
 
@@ -71,37 +74,41 @@ const Overview = () => {
           <Text style={styles.userName}>{profileData.firstName} {profileData.lastName}</Text>  
           <Text style={styles.userUni}>{profileData.college}</Text>
 
+           {/* Edit Profile Button Section */}
+          <View style={styles.editProfileButtonContainer}>
+            <TouchableOpacity onPress={handleUpdate}>
+              <Text style={styles.buttonText}>Edit Profile</Text>
+            </TouchableOpacity>
+          </View>
+
         </View>
+        
       </View>
 
+      {/* Bio Section */}
       <View style={styles.bioContainer}>
         <Text style={styles.userBio}>{profileData.bio}</Text>
       </View>
 
-      <View style={styles.button}>
-  <TouchableOpacity onPress={handleUpdate}>
-    <Text style={styles.buttonText}>Edit Profile</Text>
-  </TouchableOpacity>
-  <TouchableOpacity onPress={handleSignOut}>
-    <Text style={styles.buttonText}>Sign Out</Text>
-  </TouchableOpacity>
-</View>
+     
 
-        {/* <View style={styles.button}>
-          <Button title="Edit Profile" onPress={handleUpdate} />
-          <Button title="Sign Out" onPress={handleSignOut} />
-        </View> */}
+      {/* Sign Out Button Section */}
+      <View style={styles.signOutButtonContainer}>
+        <TouchableOpacity onPress={handleSignOut}>
+          <Text style={styles.buttonText}>Sign Out</Text>
+        </TouchableOpacity>
+      </View>
 
+      {/* Tab Navigator Section */}
       <View style={styles.line} />
-
       <tabs.Navigator
-      tabBarOptions={{
-        activeTintColor: '#3f9eeb', // Color of the active tab label
-        inactiveTintColor: 'black', // Color of inactive tab labels
-        labelStyle: { fontSize: 16, fontWeight: 'bold' }, // Style for tab labels
-        style: { backgroundColor: '#e6f2ff' }, // Background color of the tab bar
-        indicatorStyle: { backgroundColor: '#3f9eeb' }, // Color of the tab indicator
-      }}
+        tabBarOptions={{
+          activeTintColor: '#3f9eeb',
+          inactiveTintColor: 'black',
+          labelStyle: { fontSize: 16, fontWeight: 'bold' },
+          style: { backgroundColor: '#e6f2ff' },
+          indicatorStyle: { backgroundColor: '#3f9eeb' },
+        }}
       >
         <tabs.Screen name="Selling" component={Selling}/>
         <tabs.Screen name="Bought" component={Bought}/>
@@ -137,15 +144,21 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
   },
+  profileImgBorder: {
+    borderRadius: 55,
+    borderWidth: 2,
+    borderColor: '#3f9eeb', 
+    padding: 2, 
+  },
   profileInfo: {
     flex: 1,
-    marginLeft: 10, // Add marginLeft to create space between profile picture and text
+    marginLeft: 10,
     paddingTop: 20,
   },
   userUni: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginVertical: 5,
+    marginVertical: 2,
   },
   line: {
     borderBottomWidth: 2,
@@ -158,29 +171,32 @@ const styles = StyleSheet.create({
   },
   bioContainer: {
     paddingTop: 10,
-    // marginBottom: 30,
     paddingLeft: 30,
   },
   userBio: {
     fontSize: 17,
     fontWeight: '500',
+    paddingBottom: 25,
   },
-  button: {
+  editProfileButtonContainer: {
     flexDirection: 'row',
-    alignSelf: 'flex-end',
+    alignSelf: 'flex-start',
     paddingRight: 15,
-    // fontSize: 50
-    },
-    buttonText: {
-      fontSize: 15,
-      fontWeight: 'bold',
-      color: '#3f9eeb',
-      marginRight: 15, // Adjust spacing between buttons 
-      paddingBottom: 10,
-    },
-  
-    
+    paddingTop: 5,
+  },
+  signOutButtonContainer: {
+    position: 'absolute',
+    top: 15, // Adjust top position
+    right: 15, // Adjust right position
+    paddingTop: 50,
+  },
+  buttonText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#3f9eeb',
+    marginRight: 15,
+    paddingBottom: 10,
+  },
 });
 
 export default Overview;
-

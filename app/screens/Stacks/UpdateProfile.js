@@ -32,7 +32,6 @@ const UpdateProfile = ({ route }) => { // Receive profile data as props
     const [lastName, setLastName] = useState(profileData.lastName || "");
     const [college, setCollege] = useState(profileData.college || "");
     const [bio, setBio] = useState(profileData.bio || "");
-    const [email, setEmail] = useState(profileData.email || "");
     const [profilePic, setProfilePic] = useState("https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg");
     
 
@@ -249,13 +248,6 @@ const UpdateProfile = ({ route }) => { // Receive profile data as props
         <Text style={styles.input}>
           {auth.currentUser?.email}
           </Text>
-
-      {/* <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={(text) => setEmail(text)}
-          style={styles.input}
-        /> */}
 
 
 
