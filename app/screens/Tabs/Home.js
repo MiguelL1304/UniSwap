@@ -7,7 +7,6 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Button,
   Keyboard
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,15 +14,14 @@ import { firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
-import BottomSheet, { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import "react-native-gesture-handler";
-//import Slider from "@react-native-community/slider";
-//import RangeSlider from 'react-native-range-slider';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
+import subjects from "../Components/SubjectsList";
 
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
-import { GestureHandlerRootView, ScrollView } from "react-native-gesture-handler";
+import { ScrollView } from "react-native-gesture-handler";
 
 
 const Home = () => {
@@ -487,7 +485,16 @@ const Home = () => {
 
     switch (currentFilter) {
       case "main":
-        return <FilterContent onSelectFilter={onSelectFilter} handleClearFilters={handleClearFilters}/>;
+        return (
+        <FilterContent 
+          onSelectFilter={onSelectFilter} 
+          handleClearFilters={handleClearFilters}
+          selectedCategories={filters.category}
+          selectedSubjects={filters.subject}
+          selectedConditions={filters.condition}
+          selectedCourse={filters.course}
+        />
+        );
       case "Category":
         return (
           <CategoryContent
@@ -755,29 +762,73 @@ const Home = () => {
 };
 
 // first thing you see when you click filter button (category, subject, condition)
-const FilterOption = ({ title, onPress}) => (
-  <TouchableOpacity onPress={onPress}>
-    <Text style={styles.filterOption}>{title}</Text>
-  </TouchableOpacity>
-);
+const FilterOption = ({ title, onPress, selectedOptions}) => {
+  // console.log("SELECTED OPTIONS TEST: ")
+  // console.log(`FilterOption ${title}`, selectedOptions);
+  console.log("SELECTED OPTIONS: ", selectedOptions);
 
-const FilterContent = ({ onSelectFilter, handleClearFilters }) => (
+  let selectedOptionText = "";
+
+  if (selectedOptions && selectedOptions.length === 1) {
+    selectedOptionText = selectedOptions[0];
+  } else if (selectedOptions && selectedOptions.length > 1) {
+    selectedOptionText = `${selectedOptions.length} selected`;
+  }
+
+  if (title === "Course" && selectedOptions) {
+    selectedOptionText = `${selectedOptions}`;
+  }
+
+  return (
+    <View>
+      <TouchableOpacity onPress={onPress} style={styles.indFilterTab} >
+        <Text style={styles.filterOption}>{title}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center"}}>
+          {selectedOptionText ? (
+          <Text style={styles.selectedOptionText}>{selectedOptionText}</Text>
+        ) : null}
+        <Ionicons name="chevron-forward" size={20} color="#3f9eeb" style={{padding:10}}/>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const FilterContent = ({ 
+  onSelectFilter, 
+  handleClearFilters, 
+  selectedCategories, 
+  selectedSubjects,
+  selectedConditions,
+  selectedCourse,
+  }) => (
   <View style={styles.filterContent}>
-    <FilterOption title="Category" onPress={() => onSelectFilter("Category")} />
-    {/* <Ionicons name="chevron-forward" /> */}
-    <FilterOption title="Subject" onPress={() => onSelectFilter("Subject")}/>
-    <FilterOption title="Condition" onPress={() => onSelectFilter("Condition")}/>
-    <FilterOption title="Course" onPress={() => onSelectFilter("Course")} />
-    <FilterOption title="Price" onPress={() => onSelectFilter("Price")} />
+
+      <FilterOption 
+        title="Category" 
+        onPress={() => onSelectFilter("Category")} 
+        selectedOptions={selectedCategories}
+      />
+      <FilterOption 
+        title="Subject" 
+        onPress={() => onSelectFilter("Subject")}
+        selectedOptions={selectedSubjects}
+      />
+      <FilterOption 
+        title="Condition" 
+        onPress={() => onSelectFilter("Condition")}
+        selectedOptions={selectedConditions}
+        />
+      <FilterOption title="Course" onPress={() => onSelectFilter("Course")} selectedOptions={selectedCourse}/>
+      <FilterOption title="Price" onPress={() => onSelectFilter("Price")} selectedOptions={null}/>
 
     <View style={styles.buttonContainer}>
       <TouchableOpacity onPress={handleClearFilters} style={[styles.clearButton, styles.buttonOutline]}>
         <Text style={styles.buttonOutlineText}>Clear Filters</Text>
       </TouchableOpacity>
+      
     </View>
-    
   </View>
-  
 )
 
 const CategoryContent = ({ onBack, selectedCategories, addCategory }) => (
@@ -790,148 +841,61 @@ const CategoryContent = ({ onBack, selectedCategories, addCategory }) => (
     </View>
 
     <ScrollView>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addCategory("Books")}>
-        <Text style={[
-            styles.filterSubjectOptions,
-            selectedCategories.includes("Books") && { color: "red" }
-          ]}>Books</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addCategory("Clothes")}>
-        <Text style={[
-            styles.filterSubjectOptions,
-            selectedCategories.includes("Clothes") && { color: "red" }
-          ]}>Clothes</Text>
-      </TouchableOpacity>
+      {/* ADD ADDITIONAL CATEGORIES TO THIS ARRAY AS YOU SEE FIT */}
+      {["Books", "Clothes"].map((category) => (
+        <TouchableOpacity key={category} style={styles.subjectBox} onPress={() => addCategory(category)}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            {selectedCategories.includes(category) && (
+              <Ionicons name="checkmark-outline" size={20}/>
+            )}
+            <Text style={styles.filterSubjectOptions}>{category}</Text>
+          </View>
+        </TouchableOpacity>
+      ))}
     </ScrollView>
   </View>  
 )
 
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 const SubjectContent = ({ onBack, selectedSubjects, addSubject }) => (
   <View>
-    
     <View style={styles.headerContainer}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Subjects</Text>
       </View>
+
     <ScrollView>
-      
-      {/* SUBJECTS */}
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Accounting")}>
-        <Text style={styles.filterSubjectOptions}>Accounting</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("African American Studies")}>
-        <Text style={styles.filterSubjectOptions}>African American Studies</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Anthropology")}>
-        <Text style={styles.filterSubjectOptions}>Anthropology</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Art")}>
-        <Text style={styles.filterSubjectOptions}>Art</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Biochemistry")}>
-        <Text style={styles.filterSubjectOptions}>Biochemistry</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Biology")}>
-        <Text style={styles.filterSubjectOptions}>Biology</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Business Administration")}>
-        <Text style={styles.filterSubjectOptions}>Business Administration</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Chemistry")}>
-        <Text style={[
-            styles.filterSubjectOptions,
-            selectedSubjects.includes("Chemistry") && { color: "red" }
-          ]}>Chemistry</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Cinema Media")}>
-        <Text style={styles.filterSubjectOptions}>Cinema Media</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Communications")}>
-        <Text style={styles.filterSubjectOptions}>Communications</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Computer Science")}>
-        <Text style={styles.filterSubjectOptions}>Computer Science</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Economics")}>
-        <Text style={styles.filterSubjectOptions}>Economics</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Education")}>
-        <Text style={styles.filterSubjectOptions}>Education</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("English")}>
-        <Text style={styles.filterSubjectOptions}>English</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Environmental Science")}>
-        <Text style={styles.filterSubjectOptions}>Environmental Science</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Film")}>
-        <Text style={styles.filterSubjectOptions}>Film</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Finance")}>
-        <Text style={styles.filterSubjectOptions}>Finance</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("French")}>
-        <Text style={styles.filterSubjectOptions}>French</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Geography")}>
-        <Text style={styles.filterSubjectOptions}>Geography</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Health Science")}>
-        <Text style={styles.filterSubjectOptions}>Health Science</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Honors")}>
-        <Text style={styles.filterSubjectOptions}>Honors</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Human Services")}>
-        <Text style={styles.filterSubjectOptions}>Human Services</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Information Technology")}>
-        <Text style={styles.filterSubjectOptions}>Information Technology</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Management")}>
-        <Text style={styles.filterSubjectOptions}>Management</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Marketing")}>
-        <Text style={styles.filterSubjectOptions}>Marketing</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Mathematics")}>
-        <Text style={styles.filterSubjectOptions}>Mathematics</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Music")}>
-        <Text style={styles.filterSubjectOptions}>Music</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Nursing")}>
-        <Text style={styles.filterSubjectOptions}>Nursing</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Philosophy")}>
-        <Text style={styles.filterSubjectOptions}>Philosophy</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Physical Education")}>
-        <Text style={styles.filterSubjectOptions}>Physical Education</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Political Science")}>
-        <Text style={styles.filterSubjectOptions}>Political Science</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Psychology")}>
-        <Text style={styles.filterSubjectOptions}>Psychology</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Sociology")}>
-        <Text style={styles.filterSubjectOptions}>Sociology</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Spanish")}>
-        <Text style={styles.filterSubjectOptions}>Spanish</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.subjectBox} onPress={() => addSubject("Theatre")}>
-        <Text style={styles.filterSubjectOptions}>Theatre</Text>
-      </TouchableOpacity>
+      {/* SUBJECTS IS NOW ITS OWN COMPONENT app>screens>components>"SubjectsList.js" */}
+      {subjects.map((subject) =>
+        <TouchableOpacity key={subject} onPress={() => addSubject(subject)} style={styles.subjectBox}>
+          <View style={{flexDirection: "row", alignItems: "center"}}>
+            {selectedSubjects.includes(subject) && (
+              <Ionicons name="checkmark-outline" size={20}/>
+            )}
+            <Text style={styles.filterSubjectOptions}>{subject}</Text>
+          </View>
+        </TouchableOpacity>
+      )}
     </ScrollView>
+
   </View>
 )
 
 const ConditionContent = ({ onBack, selectedConditions, addCondition }) => (
-  //<View style={styles.headerContainer}>
   <View>
     <View style={styles.headerContainer}>
       <TouchableOpacity onPress={onBack} style={styles.backButton}>
@@ -941,41 +905,17 @@ const ConditionContent = ({ onBack, selectedConditions, addCondition }) => (
     </View>
 
       <ScrollView>
-        {/* CONDITIONS */}
-        <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Brand New")}>
-          <Text style={[
-              styles.filterSubjectOptions,
-              selectedConditions.includes("Brand New") && { color: "red" }
-            ]}>Brand New</Text>
+        {/* ADD ADDITIONAL CONDITIONS TO THIS ARRAY AS YOU SEE FIT */}
+        {["Brand New", "Like New", "Used - Excellent", "Used - Good", "Used - Fair"].map((condition) => (
+          <TouchableOpacity key={condition} style={styles.subjectBox} onPress={() => addCondition(condition)}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              {selectedConditions.includes(condition) && (
+                <Ionicons name="checkmark-outline" size={20}/>
+              )}
+                <Text style={styles.filterSubjectOptions}>{condition}</Text>
+            </View>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Like New")}>
-          <Text style={[
-              styles.filterSubjectOptions,
-              selectedConditions.includes("Like New") && { color: "red" }
-            ]}>Like New</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Excellent")}>
-          <Text style={[
-              styles.filterSubjectOptions,
-              selectedConditions.includes("Used - Excellent") && { color: "red" }
-            ]}>Used - Excellent</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Good")}>
-          <Text style={[
-              styles.filterSubjectOptions,
-              selectedConditions.includes("Used - Good") && { color: "red" }
-            ]}>Used - Good</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.subjectBox} onPress={() => addCondition("Used - Fair")}>
-          <Text style={[
-              styles.filterSubjectOptions,
-              selectedConditions.includes("Used - Fair") && { color: "red" }
-            ]}>Used - Fair</Text>
-        </TouchableOpacity>  
+        ))}
       </ScrollView>
     </View>
 )
@@ -993,26 +933,33 @@ const CourseNumContent = ({ onBack, selectedConditions, addCourseNum }) => {
   };
 
   return (
-    <View>
+    <View style={styles.courseOuterContainer}>
       <TouchableOpacity onPress={onBack} style={styles.backButton}>
         <Ionicons name="arrow-back-circle" size={40} color="#3f9eeb"/>
       </TouchableOpacity>
       <View style={styles.courseNumberContainer}>
-        <Text>Course Number:</Text>
+        <Text style={styles.courseNumberText}>Course Number:</Text>
         <TextInput 
           value={courseNumber}
           onChangeText={handleCourseNumberChange}
           keyboardType="numeric"
           maxLength={4}
+          placeholder="#..."
           style={styles.courseNumberInput}
         />
-        <Button title="Apply" onPress={applyCourseFilter} />
       </View>
+
+      <View style={styles.applyBtnContainer}>
+        <TouchableOpacity>
+          <Text onPress={applyCourseFilter} style={styles.courseNumApplyBtn}>Apply</Text>
+        </TouchableOpacity>
+      </View>
+
     </View>
   );
 };
 
-const PriceContent = ({ onBack, addPrice, handleClearFilters, sliderValues, setSliderValues }) => {
+const PriceContent = ({ onBack, addPrice, sliderValues, setSliderValues }) => {
 
   const sliderOneValuesChange = (values) => {
     setSliderValues(values);
@@ -1046,8 +993,8 @@ const PriceContent = ({ onBack, addPrice, handleClearFilters, sliderValues, setS
         />
       </View>
       <View>
-        <TouchableOpacity onPress={applyPriceFilter}>
-          <Text>Apply</Text>
+        <TouchableOpacity onPress={applyPriceFilter} style={styles.applyBtnContainer}>
+          <Text style={styles.courseNumApplyBtn}>Apply</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -1123,16 +1070,26 @@ const styles = StyleSheet.create({
   },
   filterContent: {
     width: '100%',
-    //backgroundColor: "pink",
     //flexDirection: "row",
     //margin: 2,
   },
   filterOption: {
-    flexDirection: "row",
-    padding: 20,
-    //margin: 40,
+    //flexDirection: "row",
+    padding: 10,
+    //width: "100%",
     fontSize: 20,
+    fontWeight: "bold",
+    color: "#3f9eeb",
     //backgroundColor: "red",
+    //justifyContent: "space-between",
+  },
+  indFilterTab: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    paddingVertical: 5,
+    //backgroundColor: "pink"
   },
   backButton: {
     //padding: 10,
@@ -1171,22 +1128,70 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  courseOuterContainer: {
+    width: "100%",
+  },
   courseNumberContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 10,
+    //justifyContent: 'space-around',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    marginTop: 15,
     alignItems: 'center',
+    //backgroundColor: "red",
+    width: "100%",
+  },
+  courseNumberText: {
+    color: "#3f9eeb",
+    fontSize: 20,
+    fontWeight: "700",
+    //paddingHorizontal: 10,
+   //width: "100%",
   },
   courseNumberInput: {
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 5,
-    padding: 8,
-    marginRight: 10,
-    width: 60, // Set a fixed width for the input field
+    //flex: 1,
+    fontSize: 20,
+    // borderWidth: 1,
+    // borderColor: "#3f9eeb",
+    // borderRadius: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: "#3f9eeb",
+    padding: 5,
+    //paddingVertical: 6,
+    paddingHorizontal: 5,
+    marginLeft: 15,
+    width: 80, // Set a fixed width for the input field
+    //backgroundColor: "yellow",
+  },
+  applyBtnContainer: {
+    //flexDirection: "row",
+    //width: "100%",
+    justifyContent: "center",
+    //alignContent: "center",
+    alignItems: "center",
+    //backgroundColor: "red",
+  },
+  courseNumApplyBtn: {
+    fontSize: 15,
+    fontWeight: "700",
+    //paddingLeft: 15,
+    padding: 10,
+    borderWidth: 2,
+    borderRadius: 8,
+    borderColor: "#3f9eeb",
+    color: "white",
+    //margin: 10,
+    width: 100,
+    textAlign: "center",
+    marginTop: 30,
+    //justifyContent: "center",
+    //alignItems: "center",
+    //justifyContent: "space-between",
+    backgroundColor: "#3f9eeb",
+    overflow: "hidden",
   },
   clearButton: {
-    backgroundColor: '#3f9eeb',
+    //backgroundColor: '#3f9eeb',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -1196,16 +1201,23 @@ const styles = StyleSheet.create({
     width: '60%',
   },
   buttonOutline: {
-    backgroundColor: "white",
+    backgroundColor: "#3f9eeb",
     color: "#3f9eeb",
     borderColor: "#3f9eeb",
     borderWidth: 2,
     marginTop: 50,
   },
   buttonOutlineText: {
-    color: "#3f9eeb",
+    color: "white",
     fontWeight: "700",
     fontSize: 16,
+  },
+
+  //applied filters text that shows up next to "Category", "Subject", "Condition"
+  selectedOptionText: {
+    fontSize: 15,
+    color: "grey",
+    fontStyle: "italic",
   },
 });
 
