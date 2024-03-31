@@ -721,7 +721,8 @@ const Home = () => {
       />
 
       {/* // display  of listings */}
-      <FlatList
+      {listings.length > 0 ? (
+        <FlatList
         style={styles.listings}
         data={listings}
         numColumns={2}
@@ -743,6 +744,12 @@ const Home = () => {
         )}
         contentContainerStyle={styles.listingsContainer}
       />
+      ) : (
+        <View style={{alignItems: "center", justifyContent: "center", flex: 1}}>
+          <Text style={styles.noResultsFound}>No results found :(</Text>
+        </View>
+      )}
+      
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
@@ -1219,5 +1226,9 @@ const styles = StyleSheet.create({
     color: "grey",
     fontStyle: "italic",
   },
+  noResultsFound: {
+    fontSize: 25,
+    textAlign: "center",
+  }
 });
 
