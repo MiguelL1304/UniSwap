@@ -25,20 +25,29 @@ import defaultImg from "../../assets/defaultImg.png";
 import ImageCarousel from '../Components/ImageCarousel';
 import WishlistButton from '../Components/WishlistButton';
 import { Picker } from '@react-native-picker/picker';
+import Swiper from "react-native-swiper";
 
 
 const Listing = ({ route }) => {
-    const { listing } = route.params;
-    const {
+  const { listing } = route.params;
+  const {
       id,
       price,
       title,
       listingImg1,
+      listingImg2,
+      listingImg3,
+      listingImg4,
+      listingImg5,
+      firstName,
+      lastName,
       condition,
       subject,
       course,
       description
-    } = listing;
+  } = listing;
+
+    const images = [listingImg1, listingImg2, listingImg3, listingImg4, listingImg5].filter(img => img);
   
     // Declarations for state hooks
     const [isInWishlist, setIsInWishlist] = useState(false); // Ensure unique declaration
@@ -51,22 +60,20 @@ const Listing = ({ route }) => {
     const isFocused = useIsFocused();
 
     const [userName, setUserName] = useState('');
-    const [userPic, setUserPic] = useState('')
 
-    const fetchUserProfile = async () => {
-      try {
-        const userEmailPrefix = listing.id.split('_')[0];
-        const profileDocRef = doc(firestoreDB, 'profile', userEmailPrefix);
-        const profileDocSnap = await getDoc(profileDocRef);
 
-        if (profileDocSnap.exists()) {
-          const profileData = profileDocSnap.data();
-          setUserName(`${profileData.firstName} ${profileData.lastName}`);
-          setUserPic(`${profileData.profilePic}`);
-        }
-      } catch (error) {
-        console.error('Error fetching document:', error);
-      }
+
+    const fetchUserProfile = async (listingId) => {
+    const userEmailPrefix = listingId.split('_')[0];
+    const profileDocRef = doc(firestoreDB, 'profile', userEmailPrefix);
+    const profileDocSnap = await getDoc(profileDocRef);
+
+    if (profileDocSnap.exists()) {
+        const profileData = profileDocSnap.data();
+        setUserName(`${profileData.firstName} ${profileData.lastName}`);
+    } else {
+        setUserName("User not found");
+    }
     };
 
     useEffect(() => {
@@ -75,9 +82,8 @@ const Listing = ({ route }) => {
     }
     }, [listing, listing.id]);
 
+
     
-
-
     useEffect(() => {
         const checkWishlist = async () => {
             try {
@@ -176,34 +182,39 @@ const Listing = ({ route }) => {
 
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
           <View style={styles.listedByContainer}>
-            <Image
-              source={{ uri: userPic ? userPic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
-              style={styles.profileImg}
-            />
-            <Text style={styles.listedBy}>{`${userName}`}</Text>
+              <Text style={styles.listedBy}>Listed by: {`${firstName} ${lastName}`}</Text>
           </View>
-          <Image
-            source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
-            style={styles.image}
-          />
+          <Swiper style={styles.swiperContainer}>
+              {images.map((img, index) => (
+                  <View key={index}>
+                      <Image
+                          source={{ uri: img || "https://via.placeholder.com/150" }}
+                          style={styles.image}
+                      />
+                  </View>
+              ))}
+          </Swiper>
           <Text style={styles.price}>${price}</Text>
           <Text style={styles.title}>{title}</Text>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Buy</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Trade</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.button}>
+                  <Text style={styles.buttonText}>Buy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.button}>
+                  <Text style={styles.buttonText}>Trade</Text>
+              </TouchableOpacity>
           </View>
           <TouchableOpacity 
-            onPress={() => { setIsInWishlist(!isInWishlist);
-            if (!isInWishlist) {
-              handleAddWishlist();
-            }
-          }}
+            onPress={() => { 
+                setIsInWishlist(!isInWishlist); 
+                if (isInWishlist) {
+                  handleRemoveWishlist();
+                } else {
+                  handleAddWishlist();
+                }
+              }}
             style={styles.heartButton}
           >
             <Text style={[styles.heart, { color: isInWishlist ? "red" : "grey" }]}>
@@ -222,85 +233,79 @@ const Listing = ({ route }) => {
       );
         }
     
-    const styles = StyleSheet.create({
-      container: {
-        flex: 1,
-        backgroundColor: "white",
-      },
-      detailText: {
-        textAlign: 'center',
-        fontSize: 16,
-        marginVertical: 4,
-      },      
-      contentContainer: {
-        alignItems: 'center',
-        paddingTop: 50,
-      },
-      listedByContainer: {
-        alignSelf: 'flex-start',
-        marginLeft: 15,
-        position: 'absolute',
-        top: 10,
-        flexDirection: 'row', 
-        alignItems: 'center', 
-      },
-      listedBy: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginLeft: 15,
-      },
-      image: {
-        width: '80%',
-        aspectRatio: 1, // Keep the aspect ratio of the image
-        borderRadius: 10,
-      },
-      price: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginVertical: 8,
-        alignSelf: 'center',
-      },
-      title: {
-        textAlign: 'center',
-        fontSize: 18,
-        marginVertical: 8,
-      },
-      buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: '100%',
-        padding: 10,
-      },
-      button: {
-        backgroundColor: "#e6f2ff",
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 5,
-        flexGrow: 1, // Buttons take equal space
-        marginHorizontal: 5, // Add some space between the buttons
-      },
-      buttonText: {
-        textAlign: 'center',
-        fontWeight: 'bold',
-      },
-      heartButton: {
-        marginVertical: 8,
-        alignSelf: 'center',
-      },
-      heart: {
-        fontSize: 24,
-      },
-      picker: {
-        width: 200,
-        height: 50,
-      },
-      profileImg: { // circle for profile picture
-        width: 30,
-        height: 30,
-        borderRadius: 50,
-        backgroundColor: '#f5f5f5',
-        marginLeft: 15,
-      },
-    });
+        const styles = StyleSheet.create({
+          container: {
+              flex: 1,
+              backgroundColor: "white",
+          },
+          detailText: {
+              textAlign: 'center',
+              fontSize: 16,
+              marginVertical: 4,
+          },
+          contentContainer: {
+              alignItems: 'center',
+              paddingTop: 50,
+          },
+          listedByContainer: {
+              alignSelf: 'flex-start',
+              marginLeft: 15,
+              position: 'absolute',
+              top: 10,
+          },
+          listedBy: {
+              fontSize: 16,
+              fontWeight: 'bold',
+          },
+          swiperContainer: {
+              height: 200, // Adjust the height as needed
+          },
+          image: {
+              width: '100%',
+              height: '100%',
+              aspectRatio: 1, // Keep the aspect ratio of the image
+              borderRadius: 10,
+          },
+          price: {
+              fontSize: 24,
+              fontWeight: 'bold',
+              marginVertical: 8,
+              alignSelf: 'center',
+          },
+          title: {
+              textAlign: 'center',
+              fontSize: 18,
+              marginVertical: 8,
+          },
+          buttonContainer: {
+              flexDirection: 'row',
+              justifyContent: 'space-around',
+              width: '100%',
+              padding: 10,
+          },
+          button: {
+              backgroundColor: "#e6f2ff",
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              borderRadius: 5,
+              flexGrow: 1, // Buttons take equal space
+              marginHorizontal: 5, // Add some space between the buttons
+          },
+          buttonText: {
+              textAlign: 'center',
+              fontWeight: 'bold',
+          },
+          heartButton: {
+              marginVertical: 8,
+              alignSelf: 'center',
+          },
+          heart: {
+              fontSize: 24,
+          },
+          picker: {
+              width: 200,
+              height: 50,
+          },
+      });
     
     export default Listing;
