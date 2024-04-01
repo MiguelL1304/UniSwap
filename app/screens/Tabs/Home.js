@@ -493,6 +493,8 @@ const Home = () => {
           selectedSubjects={filters.subject}
           selectedConditions={filters.condition}
           selectedCourse={filters.course}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
         />
         );
       case "Category":
@@ -769,7 +771,7 @@ const Home = () => {
 };
 
 // first thing you see when you click filter button (category, subject, condition)
-const FilterOption = ({ title, onPress, selectedOptions}) => {
+const FilterOption = ({ title, onPress, selectedOptions, minPrice, maxPrice }) => {
   // console.log("SELECTED OPTIONS TEST: ")
   // console.log(`FilterOption ${title}`, selectedOptions);
   console.log("SELECTED OPTIONS: ", selectedOptions);
@@ -786,14 +788,22 @@ const FilterOption = ({ title, onPress, selectedOptions}) => {
     selectedOptionText = `${selectedOptions}`;
   }
 
+  if (title === "Price") {
+    if (minPrice === 0 && maxPrice === 50000) {
+      selectedOptionText = "Any Price";
+    } else {
+      selectedOptionText = `$${minPrice} up to $${maxPrice}`;
+    }
+  }
+
   return (
     <View>
       <TouchableOpacity onPress={onPress} style={styles.indFilterTab} >
         <Text style={styles.filterOption}>{title}</Text>
         <View style={{ flexDirection: "row", alignItems: "center"}}>
-          {selectedOptionText ? (
+          {selectedOptionText && (
           <Text style={styles.selectedOptionText}>{selectedOptionText}</Text>
-        ) : null}
+        )}
         <Ionicons name="chevron-forward" size={20} color="#3f9eeb" style={{padding:10}}/>
         </View>
       </TouchableOpacity>
@@ -808,6 +818,8 @@ const FilterContent = ({
   selectedSubjects,
   selectedConditions,
   selectedCourse,
+  minPrice,
+  maxPrice,
   }) => (
   <View style={styles.filterContent}>
 
@@ -827,7 +839,12 @@ const FilterContent = ({
         selectedOptions={selectedConditions}
         />
       <FilterOption title="Course" onPress={() => onSelectFilter("Course")} selectedOptions={selectedCourse}/>
-      <FilterOption title="Price" onPress={() => onSelectFilter("Price")} selectedOptions={null}/>
+      <FilterOption 
+        title="Price" 
+        onPress={() => onSelectFilter("Price")} 
+        //selectedOptions={null}
+        minPrice={minPrice}
+        maxPrice={maxPrice} />
 
     <View style={styles.buttonContainer}>
       <TouchableOpacity onPress={handleClearFilters} style={[styles.clearButton, styles.buttonOutline]}>
@@ -863,19 +880,6 @@ const CategoryContent = ({ onBack, selectedCategories, addCategory }) => (
   </View>  
 )
 
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 const SubjectContent = ({ onBack, selectedSubjects, addSubject }) => (
   <View>
     <View style={styles.headerContainer}>
@@ -973,7 +977,7 @@ const PriceContent = ({ onBack, addPrice, sliderValues, setSliderValues }) => {
   };
 
   const applyPriceFilter = () => {
-    addPrice(sliderValues[0], sliderValues[1]);
+    addPrice(sliderValues[0], sliderValues[1] > 250 ? "any" : sliderValues[1]);
   }
 
   const maxPriceText = sliderValues[1] >= 250 ? "Any" : `$${sliderValues[1]}`
