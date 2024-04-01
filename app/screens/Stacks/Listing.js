@@ -176,50 +176,72 @@ const Listing = ({ route }) => {
 
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.listedByContainer}>
-            <Image
-              source={{ uri: userPic ? userPic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
-              style={styles.profileImg}
-            />
-            <Text style={styles.listedBy}>{`${userName}`}</Text>
-          </View>
-          <Image
-            source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
-            style={styles.image}
-          />
-          <Text style={styles.price}>${price}</Text>
-          <Text style={styles.title}>{title}</Text>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Buy</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Trade</Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity 
-            onPress={() => { setIsInWishlist(!isInWishlist);
-            if (!isInWishlist) {
-              handleAddWishlist();
-            }
-          }}
-            style={styles.heartButton}
-          >
-            <Text style={[styles.heart, { color: isInWishlist ? "red" : "grey" }]}>
-              {isInWishlist ? "♥" : "♡"}
-            </Text>
-          </TouchableOpacity>
+  <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.listedByContainer}>
+      <Image
+        source={{ uri: userPic ? userPic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
+        style={styles.profileImg}
+      />
+      <Text style={styles.listedBy}>{`${userName}`}</Text>
+    </View>
+    <Image
+      source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
+      style={styles.image}
+    />
+    <Text style={styles.price}>${price}</Text>
+    <Text style={styles.title}>{title}</Text>
+    <TouchableOpacity 
+      onPress={() => { 
+        setIsInWishlist(!isInWishlist); 
+        if (isInWishlist) {
+          handleRemoveWishlist();
+        } else {
+          handleAddWishlist();
+        }
+      }}
+      style={styles.heartButton}
+    >
+      <Text style={[styles.heart, { color: isInWishlist ? "red" : "grey" }]}>
+        {isInWishlist ? "♥" : "♡"}
+      </Text>
+    </TouchableOpacity>
+
+    {/* Details section */}
+    <View style={styles.detailsContainer}>
+      <Text style={styles.detailsTitle}>Details</Text>
+    </View>
     
-          {/* Display condition, subject, and course fields */}
-          <Text style={styles.detailText}>Condition: {listing.condition}</Text>
-          <Text style={styles.detailText}>Subject: {listing.subject}</Text>
-          <Text style={styles.detailText}>Course: {listing.course}</Text>
-          <Text style={styles.detailText}>Description: {listing.description}</Text>
-    
-          {/* Add Picker components for date/time and location selections here */}
-        </ScrollView>
-      );
+    {/* Description section */}
+    <View style={styles.detailsSection}>
+      <Text style={styles.detailsLabel}>Condition:</Text>
+      <Text style={styles.detailsText}>{listing.condition}</Text>
+    </View>
+    <View style={styles.detailsSection}>
+      <Text style={styles.detailsLabel}>Subject:</Text>
+      <Text style={styles.detailsText}>{listing.subject}</Text>
+    </View>
+    <View style={styles.detailsSection}>
+      <Text style={styles.detailsLabel}>Course:</Text>
+      <Text style={styles.detailsText}>{listing.course}</Text>
+    </View>
+    <View style={styles.detailsSection}>
+      <Text style={styles.detailsLabel}>Description:</Text>
+      <Text style={styles.detailsText}>{listing.description}</Text>
+    </View>
+
+    {/* Buy and Trade buttons */}
+    <View style={styles.buttonContainer}>
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>Buy</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button}>
+        <Text style={styles.buttonText}>Trade</Text>
+      </TouchableOpacity>
+    </View>
+
+    {/* Add Picker components for date/time and location selections here */}
+  </ScrollView>
+);
         }
     
     const styles = StyleSheet.create({
@@ -284,8 +306,9 @@ const Listing = ({ route }) => {
         fontWeight: 'bold',
       },
       heartButton: {
-        marginVertical: 8,
-        alignSelf: 'center',
+        position: 'absolute',
+        right: 45,
+        top: 370, // Adjust top value as needed
       },
       heart: {
         fontSize: 24,
@@ -300,6 +323,31 @@ const Listing = ({ route }) => {
         borderRadius: 50,
         backgroundColor: '#f5f5f5',
         marginLeft: 15,
+      },
+      detailsContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+        width: '100%',
+      },
+      detailsTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+      },
+      detailsSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+      },
+      detailsLabel: {
+        flex: 1,
+        fontWeight: 'bold',
+      },
+      detailsText: {
+        flex: 3,
       },
     });
     
