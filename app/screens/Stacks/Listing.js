@@ -184,27 +184,35 @@ const Listing = ({ route }) => {
       />
       <Text style={styles.listedBy}>{`${userName}`}</Text>
     </View>
-    <Image
-      source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
-      style={styles.image}
-    />
-    <Text style={styles.price}>${price}</Text>
+    <View>
+      <Image
+        source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
+        style={styles.image}
+      />
+    </View>
+    
+    <View style={styles.container2}>
+      <Text style={styles.price}>${price}</Text>
+
+      <TouchableOpacity 
+        onPress={() => { 
+          setIsInWishlist(!isInWishlist); 
+          if (isInWishlist) {
+            handleRemoveWishlist();
+          } else {
+            handleAddWishlist();
+          }
+        }}
+        style={styles.heartButton}
+      >
+        <Text style={[styles.heart, { color: isInWishlist ? "red" : "grey" }]}>
+          {isInWishlist ? "♥" : "♡"}
+        </Text>
+      </TouchableOpacity>
+    </View>
+    
     <Text style={styles.title}>{title}</Text>
-    <TouchableOpacity 
-      onPress={() => { 
-        setIsInWishlist(!isInWishlist); 
-        if (isInWishlist) {
-          handleRemoveWishlist();
-        } else {
-          handleAddWishlist();
-        }
-      }}
-      style={styles.heartButton}
-    >
-      <Text style={[styles.heart, { color: isInWishlist ? "red" : "grey" }]}>
-        {isInWishlist ? "♥" : "♡"}
-      </Text>
-    </TouchableOpacity>
+    
 
     {/* Details section */}
     <View style={styles.detailsContainer}>
@@ -248,6 +256,14 @@ const Listing = ({ route }) => {
       container: {
         flex: 1,
         backgroundColor: "white",
+      },
+      container2: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '70%',
+        // borderWidth: 1,
+        // borderColor: 'black',
       },
       detailText: {
         textAlign: 'center',
@@ -306,12 +322,10 @@ const Listing = ({ route }) => {
         fontWeight: 'bold',
       },
       heartButton: {
-        position: 'absolute',
-        right: 45,
-        top: 370, // Adjust top value as needed
+        paddingLeft: 100,
       },
       heart: {
-        fontSize: 24,
+        fontSize: 30,
       },
       picker: {
         width: 200,
