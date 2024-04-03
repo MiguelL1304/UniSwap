@@ -102,13 +102,13 @@ const Overview = () => {
       {/* Tab Navigator Section */}
       <View style={styles.line} />
       <tabs.Navigator
-        tabBarOptions={{
-          activeTintColor: '#3f9eeb',
-          inactiveTintColor: 'black',
-          labelStyle: { fontSize: 16, fontWeight: 'bold' },
-          style: { backgroundColor: '#e6f2ff' },
-          indicatorStyle: { backgroundColor: '#3f9eeb' },
-        }}
+        screenOptions={({ route }) => ({
+          tabBarActiveTintColor: '#3f9eeb',
+          tabBarInactiveTintColor: 'black',
+          tabBarLabelStyle: { fontSize: 16, fontWeight: 'bold' },
+          tabBarStyle: { backgroundColor: '#e6f2ff' },
+          tabBarIndicatorStyle: { backgroundColor: '#3f9eeb' },
+        })}
       >
         <tabs.Screen name="Selling" component={Selling}/>
         <tabs.Screen name="Bought" component={Bought}/>
