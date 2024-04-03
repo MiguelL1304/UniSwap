@@ -175,6 +175,28 @@ const Listing = ({ route }) => {
     };
 
 
+// 
+// 
+// 
+// 
+// 
+// 
+//     
+    //Place holder
+    //TO BE DELETED LATER
+    const handleOffer = (listing) => {
+      navigation.navigate("Offer", { listing: listing });
+    };
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+// 
+
+
     return (
   <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
     <View style={styles.listedByContainer}>
@@ -240,7 +262,7 @@ const Listing = ({ route }) => {
     {/* Buy and Trade buttons */}
     <View style={styles.buttonContainer}>
       <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Buy</Text>
+        <Text style={styles.buttonText} onPress={() => handleOffer(listing)}>Buy</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button}>
         <Text style={styles.buttonText}>Trade</Text>

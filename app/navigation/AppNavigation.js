@@ -27,6 +27,7 @@ import Selling from "../screens/Stacks/Selling";
 import Bought from "../screens/Stacks/Bought";
 import Trade from "../screens/Stacks/Trade";
 import PersonalListing from "../screens/Stacks/PersonalListing";
+import Offer from "../screens/Stacks/Offer";
 
 
 const Stack = createNativeStackNavigator();
@@ -143,6 +144,14 @@ export default function AppNavigation() {
           options={{
             headerTitle: "Your Listing",
             headerBackVisible: true,
+          }}
+        />
+        <Stack.Screen
+          name="Offer"
+          component={Offer}
+          options={{
+            headerTitle: "Offer",
+            headerBackVisible: false,
           }}
         />
         
