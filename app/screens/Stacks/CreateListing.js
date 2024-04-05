@@ -952,7 +952,7 @@ const styles = StyleSheet.create({
   subjectText: {
     color: '#3f9eeb',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '400',
   },
   titleContainer: {
     width: "85%",
@@ -975,19 +975,19 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '400',
     color: "#3f9eeb",
     padding: 5,
   },
   courseText: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: '400',
     color: "#3f9eeb",
     padding: 5,
   },
   titleTextMenu: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '400',
     color: "#3f9eeb",
     padding: 5,
     paddingTop: 10,

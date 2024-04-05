@@ -11,7 +11,10 @@ import SignUp from "../screens/Stacks/SignUp";
 import Home from "../screens/Tabs/Home";
 import Profile from "../screens/Stacks/Profile";
 import Wishlist from "../screens/Tabs/Wishlist";
-import Meetups from "../screens/Tabs/Meetups";
+import Inbox from "../screens/Tabs/Inbox";
+import Meetups from "../screens/Stacks/Meetups";
+import ReceivedOffers from "../screens/Stacks/ReceivedOffers";
+import SentOffers from "../screens/Stacks/SentOffers";
 //import PostListing from "../screens/Tabs/CreateListing";
 // import OnboardingScreen from "react-native-onboarding-swiper";
 import OnboardingScreen from "../screens/Stacks/OnboardingScreen";
@@ -27,6 +30,8 @@ import Selling from "../screens/Stacks/Selling";
 import Bought from "../screens/Stacks/Bought";
 import Trade from "../screens/Stacks/Trade";
 import SellerProfile from "../screens/Stacks/SellerProfile";
+import Offer from "../screens/Stacks/Offer";
+
 
 
 const Stack = createNativeStackNavigator();
@@ -36,7 +41,7 @@ const Tab = createBottomTabNavigator();
 const homeName = "Home";
 const profileName = "Profile";
 const wishlistName = "Wishlist";
-const meetupsName = "Meetups";
+const inboxName = "Inbox";
 const postListing = "CreateListing";
 
 export default function AppNavigation() {
@@ -102,6 +107,27 @@ export default function AppNavigation() {
           }}
         />
         <Stack.Screen
+          name="Meetups"
+          component={Meetups}
+          options={{
+          headerTitle: "Meetups",
+          }}
+        />
+        <Stack.Screen
+          name="ReceivedOffers"
+          component={ReceivedOffers}
+          options={{
+          headerTitle: "ReceivedOffers",
+          }}
+        />
+        <Stack.Screen
+          name="SentOffers"
+          component={SentOffers}
+          options={{
+          headerTitle: "SentOffers",
+          }}
+        />
+        <Stack.Screen
           name="Selling"
           component={Selling}
           options={{
@@ -145,6 +171,14 @@ export default function AppNavigation() {
             headerBackVisible: true,
           }}
         />
+        <Stack.Screen
+          name="Offer"
+          component={Offer}
+          options={{
+            headerTitle: "Offer",
+            headerBackVisible: false,
+          }}
+        />
         
       </Stack.Navigator>
     );
@@ -171,10 +205,8 @@ export default function AppNavigation() {
               iconName = focused ? "person" : "person-outline";
             } else if (rn === wishlistName) {
               iconName = focused ? "heart" : "heart-outline";
-            } else if (rn === meetupsName) {
-              iconName = focused
-                ? "calendar-number"
-                : "calendar-number-outline";
+            } else if (rn === inboxName) {
+              iconName = focused ? "mail" : "mail-outline";
             }
 
             return <Ionicons name={iconName} size={size} color={"#3f9eeb"} />;
@@ -223,7 +255,7 @@ export default function AppNavigation() {
         >
           {() => null}
         </Tab.Screen>
-        <Tab.Screen name="Meetups" component={Meetups} />
+        <Tab.Screen name="Inbox" component={Inbox} />
         <Tab.Screen name="Profile" component={Overview} options={{
             headerShown: false,
           }} />
