@@ -25,7 +25,7 @@ import defaultImg from "../../assets/defaultImg.png";
 import ImageCarousel from '../Components/ImageCarousel';
 import WishlistButton from '../Components/WishlistButton';
 import { Picker } from '@react-native-picker/picker';
-
+import SellerProfile from "./SellerProfile";
 
 const Listing = ({ route }) => {
     const { listing } = route.params;
@@ -173,6 +173,10 @@ const Listing = ({ route }) => {
           console.error(error.message);
         }
     };
+// navigate to seller's profile from user name
+    const handleSellerProfile = () => {
+      navigation.navigate("SellerProfile", {listing});
+    };
 
 
     return (
@@ -182,7 +186,10 @@ const Listing = ({ route }) => {
         source={{ uri: userPic ? userPic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
         style={styles.profileImg}
       />
+      {/* seller's name button --> go to seller profile */}
+      <TouchableOpacity onPress={handleSellerProfile}>
       <Text style={styles.listedBy}>{`${userName}`}</Text>
+      </TouchableOpacity>
     </View>
     <View>
       <Image

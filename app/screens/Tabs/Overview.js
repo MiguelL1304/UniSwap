@@ -5,7 +5,6 @@ import { createMaterialTopTabNavigator } from "@react-navigation/material-top-ta
 import Selling from "../Stacks/Selling";
 import Bought from "../Stacks/Bought";
 import Trade from "../Stacks/Trade";
-import Profile from "../Stacks/Profile";
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { signOut } from "firebase/auth";
@@ -113,7 +112,6 @@ const Overview = () => {
         <tabs.Screen name="Selling" component={Selling}/>
         <tabs.Screen name="Bought" component={Bought}/>
         <tabs.Screen name="Trade" component={Trade}/>
-        {/* <tabs.Screen name="Profile" component={Profile}/> */}
       </tabs.Navigator>
     </View>
   );
