@@ -204,46 +204,50 @@ const Offer = ({ route }) => { // Receive profile data as props
                 style={styles.listingImg}
             />
         </View>
+        <View>
+          <Text style={styles.titleText}>{listing.title}</Text>
+          <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Price: $ {listing.price} | {listing.condition}</Text>
+        </View>
         
-        <Text style={styles.titleText}>Title:</Text>
       </View>
 
-
+      <View style={styles.divider} />
+      
       <View style={styles.contentContainer}>
-        <Text style={styles.titleText}>Price: $</Text>
+        <Text style={{ ...styles.titleText, fontWeight: '500'}}>Meetup</Text>
       </View>
 
       <View style={styles.menuView}>
+
         <TouchableOpacity style={styles.topMenuButton} onPress={handleCategoryPress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={styles.titleTextMenu}> Category</Text>
+            <Text style={styles.titleTextMenu}> Location</Text>
             <Text style={styles.menuSelection}> {category}</Text>
           </View> 
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuButton} onPress={handleSubjectPress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={styles.titleTextMenu}> Subject</Text>
+            <Text style={styles.titleTextMenu}> Date</Text>
             <Text style={styles.menuSelection}> {subject}</Text>
           </View> 
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuButton} onPress={handleCoursePress}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={styles.titleTextMenu}> Course</Text>
-            <Text style={styles.menuSelection}> {course}</Text>
-          </View>  
-        </TouchableOpacity>
-
         <TouchableOpacity style={styles.menuButton} onPress={handleConditionPress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={styles.titleTextMenu}> Condition</Text>
+            <Text style={styles.titleTextMenu}> Time</Text>
             <Text style={styles.menuSelection}> {condition}</Text>
           </View>  
         </TouchableOpacity>
       </View>
 
+      <View style={styles.divider} />
 
+      <View style={styles.contentContainer}>
+        <Text style={{ ...styles.titleText, fontWeight: '500'}}>Buy & Trade</Text>
+      </View>
+
+      <View style={styles.divider} />
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button}>
@@ -285,15 +289,18 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
     backgroundColor: '#ffffff',
   },
+  divider: {
+    width: '100%',
+    height: 10,
+    backgroundColor: '#e6f2ff', 
+    marginVertical: 10, 
+  },
   menuView: {
     width: "85%", 
-    height: "25%",
-    backgroundColor: "#e6f2ff",
-    marginTop: 20,
+    height: "18%",
     borderRadius: 10,
   },
   menuBS: {
@@ -308,15 +315,13 @@ const styles = StyleSheet.create({
   },
   topMenuButton: {
     width: "100%", 
-    height: "25%",
-    backgroundColor: "#e6f2ff",
+    height: "33%",
     borderRadius: 10,
     paddingRight: 10,
   },
   menuButton: {
     width: "100%", 
-    height: "25%",
-    backgroundColor: "#e6f2ff",
+    height: "33%",
     borderTopLeftRadius: 0, 
     borderTopRightRadius: 0, 
     borderBottomLeftRadius: 10, 
@@ -327,7 +332,7 @@ const styles = StyleSheet.create({
   },
   topMenuButtonBS: {
     width: "100%", 
-    height: "25%",
+    height: "33%",
     backgroundColor: "#ffffff",
     borderRadius: 10,
     paddingTop: 5,
@@ -371,12 +376,12 @@ const styles = StyleSheet.create({
     width: "94%",
     flexDirection: 'row', 
     alignItems: 'center', 
-    justifyContent: 'space-between',
+    justifyContent: 'left',
     backgroundColor: 'white',
   },
   titleText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '400',
     color: "#3f9eeb",
     padding: 5,
   },
@@ -388,7 +393,7 @@ const styles = StyleSheet.create({
   },
   titleTextMenu: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '400',
     color: "#3f9eeb",
     padding: 5,
     paddingTop: 10,
@@ -447,32 +452,27 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   buttonContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
+    flexDirection: 'row',
+    justifyContent: 'center',
     width: "100%",
-    paddingHorizontal: 20,
-    paddingBottom: 10,
   },
   button: {
     backgroundColor: "#3f9eeb",
     width: "40%",
-    padding: 15,
+    padding: 10,
     borderRadius: 10,
     alignItems: "center",
-    marginLeft: 'auto',
-    marginRight: 'auto', 
+    margin: 10,
   },
   cancelButton: {
-    backgroundColor: '#e6f2ff', //'#e6f2ff'
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '35%',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    marginTop: 8,
+    backgroundColor: "#ffffff",
+    width: "40%",
+    padding: 10,
+    borderRadius: 10,
+    alignItems: "center",
+    borderColor: "#3f9eeb",
+    borderWidth: 2.5,
+    margin: 10,
   },
   buttonOutline: {
     backgroundColor: "white",
@@ -483,12 +483,12 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontWeight: "700",
+    fontWeight: "500",
     fontSize: 18,
   },
   cancelText: {
-    color: "#e8594f",
-    fontWeight: "700",
+    color: "#3f9eeb",
+    fontWeight: "500",
     fontSize: 18,
   },
   buttonOutlineText: {
