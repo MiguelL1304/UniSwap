@@ -25,7 +25,9 @@ import defaultImg from "../../assets/defaultImg.png";
 import ImageCarousel from '../Components/ImageCarousel';
 import WishlistButton from '../Components/WishlistButton';
 import { Picker } from '@react-native-picker/picker';
+import { addToBag } from "../Components/Bag/BagLogic";
 import SellerProfile from "./SellerProfile";
+
 
 const Listing = ({ route }) => {
     const { listing } = route.params;
@@ -186,10 +188,21 @@ const Listing = ({ route }) => {
 // 
 // 
 //     
-    //Place holder
-    //TO BE DELETED LATER
-    const handleOffer = (listing) => {
-      navigation.navigate("Offer", { listing: listing });
+    //const handleAddToBag = (listing) => {
+    const handleAddToBag = async () => {  
+      const user = auth.currentUser;
+      if (user) {
+        const itemDetails = {
+          id: listing.id,
+          price: listing.price,
+          title: listing.title,
+        };
+        await addToBag(user.email, itemDetails);
+      } else {
+        console.error("User must be logged in to add items to bag.");
+      }
+      //navigation.navigate("Offer", { listing: listing });
+      navigation.navigate("Bag", { listing: listing });    
     };
 // 
 // 
@@ -269,7 +282,7 @@ const Listing = ({ route }) => {
     {/* Buy and Trade buttons */}
     <View style={styles.buttonContainer}>
       <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText} onPress={() => handleOffer(listing)}>Buy</Text>
+        <Text style={styles.buttonText} onPress={() => handleAddToBag(listing)}>Add to Bag</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button}>
         <Text style={styles.buttonText}>Trade</Text>
