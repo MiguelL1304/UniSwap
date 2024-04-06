@@ -31,6 +31,7 @@ import Bought from "../screens/Stacks/Bought";
 import Trade from "../screens/Stacks/Trade";
 import PersonalListing from "../screens/Stacks/PersonalListing";
 import Offer from "../screens/Stacks/Offer";
+import Bag from "../screens/Components/Bag/BagScreen";
 
 
 const Stack = createNativeStackNavigator();
@@ -178,7 +179,14 @@ export default function AppNavigation() {
             headerBackVisible: false,
           }}
         />
-        
+        <Stack.Screen
+          name="Bag"
+          component={Bag}
+          options={{
+            headerTitle: "Bag",
+            headerBackVisible: true,
+          }}
+        />
       </Stack.Navigator>
     );
   }
