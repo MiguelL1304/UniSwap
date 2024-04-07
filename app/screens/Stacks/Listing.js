@@ -178,16 +178,7 @@ const Listing = ({ route }) => {
 // navigate to seller's profile from user name
     const handleSellerProfile = () => {
       navigation.navigate("SellerProfile", {listing});
-    };
-
-
-// 
-// 
-// 
-// 
-// 
-// 
-//     
+    };    
     //const handleAddToBag = (listing) => {
     const handleAddToBag = async () => {  
       const user = auth.currentUser;
@@ -202,9 +193,25 @@ const Listing = ({ route }) => {
       } else {
         console.error("User must be logged in to add items to bag.");
       }
-      //navigation.navigate("Offer", { listing: listing });
+      
       navigation.navigate("Bag", { listing: listing });    
     };
+// 
+// 
+// TEMPORARILLY HERE. TO BE DELETED LATER
+// 
+// 
+// 
+// 
+// 
+const handleOffer = async () => {  
+  navigation.navigate("Offer", { listing: listing });
+};
+// 
+// 
+// 
+// 
+// 
 // 
 // 
 // 
@@ -286,7 +293,7 @@ const Listing = ({ route }) => {
         <Text style={styles.buttonText} onPress={() => handleAddToBag(listing)}>Add to Bag</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Trade</Text>
+        <Text style={styles.buttonText} onPress={() => handleOffer(listing)}>Trade</Text>
       </TouchableOpacity>
     </View>
 

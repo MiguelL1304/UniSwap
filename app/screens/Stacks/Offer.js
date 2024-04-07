@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Keyboard } from "react-native";
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Keyboard, Platform } from "react-native";
 import { TextInput } from "react-native";
 import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
@@ -14,171 +14,87 @@ import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Camera } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const Offer = ({ route }) => { // Receive profile data as props
 
     const { listing } = route.params;
-    
-    //Used for identifying the image button selected. Mainly used for deleting images
-    const [selectedImageNumber, setSelectedImageNumber] = useState("");
-
 
     //Snap points for the different bottom screens
-    const snapPointsImg = useMemo(() => ['30%'], []);
-    const snapPointsTag = useMemo(() => ['50%'], []);
-    const snapPointsSubj = useMemo(() => ['80%'], []);
-
-    //Used for tracking uploading progress. Still need to implement UI
-    const[progress, setProgress] = useState(0);
-    const [animatedIndex, setAnimatedIndex] = useState(-1);
+    const snapPointsLoc = useMemo(() => ['80%'], []);
+    const snapPointsDate = useMemo(() => ['50%'], []);
+    const snapPointsTime = useMemo(() => ['35%'], []);
 
     //Bottom sheets
-    const bottomSheetRefImg = useRef(null);
-    const bottomSheetRefCon = useRef(null);
-    const bottomSheetRefSubj = useRef(null);
-    const bottomSheetRefCourse = useRef(null);
-    const bottomSheetRefCat = useRef(null);
+    const bottomSheetRefLoc = useRef(null);
+    const bottomSheetRefTime = useRef(null);
+    const bottomSheetRefDate = useRef(null);
 
     //Close the bottom sheets
     const handleClosePress = () => {
-      bottomSheetRefImg.current?.close();
-      bottomSheetRefCon.current?.close();
-      bottomSheetRefSubj.current?.close();
-      bottomSheetRefCourse.current?.close();
-      bottomSheetRefCat.current?.close();
-      setAnimatedIndex(-1);
+      bottomSheetRefLoc.current?.close();
+      bottomSheetRefTime.current?.close();
+      bottomSheetRefDate.current?.close();
     };
     
     //Open the bottom sheets
     const handleOpenPress = () => {
-      bottomSheetRefImg.current?.expand();
-      bottomSheetRefCon.current?.expand();
-      bottomSheetRefSubj.current?.expand();
-      bottomSheetRefCourse.current?.expand();
-      bottomSheetRefCat.current?.expand();
-      setAnimatedIndex(1);
+      bottomSheetRefLoc.current?.expand();
+      bottomSheetRefTime.current?.expand();
+      bottomSheetRefDate.current?.expand();
     };
 
-    //Could be used later for editing listings
-    const [listingID, setListingID] = useState("");
-    const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
+    const handleLocationPress = () => {
+      if (bottomSheetRefLoc.current) {
+        bottomSheetRefLoc.current.expand();
+      }
+    };
 
-    //All document fields for the listing
-    const [price, setPrice] = useState("");
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [condition, setCondition] = useState("");
-    const [category, setCategory] = useState("");
-    const [subject, setSubject] = useState("");
-    const [course, setCourse] = useState("");
+    const handleDatePress = () => {
+      setShowDatePicker(true);
+      if (Platform.OS === 'ios' && bottomSheetRefDate.current) {
+        bottomSheetRefDate.current.expand();
+      }
+    };
 
-    //URLs for the listing images
-    const [listingImg1, setListingImg1] = useState("");
-    const [listingImg2, setListingImg2] = useState("");
-    const [listingImg3, setListingImg3] = useState("");
-    const [listingImg4, setListingImg4] = useState("");
-    const [listingImg5, setListingImg5] = useState("");
+    const handleTimePress = () => {
+      setShowTimePicker(true);
+      if (Platform.OS === 'ios' && bottomSheetRefTime.current) {
+        bottomSheetRefTime.current.expand();
+      }
+    };
 
-    //Handles cleanup
-    useEffect(() => {
-    
-    }, []);
-
-    //const[progress, setProgress] = useState(0);
+    //All document fields for the offer
+    const [location, setLocation] = useState("");
+    const [date, setDate] = useState(() => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1); // Set initial date to tomorrow
+      return tomorrow;
+    });
+    const [time, setTime] = useState(() => {
+      const currentTime = new Date();
+      return currentTime;
+    });
 
     //Navigator
     const navigation = useNavigation();
 
-    //Set the condition and close the bottom sheet
-    const handleCondition = (selectedCondition) => {
-      setCondition(selectedCondition);
-      if (bottomSheetRefCon.current) {
-        bottomSheetRefCon.current.close(); 
+    //
+    //Set the values
+    //
+    const handleLocation= (selectedLocation) => {
+      setLocation(selectedLocation);
+      if (bottomSheetRefLoc.current) {
+        bottomSheetRefLoc.current.close(); 
       }
     };
 
-    //Set the subject and close the bottom sheet
-    const handleSubject = (selectedSubject) => {
-      setSubject(selectedSubject);
-      if (bottomSheetRefSubj.current) {
-        bottomSheetRefSubj.current.close(); 
+    const handleTime= (selectedTime) => {
+      setDate(selectedTime);
+      if (bottomSheetRefTime.current) {
+        bottomSheetRefTime.current.close(); 
       }
     };
-
-    //Set the category and close the bottom sheet
-    const handleCategory = (selectedCategory) => {
-      setCategory(selectedCategory);
-      if (bottomSheetRefCat.current) {
-        bottomSheetRefCat.current.close(); 
-      }
-    };
-
-
-  const handleImagePress = (imageNumber) => {
-    if (bottomSheetRefImg.current) {
-      setSelectedImageNumber(imageNumber);
-      bottomSheetRefImg.current.expand();
-    }
-  };
-
-  const handleConditionPress = () => {
-    if (bottomSheetRefCon.current) {
-      bottomSheetRefCon.current.expand();
-    }
-  };
-
-  const handleSubjectPress = () => {
-    if (bottomSheetRefSubj.current) {
-      bottomSheetRefSubj.current.expand();
-    }
-  };
-
-  const handleCoursePress = () => {
-    if (bottomSheetRefCourse.current) {
-      bottomSheetRefCourse.current.expand();
-    }
-  };
-
-  const handleCategoryPress = () => {
-    if (bottomSheetRefCat.current) {
-      bottomSheetRefCat.current.expand();
-    }
-  };
-
-  async function pickImage() {
-    let { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      // Handle permission denied
-      return;
-    }
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1,1],
-      quality: .5,
-    });
-
-    if(!result.canceled) {
-      if(listingImg1 == "") {
-        setListingImg1(result.assets[0].uri)
-      }
-      else if(listingImg2 == "") {
-        setListingImg2(result.assets[0].uri)
-      }
-      else if(listingImg3 == "") {
-        setListingImg3(result.assets[0].uri)
-      }
-      else if(listingImg4 == "") {
-        setListingImg4(result.assets[0].uri)
-      }
-      else {
-        setListingImg5(result.assets[0].uri)
-      }
-      
-      //Upload Image
-      await uploadImage(result.assets[0].uri, "image");
-    }
-  }
 
   
 
@@ -191,11 +107,41 @@ const Offer = ({ route }) => { // Receive profile data as props
     []
   );
 
+  //
+  // Date Logic
+  //
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    const today = new Date();
+    if (currentDate < today) {
+      // If selected date is in the past, set it to today
+      setDate(today);
+    } else {
+      setShowDatePicker(false); 
+      setDate(currentDate);
+    }
+  };
+
+  //
+  // Time Logic
+  //
+
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const onTimeChange = (event, selectedTime) => {
+    
+    const currentTime = selectedTime || new Date();
+    setTime(currentTime);
+    setShowTimePicker(false);
+    
+  };
+
+
   return (
     <GestureHandlerRootView style={[styles.container, { backgroundColor: 'white' }]} onTouchStart={Keyboard.dismiss}>
-      <View style={styles.imgContainer}>
-       
-      </View>
 
       <View style={styles.contentContainer}>
         <View style={styles.imageWrapper}>
@@ -219,24 +165,60 @@ const Offer = ({ route }) => { // Receive profile data as props
 
       <View style={styles.menuView}>
 
-        <TouchableOpacity style={styles.topMenuButton} onPress={handleCategoryPress}>
+        <TouchableOpacity style={styles.topMenuButton} onPress={handleLocationPress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={styles.titleTextMenu}> Location</Text>
-            <Text style={styles.menuSelection}> {category}</Text>
+            <Text style={styles.menuSelection}> {location}</Text>
           </View> 
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuButton} onPress={handleSubjectPress}>
+        <TouchableOpacity style={styles.menuButton} onPress={handleDatePress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+
             <Text style={styles.titleTextMenu}> Date</Text>
-            <Text style={styles.menuSelection}> {subject}</Text>
+            
+            <Text style={styles.menuSelection}> {date.toLocaleDateString()}</Text>
+
+            {/* PICKER FOR ANDROID */}
+            {showDatePicker && (Platform.OS === 'android') && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="date"
+                is24Hour={true}
+                display="default"
+                onChange={onDateChange}
+                minimumDate={new Date(new Date().getTime() + 24 * 60 * 60 * 1000)}
+              />      
+            )}
+            
           </View> 
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuButton} onPress={handleConditionPress}>
+        
+
+        <TouchableOpacity style={styles.menuButton} onPress={handleTimePress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={styles.titleTextMenu}> Time</Text>
-            <Text style={styles.menuSelection}> {condition}</Text>
+            
+            <Text style={styles.menuSelection}> {time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
+          
+            
+            {/* PICKER FOR ANDROID */}
+
+            {showTimePicker && (Platform.OS === 'android') && (
+                <DateTimePicker
+                  testID="timePicker"
+                  value={time} // Set value to the state of time
+                  mode="time" // Set mode to time
+                  is24Hour={true}
+                  display="default"
+                  onChange={onTimeChange} // Set onChange event
+                />
+            )}
+
+            
+          
           </View>  
         </TouchableOpacity>
       </View>
@@ -258,16 +240,62 @@ const Offer = ({ route }) => { // Receive profile data as props
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
       </View>
+
       
       <BottomSheet 
-        ref={bottomSheetRefImg} 
+        ref={bottomSheetRefLoc} 
         index={-1} 
-        snapPoints={snapPointsImg}
+        snapPoints={snapPointsLoc}
         handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
       >
         
+      </BottomSheet>
+
+      <BottomSheet 
+        ref={bottomSheetRefDate} 
+        index={-1} 
+        snapPoints={snapPointsDate}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+      >
+        {Platform.OS === 'ios' && (
+          <View style={{ marginTop: 7 }}>
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={date}
+              mode="date"
+              is24Hour={true}
+              display="inline"
+              onChange={onDateChange}
+              minimumDate={new Date(new Date().getTime() + 24 * 60 * 60 * 1000)}
+            />
+          </View>                    
+        )}
+      </BottomSheet>
+
+      <BottomSheet 
+        ref={bottomSheetRefTime} 
+        index={-1} 
+        snapPoints={snapPointsTime}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+      >
+        {Platform.OS === 'ios' && (
+          <View style={{ marginTop: 7 }}>
+            <DateTimePicker
+              testID="timePicker"
+              value={time} // Set value to the state of time
+              mode="time" // Set mode to time
+              is24Hour={true}
+              display="spinner"
+              onChange={onTimeChange} // Set onChange event
+            />
+          </View>                           
+        )}
       </BottomSheet>
 
       
