@@ -10,7 +10,7 @@ import {
   Keyboard
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { firestoreDB } from "../../../Firebase/firebase";
+import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
@@ -18,7 +18,6 @@ import { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import "react-native-gesture-handler";
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import subjects from "../Components/SubjectsList";
-
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
 import BagScreen from "../Components/Bag/BagScreen";
@@ -590,11 +589,14 @@ const Home = () => {
         ...doc.data(),
        }));
 
-      await setOriginalListings(documents);
+      const userEmail = auth.currentUser?.email;
+      const filteredDocuments = documents.filter(doc => !doc.id.startsWith(`${userEmail}_`)); 
+
+      await setOriginalListings(filteredDocuments);
       // console.log(originalListings);
       // console.log("---------------------");
           
-      const filteredListings = await filterListings(documents, filters); // Apply filtering
+      const filteredListings = await filterListings(filteredDocuments, filters); // Apply filtering
       await setListings(filteredListings);
 
       handleSearch();
