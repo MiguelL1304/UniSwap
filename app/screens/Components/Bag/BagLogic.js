@@ -21,6 +21,16 @@ export const addToBag = async (userEmail, itemDetails) => {
     }
 };
 
+export const removeFromBag = async (userEmail, itemID) => {
+    const itemRef = doc(firestoreDB, "profile", userEmail, "bag", itemID);
+    try {
+        await deleteDoc(itemRef);
+        console.log("ITEM REMOVED");
+    } catch (error) {
+        console.error("Problem removing item from bag: ", error);
+    }
+}
+
 export const getBagItems = async (userEmail) => {
     const bagRef = collection(firestoreDB, "profile", userEmail, "bag");
     try {

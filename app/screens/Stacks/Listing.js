@@ -196,6 +196,7 @@ const Listing = ({ route }) => {
           id: listing.id,
           price: listing.price,
           title: listing.title,
+          listingImg1: listingImg1,
         };
         await addToBag(user.email, itemDetails);
       } else {
