@@ -13,7 +13,6 @@ const Meetups = () => {
      { id: "1", text: "Meetup 1: Building B", positionX: 185, positionY: 150 },
      { id: "2", text: "Meetup 2: Building A", positionX: 270, positionY: 170 },
      { id: "3", text: "Meetup 3: Building L", positionX: 205, positionY: 180 },
-     // Add more items as needed
    ];
 
    const [selectedItem, setSelectedItem] = useState(null);
