@@ -27,6 +27,7 @@ import WishlistButton from '../Components/WishlistButton';
 import { Picker } from '@react-native-picker/picker';
 import { addToBag } from "../Components/Bag/BagLogic";
 import SellerProfile from "./SellerProfile";
+import Swiper from 'react-native-swiper';
 
 
 const Listing = ({ route }) => {
@@ -205,7 +206,8 @@ const Listing = ({ route }) => {
 // 
 // 
 const handleOffer = async () => {  
-  navigation.navigate("Offer", { listing: listing });
+  // navigation.navigate("Offer", { listing: listing });
+  navigation.navigate("Offer", { listings: [listing, listing] });
 };
 // 
 // 
@@ -234,12 +236,39 @@ const handleOffer = async () => {
       <Text style={styles.listedBy}>{`${userName}`}</Text>
       </TouchableOpacity>
     </View>
-    <View>
-      <Image
-        source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
-        style={styles.image}
-      />
-    </View>
+
+    <Swiper 
+      style={styles.wrapper} 
+      autoHeight={true} 
+      activeDot={
+        <View style={{
+          backgroundColor: '#3f9eeb', 
+          width: 8, 
+          height: 8, 
+          borderRadius: 4, 
+          marginLeft: 3, 
+          marginRight: 3, 
+          marginTop: 3, 
+          marginBottom: 3,}} 
+        />
+      }
+    >
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
+          style={styles.image}
+        />
+      </View>
+
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
+          style={styles.image}
+        />
+      </View>
+      
+    </Swiper>
+    
     
     <View style={styles.container2}>
       <Text style={styles.price}>${price}</Text>
@@ -303,6 +332,12 @@ const handleOffer = async () => {
         }
     
     const styles = StyleSheet.create({
+      wrapper: {
+        height: 350,
+      },
+      imageContainer: {
+        alignItems: 'center',
+      },
       container: {
         flex: 1,
         backgroundColor: "white",

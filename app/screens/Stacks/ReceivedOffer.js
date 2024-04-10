@@ -17,12 +17,13 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from "@expo/vector-icons";
 import defaultImg from "../../assets/defaultImg.png";
-import Swiper from 'react-native-swiper';
+import ReceivedOffers from "./ReceivedOffers";
 
-const Offer = ({ route }) => { // Receive profile data as props
+const ReceivedOffer = ({ route }) => { // Receive profile data as props
 
-    const { listings } = route.params;
-    const numContainers = Math.min(listings.length, 3);
+    const { offer } = route.params;
+    // Extract listings array from the offer object
+    const { listings } = offer;
     const [locations, setLocations] = useState([]);
     const sellerEmail = listings[0].id.split('_')[0];
     const totalPriceCal = listings.reduce((total, currentListing) => total + parseFloat(currentListing.price), 0);
@@ -349,7 +350,7 @@ const Offer = ({ route }) => { // Receive profile data as props
   return (
     <GestureHandlerRootView style={[styles.container, { backgroundColor: 'white' }]} onTouchStart={Keyboard.dismiss}>
 
-      {/* <View style={styles.contentContainer}>
+      <View style={styles.contentContainer}>
         <View style={styles.imageWrapper}>
             <Image
                 source={{ uri: listings[0].listingImg1 || "https://via.placeholder.com/150" }}
@@ -361,39 +362,7 @@ const Offer = ({ route }) => { // Receive profile data as props
           <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Price: $ {listings[0].price} | {listings[0].condition}</Text>
         </View>
         
-      </View> */}
-
-      <Swiper 
-        style={styles.wrapper} 
-        autoHeight={true} 
-        activeDot={
-          <View style={{
-            backgroundColor: '#3f9eeb', 
-            width: 8, 
-            height: 8, 
-            borderRadius: 4, 
-            marginLeft: 3, 
-            marginRight: 3, 
-            marginTop: 3, 
-            marginBottom: 3,}} 
-          />
-        }
-      >
-        {[...Array(numContainers).keys()].map((index) => (
-          <View style={[styles.contentContainer, { height: '100%'}]} key={index}>
-            <View style={styles.imageWrapper}>
-              <Image
-                source={{ uri: listings[index].listingImg1 || "https://via.placeholder.com/150" }}
-                style={styles.listingImg}
-              />
-            </View>
-            <View>
-              <Text style={styles.titleText}>{listings[index].title}</Text>
-              <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Price: $ {listings[index].price} | {listings[index].condition}</Text>
-            </View>
-          </View>
-        ))}
-      </Swiper>
+      </View>
 
       <View style={styles.divider} />
       
@@ -666,7 +635,7 @@ const Offer = ({ route }) => { // Receive profile data as props
           contentContainerStyle={styles.listingsContainer}
         />
       ) : (
-        <View style={{alignItems: "center", justifyContent: "center"}}>
+        <View style={{alignItems: "center", justifyContent: "center", flex: 1}}>
           <Text style={styles.noResultsFound}>No items to trade. Created listings can be used as trade options.</Text>
         </View>
       )}  
@@ -685,8 +654,6 @@ const Offer = ({ route }) => { // Receive profile data as props
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
-  },
   contentSheet: {
     flex: 1,
     alignItems: 'center',
@@ -783,6 +750,7 @@ const styles = StyleSheet.create({
     paddingTop: 5,
   },
   listingItem: {
+    flex: 1,
     flexDirection: "column",
     padding: 15,
     alignItems: 'center',   
@@ -795,6 +763,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   textContainer: {
+    flex: 1,
     width: '100%',
     
   },
@@ -921,12 +890,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     width: "100%",
-    height: "25%",
   },
   button: {
     backgroundColor: "#3f9eeb",
     width: "40%",
-    height: 45,
     padding: 10,
     borderRadius: 10,
     alignItems: "center",
@@ -935,7 +902,6 @@ const styles = StyleSheet.create({
   cancelButton: {
     backgroundColor: "#ffffff",
     width: "40%",
-    height: 45,
     padding: 10,
     borderRadius: 10,
     alignItems: "center",
@@ -968,7 +934,7 @@ const styles = StyleSheet.create({
   imageWrapper: {
     position: 'relative',
     width: '30%',
-    margin: 20,
+    margin: 10,
   },
   listingImg: {
     width: '100%',
@@ -977,4 +943,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Offer;
+export default ReceivedOffer;
