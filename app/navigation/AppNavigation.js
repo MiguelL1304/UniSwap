@@ -31,6 +31,8 @@ import Bought from "../screens/Stacks/Bought";
 import Trade from "../screens/Stacks/Trade";
 import SellerProfile from "../screens/Stacks/SellerProfile";
 import Offer from "../screens/Stacks/Offer";
+import Bag from "../screens/Components/Bag/BagScreen";
+import AnswerOffer from "../screens/Stacks/AnswerOffer";
 
 
 
@@ -179,7 +181,22 @@ export default function AppNavigation() {
             headerBackVisible: false,
           }}
         />
-        
+        <Stack.Screen
+          name="AnswerOffer"
+          component={AnswerOffer}
+          options={{
+            headerTitle: "Answer Offer",
+            headerBackVisible: true,
+          }}
+        />
+        <Stack.Screen
+          name="Bag"
+          component={Bag}
+          options={{
+            headerTitle: "Bag",
+            headerBackVisible: true,
+          }}
+        />
       </Stack.Navigator>
     );
   }

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Keyboard } from "react-native";
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Keyboard, Platform, FlatList } from "react-native";
 import { TextInput } from "react-native";
 import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
-import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDoc, getDocs } from 'firebase/firestore';
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import ProgressBar from "../Components/ProgressBar";
@@ -14,202 +14,372 @@ import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Camera } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Ionicons } from "@expo/vector-icons";
+import defaultImg from "../../assets/defaultImg.png";
+import Swiper from 'react-native-swiper';
 
 const Offer = ({ route }) => { // Receive profile data as props
 
-    const { listing } = route.params;
-    
-    //Used for identifying the image button selected. Mainly used for deleting images
-    const [selectedImageNumber, setSelectedImageNumber] = useState("");
+    const { listings } = route.params;
+    const numContainers = Math.min(listings.length, 3);
+    const [locations, setLocations] = useState([]);
+    const sellerEmail = listings[0].id.split('_')[0];
+    const totalPriceCal = listings.reduce((total, currentListing) => total + parseFloat(currentListing.price), 0);
+    const totalPrice = totalPriceCal.toString();
+    const [priceInput, setPriceInput] = useState(totalPrice);
+    const [userListings, setUserListings] = useState([]);
+    const isFocused = useIsFocused();
 
+    
+    const fetchLocations = async () => {
+      try {
+          const locationsSnapshot = await getDocs(collection(firestoreDB, 'meetuplocations'));
+          const locationsData = locationsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+    
+          setLocations(locationsData);
+      } catch (error) {
+          console.error("Error fetching locations: ", error);
+      }
+    };  
+
+
+    const fetchUserListings = async () => {
+      try {
+        const email = auth.currentUser ? auth.currentUser.email : null;
+        if (!email) {
+          throw new Error("Current user is null or email is undefined.");
+        }
+    
+        const userListingRef = doc(firestoreDB, "userListing", email);
+        const userListingSnapshot = await getDoc(userListingRef);
+    
+        if (userListingSnapshot.exists()) {
+          const userListingData = userListingSnapshot.data();
+          const listingIds = Object.keys(userListingData);
+    
+          if (!Array.isArray(listingIds)) {
+            throw new Error("Listing IDs is not an array.");
+          }
+          
+          const items = await Promise.all(
+            listingIds.map(async (listingId) => {
+            const listingDocRef = doc(firestoreDB, "listing", listingId);
+            const listingDocSnapshot = await getDoc(listingDocRef);
+  
+            if (listingDocSnapshot.exists()) {
+              const listingData = listingDocSnapshot.data();
+              return { id: listingDocSnapshot.id, ...listingData };
+            } else {
+              console.log("Listing document not found");
+              return null;
+            }
+          }));
+  
+          const filteredItems = items.filter((item) => item !== null);
+          setUserListings(filteredItems);
+        } else {
+          console.warn("User listing document not found")
+        }
+      } catch (error) {
+        console.error('Error fetching user listings:', error);
+      }
+    };
+
+    useEffect(() => {
+      if (isFocused) {
+        fetchUserListings();
+        fetchLocations();
+      } 
+    }, [isFocused]);
+  
+
+    
+      
+      
 
     //Snap points for the different bottom screens
-    const snapPointsImg = useMemo(() => ['30%'], []);
-    const snapPointsTag = useMemo(() => ['50%'], []);
-    const snapPointsSubj = useMemo(() => ['80%'], []);
-
-    //Used for tracking uploading progress. Still need to implement UI
-    const[progress, setProgress] = useState(0);
-    const [animatedIndex, setAnimatedIndex] = useState(-1);
+    const snapPointsLoc = useMemo(() => ['80%'], []);
+    const snapPointsDate = useMemo(() => ['50%'], []);
+    const snapPointsTime = useMemo(() => ['35%'], []);
+    const snapPointsBuy = useMemo(() => ['48%'], []);
+    const snapPointsTrade = useMemo(() => ['70%'], []);
 
     //Bottom sheets
-    const bottomSheetRefImg = useRef(null);
-    const bottomSheetRefCon = useRef(null);
-    const bottomSheetRefSubj = useRef(null);
-    const bottomSheetRefCourse = useRef(null);
-    const bottomSheetRefCat = useRef(null);
+    const bottomSheetRefLoc = useRef(null);
+    const bottomSheetRefTime = useRef(null);
+    const bottomSheetRefDate = useRef(null);
+    const bottomSheetRefBuy = useRef(null);
+    const bottomSheetRefTrade = useRef(null);
 
-    //Close the bottom sheets
-    const handleClosePress = () => {
-      bottomSheetRefImg.current?.close();
-      bottomSheetRefCon.current?.close();
-      bottomSheetRefSubj.current?.close();
-      bottomSheetRefCourse.current?.close();
-      bottomSheetRefCat.current?.close();
-      setAnimatedIndex(-1);
-    };
-    
-    //Open the bottom sheets
-    const handleOpenPress = () => {
-      bottomSheetRefImg.current?.expand();
-      bottomSheetRefCon.current?.expand();
-      bottomSheetRefSubj.current?.expand();
-      bottomSheetRefCourse.current?.expand();
-      bottomSheetRefCat.current?.expand();
-      setAnimatedIndex(1);
+    const handleLocationPress = () => {
+      if (bottomSheetRefLoc.current) {
+        bottomSheetRefLoc.current.expand();
+      }
     };
 
-    //Could be used later for editing listings
-    const [listingID, setListingID] = useState("");
-    const [bottomSheetOpened, setBottomSheetOpened] = useState(false);
+    const handleDatePress = () => {
+      setShowDatePicker(true);
+      if (Platform.OS === 'ios' && bottomSheetRefDate.current) {
+        bottomSheetRefDate.current.expand();
+      }
+    };
 
-    //All document fields for the listing
-    const [price, setPrice] = useState("");
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [condition, setCondition] = useState("");
-    const [category, setCategory] = useState("");
-    const [subject, setSubject] = useState("");
-    const [course, setCourse] = useState("");
+    const handleTimePress = () => {
+      setShowTimePicker(true);
+      if (Platform.OS === 'ios' && bottomSheetRefTime.current) {
+        bottomSheetRefTime.current.expand();
+      }
+    };
 
-    //URLs for the listing images
-    const [listingImg1, setListingImg1] = useState("");
-    const [listingImg2, setListingImg2] = useState("");
-    const [listingImg3, setListingImg3] = useState("");
-    const [listingImg4, setListingImg4] = useState("");
-    const [listingImg5, setListingImg5] = useState("");
+    const handleBuyPress = () => {
+      if (bottomSheetRefBuy.current) {
+        bottomSheetRefBuy.current.expand();
+      }
+    };
 
-    //Handles cleanup
-    useEffect(() => {
-    
-    }, []);
+    const handleTradePress = () => {
+      if (bottomSheetRefTrade.current) {
+        bottomSheetRefTrade.current.expand();
+      }
+    };
 
-    //const[progress, setProgress] = useState(0);
+    //All document fields for the offer
+    const [location, setLocation] = useState("");
+    const [date, setDate] = useState(() => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1); // Set initial date to tomorrow
+      return tomorrow;
+    });
+    const [time, setTime] = useState(() => {
+      const currentTime = new Date();
+      currentTime.setHours(12, 0, 0, 0); // Set hours to 12 pm
+      return currentTime;
+    });
+    const [offerPrice, setOfferPrice] = useState('');
+    const [offerListings, setOfferListings] = useState([]);
 
     //Navigator
     const navigation = useNavigation();
 
-    //Set the condition and close the bottom sheet
-    const handleCondition = (selectedCondition) => {
-      setCondition(selectedCondition);
-      if (bottomSheetRefCon.current) {
-        bottomSheetRefCon.current.close(); 
+    //
+    //Set the values
+    //
+    const handleOfferPrice= (selectedOfferPrice) => {
+      if (bottomSheetRefBuy.current) {
+        bottomSheetRefBuy.current.close(); 
       }
-    };
+      if (selectedOfferPrice < 1) {
+        setOfferPrice(totalPrice);
+        setPriceInput(totalPrice);
 
-    //Set the subject and close the bottom sheet
-    const handleSubject = (selectedSubject) => {
-      setSubject(selectedSubject);
-      if (bottomSheetRefSubj.current) {
-        bottomSheetRefSubj.current.close(); 
+        Alert.alert('Invalid Price', 'Price cannot be less than one');
       }
-    };
+      else if (selectedOfferPrice > totalPrice) {
+        setOfferPrice(totalPrice);
+        setPriceInput(totalPrice);
 
-    //Set the category and close the bottom sheet
-    const handleCategory = (selectedCategory) => {
-      setCategory(selectedCategory);
-      if (bottomSheetRefCat.current) {
-        bottomSheetRefCat.current.close(); 
-      }
-    };
-
-
-  const handleImagePress = (imageNumber) => {
-    if (bottomSheetRefImg.current) {
-      setSelectedImageNumber(imageNumber);
-      bottomSheetRefImg.current.expand();
-    }
-  };
-
-  const handleConditionPress = () => {
-    if (bottomSheetRefCon.current) {
-      bottomSheetRefCon.current.expand();
-    }
-  };
-
-  const handleSubjectPress = () => {
-    if (bottomSheetRefSubj.current) {
-      bottomSheetRefSubj.current.expand();
-    }
-  };
-
-  const handleCoursePress = () => {
-    if (bottomSheetRefCourse.current) {
-      bottomSheetRefCourse.current.expand();
-    }
-  };
-
-  const handleCategoryPress = () => {
-    if (bottomSheetRefCat.current) {
-      bottomSheetRefCat.current.expand();
-    }
-  };
-
-  async function pickImage() {
-    let { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      // Handle permission denied
-      return;
-    }
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1,1],
-      quality: .5,
-    });
-
-    if(!result.canceled) {
-      if(listingImg1 == "") {
-        setListingImg1(result.assets[0].uri)
-      }
-      else if(listingImg2 == "") {
-        setListingImg2(result.assets[0].uri)
-      }
-      else if(listingImg3 == "") {
-        setListingImg3(result.assets[0].uri)
-      }
-      else if(listingImg4 == "") {
-        setListingImg4(result.assets[0].uri)
+        Alert.alert('Invalid Price', 'Your offer cannot be higher than the current price');
       }
       else {
-        setListingImg5(result.assets[0].uri)
+        setOfferPrice(selectedOfferPrice);
       }
       
-      //Upload Image
-      await uploadImage(result.assets[0].uri, "image");
-    }
-  }
+    };
 
+    const handleLocation= (selectedLocation) => {
+      if (location === selectedLocation) {
+        // If the selected location is already the current location, set it to an empty string
+        setLocation("");
+      } else {
+        // Otherwise, set it to the selected location
+        setLocation(selectedLocation);
+      }
+      if (bottomSheetRefLoc.current) {
+        bottomSheetRefLoc.current.close(); 
+      }
+    };
+
+    const handleTradeListing= (selectedListing) => {
+
+      const isListingSelected = offerListings.includes(selectedListing);
+
+      if (!isListingSelected) {
+        if (offerListings.length >= 3) {
+          Alert.alert('Maximum Listings Reached', 'You can only select up to three listings for trade.');
+          return;
+        }
+        // If the selected listing id is not already in the offerListings array, add it
+        setOfferListings((prevListings) => [...prevListings, selectedListing]);
+      } else {
+        // If the selected listing id is already in the offerListings array, remove it
+        setOfferListings((prevListings) => prevListings.filter((listingId) => listingId !== selectedListing));
+      }
+      
+      if (bottomSheetRefLoc.current) {
+        bottomSheetRefLoc.current.close(); 
+      }
+    };
+    
+
+    const handleTime= (selectedTime) => {
+      setDate(selectedTime);
+      if (bottomSheetRefTime.current) {
+        bottomSheetRefTime.current.close(); 
+      }
+    };
+
+  //
+  // Main buttons
+  //
+
+  const handleSendOffer = async () => {
+    try {
+      if (!location) {
+        Alert.alert('Incomplete Offer', 'Please select a location.');
+        return;
+      }
+
+      const createDocumentName = (user, seller) => {
+        const currentDate = new Date();
+        const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, ''); // Format: YYYYMMDD
+        const timeString = currentDate.toTimeString().slice(0, 8).replace(/:/g, ''); // Format: HHMMSS
+        const userPart = user.replace(/\s+/g, ''); // Remove whitespace from user name
+        const sellerPart = seller.replace(/\s+/g, ''); // Remove whitespace from seller name
+        return `${userPart}_${sellerPart}_${dateString}_${timeString}`;
+      };
+
+      const documentName = createDocumentName(sellerEmail, auth.currentUser.email);
+      const userEmail = auth.currentUser.email;
+
+    
+      // Create a document for the seller
+      const sellerDocRef = doc(firestoreDB, 'profile', sellerEmail);
+      const sellerOfferDocRef = await setDoc(doc(sellerDocRef, 'receivedOffers', documentName), {
+        buyer: userEmail,
+        seller: sellerEmail,
+        sentBy: userEmail,
+        location,
+        date,
+        time,
+        createdAt: new Date(),
+        offerListings: offerListings,
+        offerPrice: offerPrice,
+        listings: listings,
+      });
   
+      // Create a document for the user
+      const userDocRef = doc(firestoreDB, 'profile', userEmail);
+      const userOfferDocRef = await setDoc(doc(userDocRef, 'sentOffers', documentName), {
+        buyer: userEmail,
+        seller: sellerEmail,
+        sentBy: userEmail,
+        location,
+        date,
+        time,
+        createdAt: new Date(),
+      });
+  
+      console.log('Offer sent successfully');
+
+      navigation.goBack();
+      // Optionally, you can navigate the user to a different screen or show a success message
+    } catch (error) {
+      console.error('Error sending offer:', error);
+      // Handle errors or show error message to the user
+    }
+  };
 
   const handleCancel = async () => {
     navigation.goBack();
   }
 
+  //Backdrop
   const renderBackdrop = useCallback(
     (props) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />,
     []
   );
 
+  //
+  // Date Logic
+  //
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    const today = new Date();
+    if (currentDate < today) {
+      // If selected date is in the past, set it to today
+      setDate(today);
+    } else {
+      setShowDatePicker(false); 
+      setDate(currentDate);
+    }
+  };
+
+  //
+  // Time Logic
+  //
+
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const onTimeChange = (event, selectedTime) => {
+    
+    const currentTime = selectedTime || new Date();
+
+    if (currentTime.getHours() < 7) {
+      currentTime.setHours(7, 0, 0, 0);
+    }
+
+    if (currentTime.getHours() > 21) {
+      // If yes, set the hour to 9 pm
+      currentTime.setHours(21, 0, 0, 0);
+    }
+
+    setTime(currentTime);
+    setShowTimePicker(false);
+    
+  };
+
+
   return (
     <GestureHandlerRootView style={[styles.container, { backgroundColor: 'white' }]} onTouchStart={Keyboard.dismiss}>
-      <View style={styles.imgContainer}>
-       
-      </View>
 
-      <View style={styles.contentContainer}>
-        <View style={styles.imageWrapper}>
-            <Image
-                source={{ uri: listing.listingImg1 || "https://via.placeholder.com/150" }}
+      <Swiper 
+        style={styles.wrapper} 
+        autoHeight={true} 
+        activeDot={
+          <View style={{
+            backgroundColor: '#3f9eeb', 
+            width: 8, 
+            height: 8, 
+            borderRadius: 4, 
+            marginLeft: 3, 
+            marginRight: 3, 
+            marginTop: 3, 
+            marginBottom: 3,}} 
+          />
+        }
+      >
+        {[...Array(numContainers).keys()].map((index) => (
+          <View style={[styles.contentContainer, { height: '100%'}]} key={index}>
+            <View style={styles.imageWrapper}>
+              <Image
+                source={{ uri: listings[index].listingImg1 || "https://via.placeholder.com/150" }}
                 style={styles.listingImg}
-            />
-        </View>
-        <View>
-          <Text style={styles.titleText}>{listing.title}</Text>
-          <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Price: $ {listing.price} | {listing.condition}</Text>
-        </View>
-        
-      </View>
+              />
+            </View>
+            <View>
+              <Text style={styles.titleText}>{listings[index].title}</Text>
+              <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Price: $ {listings[index].price} | {listings[index].condition}</Text>
+            </View>
+          </View>
+        ))}
+      </Swiper>
 
       <View style={styles.divider} />
       
@@ -219,24 +389,76 @@ const Offer = ({ route }) => { // Receive profile data as props
 
       <View style={styles.menuView}>
 
-        <TouchableOpacity style={styles.topMenuButton} onPress={handleCategoryPress}>
+        <TouchableOpacity style={styles.topMenuButton} onPress={handleLocationPress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={styles.titleTextMenu}> Location</Text>
-            <Text style={styles.menuSelection}> {category}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.menuSelection}> {location}</Text>
+              <Ionicons name="chevron-forward" size={20} color="#3f9eeb" style={{paddingTop: 7 }}/>
+            </View>
           </View> 
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuButton} onPress={handleSubjectPress}>
+        <TouchableOpacity style={styles.menuButton} onPress={handleDatePress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+
             <Text style={styles.titleTextMenu}> Date</Text>
-            <Text style={styles.menuSelection}> {subject}</Text>
+            
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.menuSelection}> {date.toLocaleDateString()}</Text>
+              <Ionicons name="chevron-forward" size={20} color="#3f9eeb" style={{paddingTop: 5 }}/>
+            </View>
+            
+
+            
+
+            {/* PICKER FOR ANDROID */}
+            {showDatePicker && (Platform.OS === 'android') && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="date"
+                is24Hour={true}
+                display="default"
+                onChange={onDateChange}
+                minimumDate={new Date(new Date().getTime() + 24 * 60 * 60 * 1000)}
+                maximumDate={new Date(new Date().getTime() + 15 * 24 * 60 * 60 * 1000)}
+              />      
+            )}
+            
           </View> 
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuButton} onPress={handleConditionPress}>
+        
+
+        <TouchableOpacity style={styles.menuButton} onPress={handleTimePress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={styles.titleTextMenu}> Time</Text>
-            <Text style={styles.menuSelection}> {condition}</Text>
+            
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.menuSelection}> {time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
+              <Ionicons name="chevron-forward" size={20} color="#3f9eeb" style={{paddingTop: 5 }}/>
+            </View>
+            
+          
+            
+            {/* PICKER FOR ANDROID */}
+
+            {showTimePicker && (Platform.OS === 'android') && (
+                <DateTimePicker
+                  testID="timePicker"
+                  value={time} // Set value to the state of time
+                  mode="time" // Set mode to time
+                  is24Hour={true}
+                  display="default"
+                  onChange={onTimeChange} // Set onChange event
+                  minimumDate={new Date(new Date().setHours(7, 0, 0, 0))}
+                  maximumDate={new Date(new Date().setHours(21, 0, 0, 0))}
+                />
+            )}
+
+            
+          
           </View>  
         </TouchableOpacity>
       </View>
@@ -247,10 +469,39 @@ const Offer = ({ route }) => { // Receive profile data as props
         <Text style={{ ...styles.titleText, fontWeight: '500'}}>Buy & Trade</Text>
       </View>
 
+      <View style={styles.menuView2}>
+
+        <TouchableOpacity style={styles.topMenuButton2} onPress={handleBuyPress}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={styles.titleTextMenu}> Buy Offer</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.menuSelection}> {offerPrice}</Text>
+              <Ionicons name="chevron-forward" size={20} color="#3f9eeb" style={{paddingTop: 7 }}/>
+            </View>
+          </View> 
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.menuButton2} onPress={handleTradePress}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+
+            <Text style={styles.titleTextMenu}> Trades</Text>
+            
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.menuSelection}>
+                {offerListings.length > 0 ? `${offerListings.length} selected` : ''}
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color="#3f9eeb" style={{paddingTop: 5 }}/>
+            </View>
+            
+          </View> 
+        </TouchableOpacity>
+
+      </View>
+
       <View style={styles.divider} />
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity onPress={handleSendOffer} style={styles.button}>
           <Text style={styles.buttonText}>Send Offer</Text>
         </TouchableOpacity>
 
@@ -258,15 +509,156 @@ const Offer = ({ route }) => { // Receive profile data as props
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
       </View>
+
       
       <BottomSheet 
-        ref={bottomSheetRefImg} 
+        ref={bottomSheetRefLoc} 
         index={-1} 
-        snapPoints={snapPointsImg}
+        snapPoints={snapPointsLoc}
         handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
       >
+        <ScrollView>
+
+          <FlatList
+            data={locations}
+            scrollEnabled={false}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View key={item.id}>
+                <TouchableOpacity onPress={() => handleLocation(item.name)} style={styles.locationBox}>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    {location === item.name && (
+                      <Ionicons name="checkmark-outline" size={20}/>
+                    )}
+                    <Text style={styles.locationText}>{item.name}</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+        
+        </ScrollView>
+        
+      </BottomSheet>
+
+      <BottomSheet 
+        ref={bottomSheetRefDate} 
+        index={-1} 
+        snapPoints={snapPointsDate}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+      >
+        {Platform.OS === 'ios' && (
+          <View style={{ marginTop: 7 }}>
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={date}
+              mode="date"
+              is24Hour={true}
+              display="inline"
+              onChange={onDateChange}
+              minimumDate={new Date(new Date().getTime() + 24 * 60 * 60 * 1000)}
+              maximumDate={new Date(new Date().getTime() + 15 * 24 * 60 * 60 * 1000)}
+            />
+          </View>                    
+        )}
+      </BottomSheet>
+
+      <BottomSheet 
+        ref={bottomSheetRefTime} 
+        index={-1} 
+        snapPoints={snapPointsTime}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+      >
+        {Platform.OS === 'ios' && (
+          <View style={{ marginTop: 7 }}>
+            <DateTimePicker
+              testID="timePicker"
+              value={time} // Set value to the state of time
+              mode="time" // Set mode to time
+              is24Hour={true}
+              display="spinner"
+              onChange={onTimeChange} // Set onChange event
+              minimumDate={new Date(new Date().setHours(7, 0, 0, 0))}
+              maximumDate={new Date(new Date().setHours(21, 0, 0, 0))}
+            />
+          </View>                           
+        )}
+      </BottomSheet>
+
+      <BottomSheet 
+        ref={bottomSheetRefBuy} 
+        index={-1} 
+        snapPoints={snapPointsBuy}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={styles.priceText}>   Buy Offer:    $</Text>
+          <TextInput
+            value={priceInput}
+            style={styles.priceInput}
+            onChangeText={(text) => setPriceInput(text)}
+            keyboardType="numeric"
+            maxLength={4}
+          />
+          <TouchableOpacity onPress={() => handleOfferPrice(priceInput)} style={[styles.button, { width: '28%', }]}>
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity> 
+        </View>
+      </BottomSheet>
+
+      <BottomSheet 
+        ref={bottomSheetRefTrade} 
+        index={-1} 
+        snapPoints={snapPointsTrade}
+        handleIndicatorStyle={{backgroundColor: '#3f9eeb'}}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+      >
+      <ScrollView>
+      {userListings.length > 0 ? (
+        <FlatList
+          style={styles.listings}
+          scrollEnabled={false}
+          data={userListings}
+          numColumns={2}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.listingItem} key={item.id}>
+              <TouchableOpacity onPress={() => handleTradeListing(item)}> 
+                <View style={[styles.imageContainer]}>
+                  <Image
+                    source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+                    style={styles.listingImage}
+                  />
+                  {offerListings.includes(item) && (
+                    <Ionicons name="checkmark-circle" size={60} color="#3f9eeb" style={styles.checkIcon} />
+                  )}
+                </View>
+              </TouchableOpacity>
+              <View style={styles.textContainer}>
+                <Text style={styles.listingTitle}>{item.title}</Text>
+                <Text style={styles.listingPrice}>${item.price}</Text>
+              </View>
+            </View>
+          )}
+          contentContainerStyle={styles.listingsContainer}
+        />
+      ) : (
+        <View style={{alignItems: "center", justifyContent: "center"}}>
+          <Text style={styles.noResultsFound}>No items to trade. Created listings can be used as trade options.</Text>
+        </View>
+      )}  
+          
+          
+      </ScrollView>
         
       </BottomSheet>
 
@@ -279,6 +671,8 @@ const Offer = ({ route }) => { // Receive profile data as props
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+  },
   contentSheet: {
     flex: 1,
     alignItems: 'center',
@@ -292,6 +686,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: '#ffffff',
   },
+  listingsContainer: {
+    backgroundColor: "white",
+  },
   divider: {
     width: '100%',
     height: 10,
@@ -301,6 +698,11 @@ const styles = StyleSheet.create({
   menuView: {
     width: "85%", 
     height: "18%",
+    borderRadius: 10,
+  },
+  menuView2: {
+    width: "85%", 
+    height: "14%",
     borderRadius: 10,
   },
   menuBS: {
@@ -319,9 +721,26 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingRight: 10,
   },
+  topMenuButton2: {
+    width: "100%", 
+    height: "50%",
+    borderRadius: 10,
+    paddingRight: 10,
+  },
   menuButton: {
     width: "100%", 
     height: "33%",
+    borderTopLeftRadius: 0, 
+    borderTopRightRadius: 0, 
+    borderBottomLeftRadius: 10, 
+    borderBottomRightRadius: 10,
+    borderTopWidth: 1,
+    borderColor: '#3f9eeb',
+    paddingRight: 10,
+  },
+  menuButton2: {
+    width: "100%", 
+    height: "50%",
     borderTopLeftRadius: 0, 
     borderTopRightRadius: 0, 
     borderBottomLeftRadius: 10, 
@@ -349,6 +768,49 @@ const styles = StyleSheet.create({
     borderColor: '#3f9eeb',
     paddingTop: 5,
   },
+  listingItem: {
+    flexDirection: "column",
+    padding: 15,
+    alignItems: 'center',   
+  },
+  listingImage: {
+    width: 120,
+    height: 120,
+    resizeMode: "cover",
+    margin: 15,
+    borderRadius: 15,
+  },
+  textContainer: {
+    width: '100%',
+    
+  },
+  listingTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    paddingLeft: 5,
+  },
+  listingPrice: {
+    fontSize: 16,
+    color: "green",
+    paddingLeft: 5,
+  },
+  imageContainer: {
+    position: 'relative',
+    borderRadius: 10,
+    overflow: 'hidden',
+    margin: 5,
+  },
+  checkIcon: {
+    position: 'absolute',
+    top: '30%', 
+    right: '30%',
+    zIndex: 1, 
+    color: '#3f9eeb', 
+  },
+  noResultsFound: {
+    fontSize: 25,
+    textAlign: "center",
+  },
   scrollViewContainer: {
     flexGrow: 1, // Allow the ScrollView to grow vertically
     paddingHorizontal: 20,
@@ -371,6 +833,39 @@ const styles = StyleSheet.create({
     color: '#3f9eeb',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  locationBox: {
+    padding: 3,
+    margin: 5,
+  },
+  locationText: { //individual subjects in the subject option (Accounting, Bio, etc.)
+    fontSize: 20,
+    padding: 5,
+    color: "#3f9eeb",
+  },
+  priceInput: {
+    backgroundColor: '#e6f2ff',
+    flex: 1,
+    fontSize: 30,
+    textAlign: 'center',
+    borderBottomWidth: 1,
+    borderColor: '#3f9eeb',
+    borderRadius: 10,
+    color: '#3f9eeb', 
+  },
+  priceText: {
+    fontSize: 22,
+    fontWeight: '400',
+    color: "#3f9eeb",
+    padding: 5,
+  },
+  priceContainer: {
+    width: "100%",
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingRight: 20,
   },
   contentContainer: {
     width: "94%",
@@ -408,57 +903,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#5fb6e3",
   },
-  titleInput: {
-    backgroundColor: "#e6f2ff",
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginTop: 5,
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 18,
-  },
-  priceInput: {
-    backgroundColor: '#e6f2ff', //#d4e9fa
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginTop: 5,
-    flex: 1,
-    marginLeft: 10,
-    marginRight: 140,
-    fontSize: 20,
-    textAlign: 'center',
-    shadowColor: 'black',
-  },
-  courseInput: {
-    paddingVertical: 8,
-    borderRadius: 10,
-    marginTop: 5,
-    flex: 1,
-    marginLeft: 35,
-    marginRight: 35,
-    fontSize: 30,
-    textAlign: 'center',
-    borderBottomWidth: 1,
-    borderColor: '#3f9eeb',
-  },
-  descriptionInput: {
-    backgroundColor: "#e6f2ff",
-    paddingHorizontal: 15,
-    paddingVertical: 30,
-    borderRadius: 10,
-    marginTop: 5,
-    fontSize: 15,
-  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     width: "100%",
+    height: "25%",
   },
   button: {
     backgroundColor: "#3f9eeb",
     width: "40%",
+    height: 45,
     padding: 10,
     borderRadius: 10,
     alignItems: "center",
@@ -467,6 +921,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     backgroundColor: "#ffffff",
     width: "40%",
+    height: 45,
     padding: 10,
     borderRadius: 10,
     alignItems: "center",
@@ -499,7 +954,7 @@ const styles = StyleSheet.create({
   imageWrapper: {
     position: 'relative',
     width: '30%',
-    margin: 10,
+    margin: 20,
   },
   listingImg: {
     width: '100%',

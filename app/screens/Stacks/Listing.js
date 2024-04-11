@@ -25,7 +25,10 @@ import defaultImg from "../../assets/defaultImg.png";
 import ImageCarousel from '../Components/ImageCarousel';
 import WishlistButton from '../Components/WishlistButton';
 import { Picker } from '@react-native-picker/picker';
+import { addToBag } from "../Components/Bag/BagLogic";
 import SellerProfile from "./SellerProfile";
+import Swiper from 'react-native-swiper';
+
 
 const Listing = ({ route }) => {
     const { listing, sourceScreen } = route.params;
@@ -53,7 +56,7 @@ const Listing = ({ route }) => {
     const isFocused = useIsFocused();
 
     const [userName, setUserName] = useState('');
-    const [userPic, setUserPic] = useState('')
+    const [userPic, setUserPic] = useState('');
 
     const fetchUserProfile = async () => {
       try {
@@ -178,21 +181,41 @@ const Listing = ({ route }) => {
 // navigate to seller's profile from user name
     const handleSellerProfile = () => {
       navigation.navigate("SellerProfile", {listing});
+    };    
+    //const handleAddToBag = (listing) => {
+    const handleAddToBag = async () => {  
+      const user = auth.currentUser;
+      if (user) {
+        const itemDetails = {
+          id: listing.id,
+          price: listing.price,
+          title: listing.title,
+          listingImg1: listingImg1,
+        };
+        await addToBag(user.email, itemDetails);
+      } else {
+        console.error("User must be logged in to add items to bag.");
+      }
+      
+      navigation.navigate("Bag", { listing: listing });    
     };
-
-
+// 
+// 
+// TEMPORARILLY HERE. TO BE DELETED LATER
 // 
 // 
 // 
 // 
 // 
+const handleOffer = async () => {  
+  // navigation.navigate("Offer", { listing: listing });
+  navigation.navigate("Offer", { listings: [listing, listing] });
+};
 // 
-//     
-    //Place holder
-    //TO BE DELETED LATER
-    const handleOffer = (listing) => {
-      navigation.navigate("Offer", { listing: listing });
-    };
+// 
+// 
+// 
+// 
 // 
 // 
 // 
@@ -237,12 +260,46 @@ const handleBackNavigation = () => {
       </TouchableOpacity>
     </View>
 
+
     <View>
       <Image
         source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
         style={styles.image}
       />
     </View>
+
+    <Swiper 
+      style={styles.wrapper} 
+      autoHeight={true} 
+      activeDot={
+        <View style={{
+          backgroundColor: '#3f9eeb', 
+          width: 8, 
+          height: 8, 
+          borderRadius: 4, 
+          marginLeft: 3, 
+          marginRight: 3, 
+          marginTop: 3, 
+          marginBottom: 3,}} 
+        />
+      }
+    >
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
+          style={styles.image}
+        />
+      </View>
+
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
+          style={styles.image}
+        />
+      </View>
+      
+    </Swiper>
+    
     
     <View style={styles.container2}>
       <Text style={styles.price}>${price}</Text>
@@ -293,10 +350,10 @@ const handleBackNavigation = () => {
     {/* Buy and Trade buttons */}
     <View style={styles.buttonContainer}>
       <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText} onPress={() => handleOffer(listing)}>Buy</Text>
+        <Text style={styles.buttonText} onPress={() => handleAddToBag(listing)}>Add to Bag</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Trade</Text>
+        <Text style={styles.buttonText} onPress={() => handleOffer(listing)}>Trade</Text>
       </TouchableOpacity>
     </View>
 
@@ -306,6 +363,12 @@ const handleBackNavigation = () => {
         }
     
     const styles = StyleSheet.create({
+      wrapper: {
+        height: 350,
+      },
+      imageContainer: {
+        alignItems: 'center',
+      },
       container: {
         flex: 1,
         backgroundColor: "white",

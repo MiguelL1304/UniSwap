@@ -10,7 +10,7 @@ import {
   Keyboard
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { firestoreDB } from "../../../Firebase/firebase";
+import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
@@ -18,9 +18,9 @@ import { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import "react-native-gesture-handler";
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import subjects from "../Components/SubjectsList";
-
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
+import BagScreen from "../Components/Bag/BagScreen";
 import { ScrollView } from "react-native-gesture-handler";
 
 
@@ -589,11 +589,14 @@ const Home = () => {
         ...doc.data(),
        }));
 
-      await setOriginalListings(documents);
+      const userEmail = auth.currentUser?.email;
+      const filteredDocuments = documents.filter(doc => !doc.id.startsWith(`${userEmail}_`)); 
+
+      await setOriginalListings(filteredDocuments);
       // console.log(originalListings);
       // console.log("---------------------");
           
-      const filteredListings = await filterListings(documents, filters); // Apply filtering
+      const filteredListings = await filterListings(filteredDocuments, filters); // Apply filtering
       await setListings(filteredListings);
 
       handleSearch();
@@ -706,7 +709,6 @@ const Home = () => {
   );
 
   return (
-
     <View style={styles.container}>
       <HomeHeader 
         searchQuery={searchQuery} 
@@ -725,11 +727,11 @@ const Home = () => {
       {/* // display  of listings */}
       {listings.length > 0 ? (
         <FlatList
-        style={styles.listings}
-        data={listings}
-        numColumns={2}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+          style={styles.listings}
+          data={listings}
+          numColumns={2}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
           <View style={styles.listingItem}>
             <TouchableOpacity onPress={() => handleListing(item)}>
               <Image
@@ -752,7 +754,18 @@ const Home = () => {
         </View>
       )}
       
-
+      {/* 
+      
+      BAG ICON 
+      
+      */}
+      <TouchableOpacity  
+        style={styles.bagIconContainer}
+        onPress={() => navigation.navigate("Bag")}
+      >
+        <Ionicons name="bag-outline" size={40} color="white"/>
+      </TouchableOpacity>
+      
       <BottomSheetModal
         ref={bottomSheetModalRef}
         index={0}
@@ -1233,6 +1246,25 @@ const styles = StyleSheet.create({
   noResultsFound: {
     fontSize: 25,
     textAlign: "center",
-  }
+  },
+  bagIconContainer: {
+    //alignContent: "center",
+    alignItems: "center",
+    //flex: 1,
+    left: 320,
+    //right: 30,
+    bottom: 25,
+    position: "absolute",
+    borderWidth: 2,
+    backgroundColor: "#3f9eeb",
+    borderColor: "#3f9eeb",
+    zIndex: 1000,
+    borderRadius: 15,
+    width: 50,
+    height: 50,
+  },
+  bagIcon: {
+    //position: "absolute",
+  },
 });
 
