@@ -189,7 +189,8 @@ const Listing = ({ route }) => {
           title: listing.title,
           listingImg1: listingImg1,
         };
-        await addToBag(user.email, itemDetails);
+        //await addToBag(user.email, itemDetails);
+        await addToBag(user.email, itemDetails, listing)
       } else {
         console.error("User must be logged in to add items to bag.");
       }
