@@ -54,7 +54,7 @@ const Listing = ({ route }) => {
     const isFocused = useIsFocused();
 
     const [userName, setUserName] = useState('');
-    const [userPic, setUserPic] = useState('')
+    const [userPic, setUserPic] = useState('');
 
     const fetchUserProfile = async () => {
       try {
