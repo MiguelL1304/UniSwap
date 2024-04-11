@@ -261,12 +261,12 @@ const handleBackNavigation = () => {
     </View>
 
 
-    <View>
+    {/* <View>
       <Image
         source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
         style={styles.image}
       />
-    </View>
+    </View> */}
 
     <Swiper 
       style={styles.wrapper} 
