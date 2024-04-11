@@ -349,20 +349,6 @@ const Offer = ({ route }) => { // Receive profile data as props
   return (
     <GestureHandlerRootView style={[styles.container, { backgroundColor: 'white' }]} onTouchStart={Keyboard.dismiss}>
 
-      {/* <View style={styles.contentContainer}>
-        <View style={styles.imageWrapper}>
-            <Image
-                source={{ uri: listings[0].listingImg1 || "https://via.placeholder.com/150" }}
-                style={styles.listingImg}
-            />
-        </View>
-        <View>
-          <Text style={styles.titleText}>{listings[0].title}</Text>
-          <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Price: $ {listings[0].price} | {listings[0].condition}</Text>
-        </View>
-        
-      </View> */}
-
       <Swiper 
         style={styles.wrapper} 
         autoHeight={true} 

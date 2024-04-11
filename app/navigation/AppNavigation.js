@@ -32,7 +32,7 @@ import Trade from "../screens/Stacks/Trade";
 import SellerProfile from "../screens/Stacks/SellerProfile";
 import Offer from "../screens/Stacks/Offer";
 import Bag from "../screens/Components/Bag/BagScreen";
-import ReceivedOffer from "../screens/Stacks/ReceivedOffer";
+import AnswerOffer from "../screens/Stacks/AnswerOffer";
 
 
 
@@ -182,10 +182,10 @@ export default function AppNavigation() {
           }}
         />
         <Stack.Screen
-          name="ReceivedOffer"
-          component={ReceivedOffer}
+          name="AnswerOffer"
+          component={AnswerOffer}
           options={{
-            headerTitle: "Received Offer",
+            headerTitle: "Answer Offer",
             headerBackVisible: true,
           }}
         />
