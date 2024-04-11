@@ -31,7 +31,7 @@ import Swiper from 'react-native-swiper';
 
 
 const Listing = ({ route }) => {
-    const { listing } = route.params;
+    const { listing, sourceScreen } = route.params;
     const {
       id,
       price,
@@ -42,6 +42,8 @@ const Listing = ({ route }) => {
       course,
       description
     } = listing;
+    
+    // const { sourceScreen } = route.params;
   
     // Declarations for state hooks
     const [isInWishlist, setIsInWishlist] = useState(false); // Ensure unique declaration
@@ -223,9 +225,30 @@ const handleOffer = async () => {
 // 
 // 
 
+const handleBackNavigation = () => {
+  navigation.goBack();
+  if (sourceScreen === "Home") {
+    navigation.navigate("Home", {listing}); // Navigate back to home page
+  } else 
+  if (sourceScreen === "SellerProfile") {
+    // navigation.navigate("SellerProfile"); // Navigate back to seller profile page
+    navigation.replace("SellerProfile", {listing});
+  } else {
+    // Default behavior, navigate back
+    navigation.goBack();
+  }
+};
+
+
 
     return (
   <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+
+    <TouchableOpacity style={styles.backButtonContainer} onPress={handleBackNavigation}>
+    <Text>Back</Text>
+</TouchableOpacity>
+
+
     <View style={styles.listedByContainer}>
       <Image
         source={{ uri: userPic ? userPic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
@@ -235,6 +258,14 @@ const handleOffer = async () => {
       <TouchableOpacity onPress={handleSellerProfile}>
       <Text style={styles.listedBy}>{`${userName}`}</Text>
       </TouchableOpacity>
+    </View>
+
+
+    <View>
+      <Image
+        source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
+        style={styles.image}
+      />
     </View>
 
     <Swiper 
@@ -448,6 +479,11 @@ const handleOffer = async () => {
       detailsText: {
         flex: 3,
       },
+      backButtonContainer: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+    },
     });
     
     export default Listing;
