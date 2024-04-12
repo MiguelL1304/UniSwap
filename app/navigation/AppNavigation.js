@@ -185,7 +185,7 @@ export default function AppNavigation() {
           name="AnswerOffer"
           component={AnswerOffer}
           options={{
-            headerTitle: "Answer Offer",
+            headerTitle: "Offer Details",
             headerBackVisible: true,
           }}
         />
