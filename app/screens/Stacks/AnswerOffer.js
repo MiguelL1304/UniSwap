@@ -5,7 +5,7 @@ import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
-import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDoc, getDocs, writeBatch } from 'firebase/firestore';
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import ProgressBar from "../Components/ProgressBar";
@@ -17,21 +17,23 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from "@expo/vector-icons";
 import defaultImg from "../../assets/defaultImg.png";
+import Swiper from 'react-native-swiper';
 
 const AnswerOffer= ({ route }) => { // Receive profile data as props
 
-    const { offer } = route.params;
+    const offer = route.params;
     // Extract listings array from the offer object
-    const { listings } = offer;
+    const listings = offer.listings;
+    const numContainers = Math.min(listings.length, 3);
     const sellerEmail = listings[0].id.split('_')[0];
 
     const isFocused = useIsFocused();
  
 
-    useEffect(() => {
-      if (isFocused) {
-      } 
-    }, [isFocused]);
+    // useEffect(() => {
+    //   if (isFocused) {
+    //   } 
+    // }, [isFocused]);
 
     //Snap points for the different bottom screens
     const snapPointsLoc = useMemo(() => ['80%'], []);
@@ -54,11 +56,11 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
     };
 
     //All document fields for the offer
-    const [location, setLocation] = offer.location;
-    const [date, setDate] = offer.date;
-    const [time, setTime] = offer.time;
-    const [offerPrice, setOfferPrice] = offer.offerPrice
-    const [offerListings, setOfferListings] = offer.offerListings;
+    const location = offer.location;
+    const date = offer.date;
+    const time = offer.time;
+    const offerPrice = offer.offerPrice;
+    const offerListings = offer.offerListings;
     
     //Navigator
     const navigation = useNavigation();
@@ -198,7 +200,7 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
             <Text style={styles.titleTextMenu}> Date</Text>
             
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.menuSelection}> {date.toLocaleDateString()}</Text>
+            <Text style={styles.menuSelection}>{date ? new Date(date.seconds * 1000).toLocaleDateString() : 'Date not available'}</Text>
             </View>
             
           </View> 
@@ -211,7 +213,7 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
             <Text style={styles.titleTextMenu}> Time</Text>
             
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.menuSelection}> {time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</Text>
+            <Text style={styles.menuSelection}>{time ? new Date(time.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Time not available'}</Text>
             </View>    
           
           </View>  
@@ -229,9 +231,9 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
 
         <View style={styles.topMenuButton2}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={styles.titleTextMenu}> Offer Amount</Text>
+            <Text style={styles.titleTextMenu}> Pay Offer</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.menuSelection}> {offerPrice}</Text>
+              <Text style={styles.menuSelection}> ${offerPrice}</Text>
             </View>
           </View> 
         </View>
@@ -289,7 +291,36 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
         backdropComponent={renderBackdrop}
       >
         <ScrollView>  
-            
+        {offerListings.length > 0 ? (
+          <FlatList
+            style={styles.listings}
+            scrollEnabled={false}
+            data={offerListings}
+            numColumns={2}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.listingItem} key={item.id}>
+                <TouchableOpacity> 
+                  <View style={[styles.imageContainer]}>
+                    <Image
+                      source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
+                      style={styles.listingImage}
+                    />
+                  </View>
+                </TouchableOpacity>
+                <View style={styles.textContainer}>
+                  <Text style={styles.listingTitle}>{item.title}</Text>
+                  <Text style={styles.listingPrice}>${item.price}</Text>
+                </View>
+              </View>
+            )}
+            contentContainerStyle={styles.listingsContainer}
+          />
+        ) : (
+          <View style={{alignItems: "center", justifyContent: "center"}}>
+            <Text style={styles.noResultsFound}>No items offered for trade</Text>
+          </View>
+        )}  
             
         </ScrollView>
         
@@ -540,21 +571,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     width: "100%",
+    height: "25%",
   },
   button: {
     backgroundColor: "#3f9eeb",
     width: "40%",
-    padding: 10,
+    height: 45,
     borderRadius: 10,
     alignItems: "center",
+    justifyContent: "center",
     margin: 10,
   },
   cancelButton: {
     backgroundColor: "#ffffff",
     width: "40%",
-    padding: 10,
+    height: 45,
     borderRadius: 10,
     alignItems: "center",
+    justifyContent: "center",
     borderColor: "#3f9eeb",
     borderWidth: 2.5,
     margin: 10,

@@ -31,20 +31,27 @@ const ReceivedOffers = () => {
       });
 
       setOffers(fetchedOffers);
-      console.log(offers);
     } catch (error) {
       console.error("Error fetching offers:", error);
     }
   };
 
-  const renderItem = ({ item }) => {
+  const handleDetails = (offer) => {
+    // console.log(offer);
+    navigation.navigate("AnswerOffer", offer);
+  };
+
+  const renderItem = ({ item, index }) => {
     return (
-      <OfferItem item={item} />
+      <View>
+        <OfferItem item={item} onPressDetails={() => handleDetails(item)} />
+        {index !== offers.length - 1 && <View style={styles.divider} />}
+      </View>
     );
   };
 
   return (
-    <ScrollView>
+    <ScrollView style={{ backgroundColor: '#e6f2ff'}}>
       {offers.length > 0 ? (
         <FlatList
           data={offers}
@@ -60,7 +67,7 @@ const ReceivedOffers = () => {
   );
 };
 
-const OfferItem = ({ item }) => {
+const OfferItem = ({ item, onPressDetails }) => {
   const [userName, setUserName] = useState('');
   const [userPic, setUserPic] = useState('');
 
@@ -107,15 +114,17 @@ const OfferItem = ({ item }) => {
 
       <View style={styles.contentContainer}>
         <View style={styles.userInfo}>
-          <Image source={{ uri: userPic }} style={styles.profilePic} />
-          
+          <Image 
+            source={{ uri: userPic || "https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" }} 
+            style={styles.profilePic} 
+          />
         </View>
         <Text style={styles.username}>{userName}</Text>
         <Text style={styles.offerPrice}>{item.offerPrice}</Text>
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={onPressDetails}>
           <Text style={styles.buttonText}>Details</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.cancelButton}>
@@ -151,8 +160,7 @@ const styles = StyleSheet.create({
   divider: {
     width: '100%',
     height: 10,
-    backgroundColor: '#e6f2ff', 
-    marginVertical: 10, 
+    backgroundColor: '#e6f2ff',
   },
   menuView: {
     width: "85%", 
