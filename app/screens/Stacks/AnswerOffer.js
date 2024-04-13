@@ -131,7 +131,28 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
   }
 
   const handleDeclineOffer = async () => {
-    console.log("Decline")
+    try {
+      const parts = offer.id.split('/');
+
+      // Extract the last part of the array
+      const documentName = parts[parts.length - 1];
+
+      // Update the offer object in the receiver's profile
+      const receiverDocRef = doc(firestoreDB, 'profile', offer.seller);
+      const receiverOfferDocRef = doc(receiverDocRef, 'receivedOffers', offer.id);
+      await updateDoc(receiverOfferDocRef, { status: "declined" });
+
+      // Update the offer object in the sender's profile
+      const senderDocRef = doc(firestoreDB, 'profile', offer.sentBy);
+      const senderOfferDocRef = doc(senderDocRef, 'sentOffers', offer.id);
+      await updateDoc(senderOfferDocRef, { status: "declined" });
+
+      console.log('Offer declined successfully');
+
+      navigation.goBack();
+      } catch (error) {
+        console.error('Error declining offer:', error);
+      }          
   }
 
   //Backdrop

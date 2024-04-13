@@ -269,6 +269,7 @@ const Offer = ({ route }) => { // Receive profile data as props
         offerListings: offerListings,
         offerPrice: offerPrice,
         listings: listings,
+        status: "pending",
       });
   
       // Create a document for the user
@@ -281,6 +282,10 @@ const Offer = ({ route }) => { // Receive profile data as props
         date,
         time,
         createdAt: new Date(),
+        offerListings: offerListings,
+        offerPrice: offerPrice,
+        listings: listings,
+        status: "pending",
       });
   
       console.log('Offer sent successfully');
