@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, FlatList, ScrollView } from "react-native";
 import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
-import { collection, doc, getDocs, getDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 
@@ -41,10 +41,51 @@ const ReceivedOffers = () => {
     navigation.navigate("AnswerOffer", offer);
   };
 
+  const handleDecline = async (offer) => {
+    try {
+      // Update the offer object in the receiver's profile
+      const receiverDocRef = doc(firestoreDB, 'profile', offer.seller);
+      const receiverOfferDocRef = doc(receiverDocRef, 'receivedOffers', offer.id);
+      await updateDoc(receiverOfferDocRef, { status: "declined" });
+
+      // Update the offer object in the sender's profile
+      const senderDocRef = doc(firestoreDB, 'profile', offer.sentBy);
+      const senderOfferDocRef = doc(senderDocRef, 'sentOffers', offer.id);
+      await updateDoc(senderOfferDocRef, { status: "declined" });
+
+      console.log('Offer declined successfully');
+
+      fetchOffers();
+      } catch (error) {
+        console.error('Error declining offer:', error);
+      }  
+
+  };
+
+  const handleDelete = async (offer) => {
+    try {
+      // Delete the offer object in the receiver's profile
+      const receiverDocRef = doc(firestoreDB, 'profile', offer.seller);
+      const receiverOfferDocRef = doc(receiverDocRef, 'receivedOffers', offer.id);
+      await deleteDoc(receiverOfferDocRef);
+  
+      console.log('Offer deleted successfully');
+  
+      fetchOffers();
+    } catch (error) {
+      console.error('Error deleting offer:', error);
+    }
+  };
+
   const renderItem = ({ item, index }) => {
     return (
       <View>
-        <OfferItem item={item} onPressDetails={() => handleDetails(item)} />
+        <OfferItem 
+          item={item} 
+          onPressDetails={() => handleDetails(item)} 
+          onPressDecline={() => handleDecline(item)}
+          onPressDelete={() => handleDelete(item)} 
+        />
         {index !== offers.length - 1 && <View style={styles.divider} />}
       </View>
     );
@@ -67,7 +108,7 @@ const ReceivedOffers = () => {
   );
 };
 
-const OfferItem = ({ item, onPressDetails }) => {
+const OfferItem = ({ item, onPressDetails, onPressDecline, onPressDelete }) => {
   const [userName, setUserName] = useState('');
   const [userPic, setUserPic] = useState('');
 
@@ -123,15 +164,24 @@ const OfferItem = ({ item, onPressDetails }) => {
         <Text style={styles.offerPrice}>{item.offerPrice}</Text>
       </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={onPressDetails}>
-          <Text style={styles.buttonText}>Details</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton}>
-          <Text style={styles.cancelText}>Reject</Text>
-        </TouchableOpacity>   
-      </View>
-          
+      {item.status === 'pending' && (
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={onPressDetails}>
+            <Text style={styles.buttonText}>Details</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.cancelButton} onPress={onPressDecline}>
+            <Text style={styles.cancelText}>Decline</Text>
+          </TouchableOpacity>   
+        </View>
+      )}
+      {item.status === 'declined' && (
+        <View style={styles.buttonContainer}>
+          <Text style={{ ...styles.cancelText, color: '#e8594f' }}>You declined this offer.</Text>
+          <TouchableOpacity style={{ ...styles.cancelButton, borderColor: '#e8594f' }} onPress={onPressDelete}>
+            <Text style={{ ...styles.cancelText, color: '#e8594f' }}>Delete</Text>
+          </TouchableOpacity>   
+        </View>
+      )}       
           
         
 
@@ -373,6 +423,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: "center",
     width: "100%",
     height: "25%",
   },

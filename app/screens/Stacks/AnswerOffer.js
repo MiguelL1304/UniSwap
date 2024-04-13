@@ -8,13 +8,6 @@ import { signOut } from "firebase/auth";
 import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getDoc, getDocs, writeBatch } from 'firebase/firestore';
 import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
-import ProgressBar from "../Components/ProgressBar";
-import Uploading from "../Components/Uploading";
-import * as ImagePicker from "expo-image-picker";
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
-import { Camera } from 'expo-camera';
-import * as ImageManipulator from 'expo-image-manipulator';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from "@expo/vector-icons";
 import defaultImg from "../../assets/defaultImg.png";
 import Swiper from 'react-native-swiper';
@@ -65,78 +58,70 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
     //Navigator
     const navigation = useNavigation();
 
-  //
-  // Main buttons
-  //
-
-  // const handleSendOffer = async () => {
-  //   try {
-  //     if (!location) {
-  //       Alert.alert('Incomplete Offer', 'Please select a location.');
-  //       return;
-  //     }
-
-  //     const createDocumentName = (user, seller) => {
-  //       const currentDate = new Date();
-  //       const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, ''); // Format: YYYYMMDD
-  //       const timeString = currentDate.toTimeString().slice(0, 8).replace(/:/g, ''); // Format: HHMMSS
-  //       const userPart = user.replace(/\s+/g, ''); // Remove whitespace from user name
-  //       const sellerPart = seller.replace(/\s+/g, ''); // Remove whitespace from seller name
-  //       return `${userPart}_${sellerPart}_${dateString}_${timeString}`;
-  //     };
-
-  //     const documentName = createDocumentName(sellerEmail, auth.currentUser.email);
-  //     const userEmail = auth.currentUser.email;
-
-    
-  //     // Create a document for the seller
-  //     const sellerDocRef = doc(firestoreDB, 'profile', sellerEmail);
-  //     const sellerOfferDocRef = await setDoc(doc(sellerDocRef, 'receivedOffers', documentName), {
-  //       buyer: userEmail,
-  //       seller: sellerEmail,
-  //       sentBy: userEmail,
-  //       location,
-  //       date,
-  //       time,
-  //       createdAt: new Date(),
-  //       offerListings: offerListings,
-  //       offerPrice: offerPrice,
-  //       listings: listings,
-  //     });
-  
-  //     // Create a document for the user
-  //     const userDocRef = doc(firestoreDB, 'profile', userEmail);
-  //     const userOfferDocRef = await setDoc(doc(userDocRef, 'sentOffers', documentName), {
-  //       buyer: userEmail,
-  //       seller: sellerEmail,
-  //       sentBy: userEmail,
-  //       location,
-  //       date,
-  //       time,
-  //       createdAt: new Date(),
-  //     });
-  
-  //     console.log('Offer sent successfully');
-
-  //     navigation.goBack();
-  //     // Optionally, you can navigate the user to a different screen or show a success message
-  //   } catch (error) {
-  //     console.error('Error sending offer:', error);
-  //     // Handle errors or show error message to the user
-  //   }
-  // };
 
   const handleAcceptOffer = async () => {
-    console.log("Accept")
+    try {
+      const createDocumentName = (user, seller) => {
+        const currentDate = new Date();
+        const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, ''); // Format: YYYYMMDD
+        const timeString = currentDate.toTimeString().slice(0, 8).replace(/:/g, ''); // Format: HHMMSS
+        const userPart = user.replace(/\s+/g, ''); // Remove whitespace from user name
+        const sellerPart = seller.replace(/\s+/g, ''); // Remove whitespace from seller name
+        return `${userPart}_${sellerPart}_${dateString}_${timeString}`;
+      };
+
+      const documentName = createDocumentName(offer.buyer, auth.currentUser.email);
+
+      const sellerDocRef = doc(firestoreDB, 'profile', offer.seller);
+      const sellerOfferDocRef = await setDoc(doc(sellerDocRef, 'meetups', documentName), {
+        buyer: offer.buyer,
+        createdAt: new Date(),
+        date: offer.date,
+        listings: offer.listings,
+        location: offer.location,
+        tradeListings: offer.offerListings,
+        finalPrice: offer.offerPrice,
+        seller: offer.seller,
+        status: "upcoming",
+        time: offer.time,
+      });
+
+      const buyerDocRef = doc(firestoreDB, 'profile', offer.buyer);
+      const buyerOfferDocRef = await setDoc(doc(buyerDocRef, 'meetups', documentName), {
+        buyer: offer.buyer,
+        createdAt: new Date(),
+        date: offer.date,
+        listings: offer.listings,
+        location: offer.location,
+        tradeListings: offer.offerListings,
+        finalPrice: offer.offerPrice,
+        seller: offer.seller,
+        status: "upcoming",
+        time: offer.time,
+      });
+
+
+      // Update the offer object in the receiver's profile
+      const receiverDocRef = doc(firestoreDB, 'profile', offer.seller);
+      const receiverOfferDocRef = doc(receiverDocRef, 'receivedOffers', offer.id);
+      await deleteDoc(receiverOfferDocRef);
+
+      // Update the offer object in the sender's profile
+      const senderDocRef = doc(firestoreDB, 'profile', offer.buyer);
+      const senderOfferDocRef = doc(senderDocRef, 'sentOffers', offer.id);
+      await deleteDoc(senderOfferDocRef);
+
+      console.log('Offer accepted successfully');
+
+      navigation.goBack();
+
+    } catch (error) {
+      console.error('Error accepting offer:', error);
+    } 
   }
 
   const handleDeclineOffer = async () => {
     try {
-      const parts = offer.id.split('/');
-
-      // Extract the last part of the array
-      const documentName = parts[parts.length - 1];
-
       // Update the offer object in the receiver's profile
       const receiverDocRef = doc(firestoreDB, 'profile', offer.seller);
       const receiverOfferDocRef = doc(receiverDocRef, 'receivedOffers', offer.id);
@@ -154,6 +139,10 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
         console.error('Error declining offer:', error);
       }          
   }
+
+  const handleListing = (listing) => {
+    navigation.navigate("Listing", { listing: listing });
+  };
 
   //Backdrop
   const renderBackdrop = useCallback(
@@ -321,7 +310,7 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <View style={styles.listingItem} key={item.id}>
-                <TouchableOpacity> 
+                <TouchableOpacity onPress={() => handleListing(item)}> 
                   <View style={[styles.imageContainer]}>
                     <Image
                       source={item.listingImg1 ? { uri: item.listingImg1 } : defaultImg}
@@ -455,7 +444,8 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
     padding: 15,
-    alignItems: 'center',   
+    alignItems: 'center',
+    width: '50%',   
   },
   listingImage: {
     width: 120,

@@ -627,7 +627,7 @@ const Offer = ({ route }) => { // Receive profile data as props
         enablePanDownToClose={true}
         backdropComponent={renderBackdrop}
       >
-      <ScrollView>
+      <ScrollView style={{ width: '100%' }}>
       {userListings.length > 0 ? (
         <FlatList
           style={styles.listings}
@@ -776,7 +776,8 @@ const styles = StyleSheet.create({
   listingItem: {
     flexDirection: "column",
     padding: 15,
-    alignItems: 'center',   
+    alignItems: 'center',
+    width: '50%',   
   },
   listingImage: {
     width: 120,
