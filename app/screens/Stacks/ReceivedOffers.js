@@ -102,7 +102,7 @@ const ReceivedOffers = () => {
           scrollEnabled={false}
         />
       ) : (
-        <Text>No offers at this time</Text>
+        <Text>No offers received at this time</Text>
       )}
     </ScrollView>
   );
@@ -167,7 +167,7 @@ const OfferItem = ({ item, onPressDetails, onPressDecline, onPressDelete }) => {
       {item.status === 'pending' && (
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={onPressDetails}>
-            <Text style={styles.buttonText}>Details</Text>
+            <Text style={styles.buttonText}>View Offer</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.cancelButton} onPress={onPressDecline}>
             <Text style={styles.cancelText}>Decline</Text>
@@ -479,9 +479,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     aspectRatio: 1,
   },
-
-
-
   username: {
     fontSize: 16,
     fontWeight: "bold",
@@ -492,7 +489,6 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
   },
-  // Add more styles as needed
 });
 
 export default ReceivedOffers;
