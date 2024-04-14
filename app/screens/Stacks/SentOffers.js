@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, FlatList, ScrollView } from "react-nativ
 import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { collection, doc, getDocs, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
-import { useNavigation, useIsFocused, useFocusEffect } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 
 const SentOffers = () => {
   const navigation = useNavigation();
