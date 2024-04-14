@@ -1,125 +1,410 @@
-import React, { useRef, useState } from "react";
-import { View, StyleSheet, Image, TouchableOpacity, FlatList, Text, Dimensions, Modal } from "react-native";
-import ImageZoom from "react-native-image-pan-zoom";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, Image, FlatList, Text, ScrollView, Dimensions } from "react-native";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { auth, firestoreDB } from "../../../Firebase/firebase";
+import { useIsFocused } from "@react-navigation/native";
+import ImageViewer from "react-native-image-zoom-viewer";
 
 const Meetups = () => {
-  const images = [
-    {
-      url: "https://svite-league-apps-content.s3.amazonaws.com/21982/30250/cb50a419-6b44-445b-847f-e6d3dd7a8e70.jpeg", // Replace with your image URL
-    },
-  ];
+  const isFocused = useIsFocused();
+  const [meetups, setMeetups] = useState([]);
 
-   const data = [
-     { id: "1", text: "Meetup 1: Building B", positionX: 185, positionY: 150 },
-     { id: "2", text: "Meetup 2: Building A", positionX: 270, positionY: 170 },
-     { id: "3", text: "Meetup 3: Building L", positionX: 205, positionY: 180 },
-   ];
+  useEffect(() => {
+    if (isFocused) {
+      fetchMeetups();
+    }
+  }, [isFocused]);
 
-   const [selectedItem, setSelectedItem] = useState(null);
-   const [modalVisible, setModalVisible] = useState(false);
-   const [modalText, setModalText] = useState("");
+  const fetchMeetups = async () => {
+    try {
+      const email = auth.currentUser ? auth.currentUser.email : null;
+      if (!email) {
+        throw new Error("Current user is null or email is undefined.");
+      }
+      const meetupDocRef = doc(firestoreDB, "profile", email);
+      const querySnapshot = await getDocs(collection(meetupDocRef, "meetups"));
 
-   const imageZoomRef = useRef();
+      const fetchedMeetups = [];
+      querySnapshot.forEach((doc) => {
+        fetchedMeetups.push({ id: doc.id, ...doc.data() });
+      });
 
-   const dot = (index, positionX, positionY) => {
-    if (selectedItem !== index) return null;
+      setMeetups(fetchedMeetups);
+    } catch (error) {
+      console.error("Error fetching meetups:", error);
+    }
+  };
 
+  const renderItem = ({ item, index }) => {
     return (
-      <View
-        key={index}
-        style={[styles.dot, { left: positionX, top: positionY }]}
-      >
-        <View style={styles.dotContainer}>
-          <Text style={styles.dotText}>{modalText}</Text>
-        </View>
+      <View>
+        <FinalizedItems 
+          item={item}
+        />
+        {index !== meetups.length - 1 && <View style={styles.divider} />}
       </View>
     );
-   };
-
-   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => {
-      setSelectedItem(item.id);
-      setModalText(item.text);
-      setModalVisible(true);
-    }}>
-       <View style={[styles.item, selectedItem === item.id && styles.selectedItem]}>
-         <Text>{item.text}</Text>
-       </View>
-     </TouchableOpacity>
-   );
-
+  };
+  
   return (
-    <View style={styles.container}>
-        <ImageZoom 
-        ref={imageZoomRef}
-        cropWidth={Dimensions.get('window').width}
-        cropHeight={Dimensions.get('window').height/3}
-        imageWidth={Dimensions.get('window').width}
-        imageHeight={Dimensions.get('window').height/2}
-        >
-        <Image source={{ uri: images[0].url }} style={styles.image} resizeMode="stretch" />
-        {data.map((item) => dot(item.id, item.positionX, item.positionY))}
-        </ImageZoom>
+    <ScrollView style={{ backgroundColor: "#e6f2ff"}}>
+      <View style={styles.mapContainer}>
+        {/*GGC Map Image */}
+        <Image
+          source={require("../../assets/ggc-map.png")}
+          style={styles.mapImage}
+        />
+      </View>
+
+      {meetups.length > 0 ? (
         <FlatList
-          data={data}
+          data={meetups}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           style={styles.list}
+          scrollEnabled={false}
         />
+      ) : (
+        <Text>No meetups finalized at this time</Text>
+      )}
+    </ScrollView>
+  );
+};
+
+const FinalizedItems = ({ item }) => {
+  const [userName, setUserName] = useState('');
+  const [userPic, setUserPic] = useState('');
+  const [transactionType, setTransactionType] = useState('');
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        let profileDocRef;
+        if (auth.currentUser && auth.currentUser.email !== item.buyer) {
+          // Show the buyer's profile if current user is not the buyer
+          profileDocRef = doc(firestoreDB, "profile", item.buyer);
+          setTransactionType("Sold To: ");
+        } else {
+          // Show the seller's profile if current user is the buyer
+          profileDocRef = doc(firestoreDB, "profile", item.seller);
+          setTransactionType("Bought From: ");
+        }
+
+        const profileDocSnap = await getDoc(profileDocRef);
+
+        if (profileDocSnap.exists()) {
+          const profileData = profileDocSnap.data();
+          setUserName(`${profileData.firstName} ${profileData.lastName}`);
+          setUserPic(`${profileData.profilePic}`);
+        }
+      } catch (error) {
+        console.error("Error fetching document:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [item.buyer, item.seller]);
+
+  const totalPriceCal = item.listings.reduce((total, currentListing) => total + parseFloat(currentListing.price.replace('$', '')), 0);
+  const totalPrice = totalPriceCal.toString();
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.contentContainer}>
+        <View style={styles.imageWrapper}>
+          <Image
+            source={{ uri: item.listings[0].listingImg1 || "https://via.placeholder.com/150" }}
+            style={styles.listingImg}
+          />
+        </View>
+
+        <View>
+          <Text style={styles.titleText}>
+            {item.listings[0].title}
+            {item.listings.length > 1 ? ` and ${item.listings.length - 1} more` : ''}</Text>
+          <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Total Price: ${totalPrice}</Text>
+        </View>
       </View>
+
+      <View style={styles.contentContainer}>
+        <Text style={styles.transactionType}>{transactionType}</Text>
+        <View style={styles.userInfo}>
+          <Image
+            source={{ uri: userPic || "https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg" }}
+            style={styles.profilePic}
+          />
+        </View>
+        <Text style={styles.username}>{userName}</Text>
+        <Text style={styles.offerPrice}>{item.offerPrice}</Text>
+      </View>
+
+   
+
+
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  contentSheet: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    padding: 16,
+    marginTop: -30,
+  },
   container: {
     flex: 1,
-    backgroundColor: "white", // Set background color for image viewer
+    alignItems: "center",
+    backgroundColor: '#ffffff',
   },
-  image: {
-    width: "100%",
-    height: "70%", // Adjust height as needed
-    marginLeft: 50,
-  },
-  list: {
-    flex: 1,
-  },
-  item: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-  selectedItem: {
-    backgroundColor: "#3f9eeb",
-  },
-  dot: {
-    position: "absolute",
-    width: 10,
-    height: 10,
-    backgroundColor: "#3f9eeb",
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: "white",
-  },
-  dotContainer: {
-    flexDirection: "row",
-    flexGrow: 1,
-  },
-  dotText: {
-    position: "absolute",
-    fontSize: 12,
-    top: -35,
-    left: -60,
+  listingsContainer: {
     backgroundColor: "white",
-    padding: 5,
-    borderRadius: 5,
-    borderWidth: 2,
-    borderColor: "#ccc",
   },
-  modal: {
-    flex: 1,
+  divider: {
+    width: '100%',
+    height: 10,
+    backgroundColor: '#e6f2ff',
+  },
+  menuView: {
+    width: "85%", 
+    height: "18%",
+    borderRadius: 10,
+  },
+  menuView2: {
+    width: "85%", 
+    height: "14%",
+    borderRadius: 10,
+  },
+  menuBS: {
+    width: "100%", 
+    height: "85%",
+    backgroundColor: "#ffffff",
+    marginTop: 20,
+    borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    padding: 10,
+  },
+  topMenuButton: {
+    width: "100%", 
+    height: "33%",
+    borderRadius: 10,
+    paddingRight: 10,
+  },
+  topMenuButton2: {
+    width: "100%", 
+    height: "50%",
+    borderRadius: 10,
+    paddingRight: 10,
+  },
+  menuButton: {
+    width: "100%", 
+    height: "33%",
+    borderTopLeftRadius: 0, 
+    borderTopRightRadius: 0, 
+    borderBottomLeftRadius: 10, 
+    borderBottomRightRadius: 10,
+    borderTopWidth: 1,
+    borderColor: '#3f9eeb',
+    paddingRight: 10,
+  },
+  menuButton2: {
+    width: "100%", 
+    height: "50%",
+    borderTopLeftRadius: 0, 
+    borderTopRightRadius: 0, 
+    borderBottomLeftRadius: 10, 
+    borderBottomRightRadius: 10,
+    borderTopWidth: 1,
+    borderColor: '#3f9eeb',
+    paddingRight: 10,
+  },
+  topMenuButtonBS: {
+    width: "100%", 
+    height: "33%",
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    paddingTop: 5,
+  },
+  menuButtonBS: {
+    width: "100%", 
+    height: "25%",
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 0, 
+    borderTopRightRadius: 0, 
+    borderBottomLeftRadius: 10, 
+    borderBottomRightRadius: 10,
+    borderTopWidth: 1,
+    borderColor: '#3f9eeb',
+    paddingTop: 5,
+  },
+  listingItem: {
+    flexDirection: "column",
+    padding: 15,
+    alignItems: 'center',   
+  },
+  listingImage: {
+    width: 60,
+    height: 60,
+    resizeMode: "cover",
+    margin: 15,
+    borderRadius: 15,
+  },
+  textContainer: {
+    width: '100%',
+  },
+  listingTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    paddingLeft: 5,
+  },
+  listingPrice: {
+    fontSize: 16,
+    color: "green",
+    paddingLeft: 5,
+  },
+  imageContainer: {
+    position: 'relative',
+    borderRadius: 10,
+    overflow: 'hidden',
+    margin: 5,
+  },
+  checkIcon: {
+    position: 'absolute',
+    top: '30%', 
+    right: '30%',
+    zIndex: 1, 
+    color: '#3f9eeb', 
+  },
+  noResultsFound: {
+    fontSize: 25,
+    textAlign: "center",
+  },
+  scrollViewContainer: {
+    flexGrow: 1, // Allow the ScrollView to grow vertically
+    paddingHorizontal: 20,
+    paddingTop: 20, // Adjust padding as needed
+    paddingBottom: 35, // Adjust padding as needed
+  },
+  subjectButtonTop: {
+    backgroundColor: '#ffffff',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  subjectButton: {
+    backgroundColor: '#ffffff',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderTopWidth: 1,
+    borderColor: '#3f9eeb',
+  },
+  subjectText: {
+    color: '#3f9eeb',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  locationBox: {
+    padding: 3,
+    margin: 5,
+  },
+  locationText: { //individual subjects in the subject option (Accounting, Bio, etc.)
+    fontSize: 20,
+    padding: 5,
+    color: "#3f9eeb",
+  },
+  priceInput: {
+    backgroundColor: '#e6f2ff',
+    flex: 1,
+    fontSize: 30,
+    textAlign: 'center',
+    borderBottomWidth: 1,
+    borderColor: '#3f9eeb',
+    borderRadius: 10,
+    color: '#3f9eeb', 
+  },
+  priceText: {
+    fontSize: 22,
+    fontWeight: '400',
+    color: "#3f9eeb",
+    padding: 5,
+  },
+  priceContainer: {
+    width: "100%",
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingRight: 20,
+  },
+  contentContainer: {
+    width: "100%",
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'left',
+    backgroundColor: 'white',
+  },
+  titleText: {
+    fontSize: 18,
+    fontWeight: '400',
+    color: "#3f9eeb",
+    padding: 5,
+  },
+  courseText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: "#3f9eeb",
+    padding: 5,
+  },
+  titleTextMenu: {
+    fontSize: 20,
+    fontWeight: '400',
+    color: "#3f9eeb",
+    padding: 5,
+    paddingTop: 10,
+  },
+  menuSelection: {
+    fontSize: 20,
+    color: "#3f9eeb",
+    padding: 5,
+    paddingTop: 10,
+  },
+  titleBody: {
+    fontSize: 14,
+    color: "#5fb6e3",
+  },
+  imageWrapper: {
+    position: 'relative',
+    width: '20%',
+    margin: 15,
+  },
+  listingImg: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    aspectRatio: 1,
+    resizeMode: "cover",
+  },
+  mapContainer: {
+    backgroundColor: "white",
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  mapImage: {
+    width: Dimensions.get("window").width,
+    height: Dimensions.get("window").height / 3,
+    borderRadius: 10,
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  profilePic: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
 });
 
