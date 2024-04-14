@@ -33,6 +33,8 @@ import SellerProfile from "../screens/Stacks/SellerProfile";
 import Offer from "../screens/Stacks/Offer";
 import Bag from "../screens/Components/Bag/BagScreen";
 import AnswerOffer from "../screens/Stacks/AnswerOffer";
+import Chat from "../screens/Stacks/Chat";
+import Messages from "../screens/Stacks/Messages";
 
 
 
@@ -196,6 +198,22 @@ export default function AppNavigation() {
             headerTitle: "Bag",
             headerBackVisible: true,
           }}
+        />
+        <Stack.Screen
+          name="Chat"
+          component={Chat}
+          // options={{
+          //   headerTitle: "Chat",
+          //   headerBackVisible: true,
+          // }}
+        />
+        <Stack.Screen
+          name="Messages"
+          component={Messages}
+          // options={{
+          //   headerTitle: "Messages",
+          //   headerBackVisible: true,
+          // }}
         />
       </Stack.Navigator>
     );

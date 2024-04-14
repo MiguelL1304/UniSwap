@@ -182,6 +182,7 @@ const Listing = ({ route }) => {
     const handleSellerProfile = () => {
       navigation.navigate("SellerProfile", {listing});
     };    
+    
     //const handleAddToBag = (listing) => {
     const handleAddToBag = async () => {  
       const user = auth.currentUser;
@@ -227,13 +228,13 @@ const handleOffer = async () => {
 // 
 
 const handleBackNavigation = () => {
-  navigation.goBack();
-  if (sourceScreen === "Home") {
-    navigation.navigate("Home", {listing}); // Navigate back to home page
-  } else 
+  // navigation.goBack();
+  // if (sourceScreen === "Home") {
+  //   navigation.navigate("Home", {listing}); // Navigate back to home page
+  // } else 
   if (sourceScreen === "SellerProfile") {
     // navigation.navigate("SellerProfile"); // Navigate back to seller profile page
-    navigation.replace("SellerProfile", {listing});
+    navigation.navigate("SellerProfile", {listing});
   } else {
     // Default behavior, navigate back
     navigation.goBack();
