@@ -37,7 +37,7 @@ const SentOffers = () => {
   };
 
   const handleDetails = (offer) => {
-    navigation.navigate("AnswerOffer", offer);
+    navigation.navigate("OfferDetails", offer);
   };
 
   const renderItem = ({ item, index }) => {

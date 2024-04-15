@@ -30,7 +30,7 @@ const SellerProfile = ({ route }) => {
   const handleListing = (listing) => {
     // navigation.replace("Listing", { listing: listing, sourceScreen: "SellerProfile" });
     // navigation.replace("Listing", { listing, sourceScreen: "SellerProfile" });
-    navigation.replace("Listing", {listing: listing});
+    navigation.navigate("Listing2", {listing: listing});
 
   };  
 
