@@ -83,7 +83,7 @@ const Messages = ({navigation}) => {
         data={MessageData}
         keyExtractor={item=>item.id}
         renderItem={({item}) => (
-          <Card onPress={() => navigation.replace('Chat', {userName: item.userName})}>
+          <Card onPress={() => navigation.navigate('Chat', {userName: item.userName})}>
             <UserInfo>
               <UserImgWrapper>
                 <UserImg source={item.userImg} />
