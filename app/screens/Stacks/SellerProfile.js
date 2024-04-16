@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Image, FlatList, TouchableOpacity, Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { doc, getDoc, addDoc, collection, setDoc } from 'firebase/firestore';
+import { doc, getDoc, addDoc, collection, setDoc, updateDoc } from 'firebase/firestore';
 import { firestoreDB, auth } from "../../../Firebase/firebase";
 import defaultImg from "../../assets/defaultImg.png";
 
@@ -18,6 +18,7 @@ const SellerProfile = ({ route }) => {
   const [userBio, setUserBio] = useState('');
   const [userUni, setUserUni] = useState('');
   const [sellerID, setSellerID] = useState('');
+  const [profileFetched, setProfileFetched] = useState(false);
 
 
   useEffect(() => {
@@ -49,6 +50,7 @@ const SellerProfile = ({ route }) => {
         setUserUni(`${profileData.college}`);
         setUserBio(`${profileData.bio}`);
         setSellerID(userId);
+        setProfileFetched(true);
       }
     } catch (error) {
       console.error('Error fetching document:', error);
@@ -59,36 +61,98 @@ const SellerProfile = ({ route }) => {
     try {
       const currentUserEmail = auth.currentUser.email;
       const chatDocName = `${currentUserEmail}_${sellerID}`;
+      const reverseChatDocName = `${sellerID}_${currentUserEmail}`; // Name for reverse document
+  
+      // Fetch the profile document of the current user
+      const profileDocRef = doc(firestoreDB, 'profile', currentUserEmail);
+      const profileDocSnapshot = await getDoc(profileDocRef);
 
-      // Create a document reference with the desired document ID
+      const sellerDocRef = doc(firestoreDB, 'profile', sellerID);
+      const sellerDocSnapshot = await getDoc(sellerDocRef);
+  
+      if (!profileDocSnapshot.exists()) {
+        console.error('Profile document not found for the current user');
+        return;
+      }
+  
+      const currentUserData = profileDocSnapshot.data();
+      const sellerData = sellerDocSnapshot.data();
+  
+      // Extract necessary user information
+      const { firstName, lastName, profilePic } = currentUserData;
+
+      if (!currentUserData.chatList) {
+        await setDoc(profileDocRef, { chatList: [] }, { merge: true });
+      }
+      if (!currentUserData.chatList) {
+        await setDoc(sellerDocRef, { chatList: [] }, { merge: true });
+      }
+  
+      // Create document references for both chat documents
       const chatDocRef = doc(firestoreDB, 'chats', chatDocName);
-
+      const reverseChatDocRef = doc(firestoreDB, 'chats', reverseChatDocName);
+  
       // Check if the chat document already exists
       const chatDocSnapshot = await getDoc(chatDocRef);
-
+      const reverseChatDocSnapshot = await getDoc(reverseChatDocRef);
+  
+      let selectedChatDocRef;
       if (chatDocSnapshot.exists()) {
-        // Chat document already exists, do something if needed
-        console.log('Chat document already exists');
+        selectedChatDocRef = chatDocRef;
+      } else if (reverseChatDocSnapshot.exists()) {
+        selectedChatDocRef = reverseChatDocRef;
       } else {
-        // Create a new chat document
+        // If neither chat document exists, create a new chat document
         await setDoc(chatDocRef, {
-          // Add initial data to the chat document if needed
+          [currentUserEmail]: {
+            name: `${firstName} ${lastName}`,
+            profilePic,
+            email: currentUserEmail,
+          },
+          [sellerID]: {
+            // Assuming you have seller information available
+            // Replace these with actual seller information if available
+            name: userName,
+            profilePic: userPic,
+            email: sellerID,
+          },
+        });
+  
+        console.log('New chat document created');
+        selectedChatDocRef = chatDocRef; // Use the chatDocRef since it was just created
+
+        await updateDoc(profileDocRef, {
+          chatList: [chatDocName, ...currentUserData.chatList]
         });
 
-        console.log('New chat document created');
+        await updateDoc(sellerDocRef, {
+          chatList: [chatDocName, ...sellerData.chatList]
+        });
       }
-
-      // Fetch chat data (optional)
-      const chatDoc = await getDoc(chatDocRef);
+  
+      // Fetch chat data using the selected chat document reference
+      const chatDoc = await getDoc(selectedChatDocRef);
       const chatData = chatDoc.data();
-
+  
       // Navigate to the chat screen with chat data
-      // navigation.navigate('Chat', { chatData });
+      navigation.navigate('Chat', {
+        chatId: selectedChatDocRef.id, // Use the ID of the selected chat document reference
+        currentUser: {
+          name: `${firstName} ${lastName}`,
+          profilePic: profilePic,
+          email: currentUserEmail,
+        },
+        seller: {
+          name: userName,
+          profilePic: userPic,
+          email: sellerID,
+        }
+      });
+  
     } catch (error) {
       console.error('Error handling message:', error);
     }
   };
-
 
   // Fetch Seller's Listings
   useEffect(() => {
@@ -154,9 +218,11 @@ const SellerProfile = ({ route }) => {
         <View style={styles.profileInfo}>
           <Text style={styles.userName}>{userName}</Text>
           <Text style={styles.userUni}>{userUni}</Text>
-          <TouchableOpacity onPress={handleMessage}>
-            <Text style={[styles.userName, { fontSize: 16, color: '#3f9eeb' }]}>Send Message</Text>
-          </TouchableOpacity>
+          {profileFetched && (
+            <TouchableOpacity onPress={handleMessage}>
+              <Text style={[styles.userName, { fontSize: 16, color: '#3f9eeb' }]}>Send Message</Text>
+            </TouchableOpacity>
+          )}
         </View>
         </View>
 
