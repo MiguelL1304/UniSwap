@@ -1,82 +1,59 @@
-// import React, {
-//     useState,
-//     useEffect,
-//     useLayoutEffect,
-//     useCallback
-// } from "react";
-// import { TouchableOpacity, Text, View } from "react-native";
-// import { GiftedChat } from "react-native-gifted-chat";
-// import {
-//     collection, 
-//     addDoc,
-//     orderBy,
-//     query,
-//     onSnapshot
-// } from 'firebase/firestore';
-// import { auth, database } from "../../../Firebase/firebase";
-// import { useNavigation } from "@react-navigation/native";
-
-
-// const Chat = () => {
-//     const navigation = useNavigation();
-
-
-//     const handleMessages = () => {
-//         navigation.navigate("Messages");
-//       };
- 
-//     return (
-//         <View>
-//         <Text>Chat</Text>
-//         <TouchableOpacity onPress={handleMessages}>
-//             <Text>Messages</Text>
-//             </TouchableOpacity> 
-//         </View>
-//     )
-    
-// }
-// export default Chat;
-
-import React, {useState, useEffect, useCallback} from 'react';
-import {View, ScrollView, Text, Button, StyleSheet} from 'react-native';
-import {Bubble, GiftedChat, Send} from 'react-native-gifted-chat';
+import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { Bubble, GiftedChat, Send } from 'react-native-gifted-chat';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { collection, addDoc, orderBy, query, onSnapshot, doc, serverTimestamp } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import { firestoreDB, auth } from "../../../Firebase/firebase";
+import { useNavigation } from '@react-navigation/native';
+import { AntDesign } from '@expo/vector-icons';
 
-const Chat = () => {
+export default function Chat({ route }) {
+  const navigation = useNavigation();
   const [messages, setMessages] = useState([]);
-  setMessages(route.params.messages);
+  const { chatId } = route.params;
 
   useEffect(() => {
-    setMessages([
-      {
-        _id: 1,
-        text: 'Hello developer',
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: 'React Native',
-          avatar: 'https://placeimg.com/140/140/any',
-        },
-      },
-      {
-        _id: 2,
-        text: 'Hello world',
-        createdAt: new Date(),
-        user: {
-          _id: 1,
-          name: 'React Native',
-          avatar: 'https://placeimg.com/140/140/any',
-        },
-      },
-    ]);
-  }, []);
+    if (!chatId) {
+      console.error('Chat ID is undefined');
+      return;
+    }
+
+    const chatMessagesRef = collection(firestoreDB, 'chats', chatId, 'messages');
+    const messagesQuery = query(chatMessagesRef, orderBy('createdAt', 'desc')); // Order messages by createdAt field in ascending order
+
+    const unsubscribe = onSnapshot(messagesQuery, (querySnapshot) => {
+      const loadedMessages = querySnapshot.docs.map((doc) => {
+        const messageData = doc.data();
+        const createdAt = messageData.createdAt ? messageData.createdAt.toDate() : new Date(); // Convert Firestore Timestamp to JavaScript Date object
+        return {
+          _id: doc.id,
+          text: messageData.text,
+          user: messageData.user,
+          createdAt,
+        };
+      });
+      setMessages(loadedMessages);
+    });
+
+    return unsubscribe;
+  }, [chatId]);
 
   const onSend = useCallback((messages = []) => {
-    setMessages((previousMessages) =>
-      GiftedChat.append(previousMessages, messages),
-    );
-  }, []);
+    const message = messages[0];
+    setMessages(previousMessages => GiftedChat.append(previousMessages, message));
+
+    const { _id, text, user } = message;
+    // Set the createdAt field to the current server timestamp
+    const createdAt = serverTimestamp(); // Get the current server timestamp
+    addDoc(collection(firestoreDB, 'chats', chatId, 'messages'), {
+      _id,
+      text,
+      user,
+      createdAt, // Set the createdAt field to the current server timestamp
+    }).catch((error) => console.error('Error sending message:', error));
+  }, [chatId]);
 
   const renderSend = (props) => {
     return (
@@ -84,13 +61,17 @@ const Chat = () => {
         <View>
           <MaterialCommunityIcons
             name="send-circle"
-            style={{marginBottom: 5, marginRight: 5}}
+            style={{ marginBottom: 5, marginRight: 5 }}
             size={32}
             color="#3f9eeb"
           />
         </View>
       </Send>
     );
+  };
+
+  const scrollToBottomComponent = () => {
+    return <FontAwesome name="angle-double-down" size={25} color="#333" />;
   };
 
   const renderBubble = (props) => {
@@ -101,45 +82,60 @@ const Chat = () => {
           right: {
             backgroundColor: '#3f9eeb',
           },
+          left: {
+            backgroundColor: '#e6f2ff',
+          },
         }}
         textStyle={{
           right: {
             color: '#fff',
+          },
+          left: {
+            color: '#3f9eeb',
           },
         }}
       />
     );
   };
 
-  const scrollToBottomComponent = () => {
-    return(
-      <FontAwesome name='angle-double-down' size={25} color='#333' />
+  const renderAvatar = (props) => {
+    const user = props.currentMessage.user;
+    const currentUser = route.params.currentUser;
+    const seller = route.params.seller;
+  
+    // Determine if the message belongs to the current user or the seller
+    const isCurrentUser = user._id === currentUser.email;
+    const profilePic = isCurrentUser ? currentUser.profilePic : seller.profilePic;
+  
+    // Use the profile picture URI for the left bubble
+    return (
+      <Image
+        source={{ uri: profilePic }}
+        style={{ width: 40, height: 40, borderRadius: 20 }}
+      />
     );
-  }
+  };
+
 
   return (
-    <GiftedChat
-      messages={messages}
-      onSend={(messages) => onSend(messages)}
-      user={{
-        _id: 1,
-      }}
-      renderBubble={renderBubble}
-      alwaysShowSend
-      renderSend={renderSend}
-      scrollToBottom
-      scrollToBottomComponent={scrollToBottomComponent}
-    />
+    <KeyboardAvoidingView 
+      style={{ flex: 1, paddingBottom: 20, backgroundColor: '#ffffff' }}
+    >
+      <GiftedChat
+        messages={messages}
+        alwaysShowSend
+        onSend={onSend}
+        renderSend={renderSend}
+        renderAvatar={renderAvatar}
+        user={{
+          _id: auth.currentUser?.uid,
+        }}
+        scrollToBottom
+        scrollToBottomComponent={scrollToBottomComponent}
+        renderBubble={renderBubble}
+      />
+    </KeyboardAvoidingView>
+    
   );
-};
+}
 
-export default Chat;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-  },
-});
