@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Image, FlatList, TouchableOpacity, Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, addDoc, collection, setDoc } from 'firebase/firestore';
 import { firestoreDB, auth } from "../../../Firebase/firebase";
 import defaultImg from "../../assets/defaultImg.png";
 
@@ -17,6 +17,8 @@ const SellerProfile = ({ route }) => {
   const [userPic, setUserPic] = useState('');
   const [userBio, setUserBio] = useState('');
   const [userUni, setUserUni] = useState('');
+  const [sellerID, setSellerID] = useState('');
+
 
   useEffect(() => {
     if (route && route.params && route.params.listing && route.params.listing.id) {
@@ -46,9 +48,44 @@ const SellerProfile = ({ route }) => {
         setUserPic(`${profileData.profilePic}`);
         setUserUni(`${profileData.college}`);
         setUserBio(`${profileData.bio}`);
+        setSellerID(userId);
       }
     } catch (error) {
       console.error('Error fetching document:', error);
+    }
+  };
+
+  const handleMessage = async () => {
+    try {
+      const currentUserEmail = auth.currentUser.email;
+      const chatDocName = `${currentUserEmail}_${sellerID}`;
+
+      // Create a document reference with the desired document ID
+      const chatDocRef = doc(firestoreDB, 'chats', chatDocName);
+
+      // Check if the chat document already exists
+      const chatDocSnapshot = await getDoc(chatDocRef);
+
+      if (chatDocSnapshot.exists()) {
+        // Chat document already exists, do something if needed
+        console.log('Chat document already exists');
+      } else {
+        // Create a new chat document
+        await setDoc(chatDocRef, {
+          // Add initial data to the chat document if needed
+        });
+
+        console.log('New chat document created');
+      }
+
+      // Fetch chat data (optional)
+      const chatDoc = await getDoc(chatDocRef);
+      const chatData = chatDoc.data();
+
+      // Navigate to the chat screen with chat data
+      // navigation.navigate('Chat', { chatData });
+    } catch (error) {
+      console.error('Error handling message:', error);
     }
   };
 
@@ -117,6 +154,9 @@ const SellerProfile = ({ route }) => {
         <View style={styles.profileInfo}>
           <Text style={styles.userName}>{userName}</Text>
           <Text style={styles.userUni}>{userUni}</Text>
+          <TouchableOpacity onPress={handleMessage}>
+            <Text style={[styles.userName, { fontSize: 16, color: '#3f9eeb' }]}>Send Message</Text>
+          </TouchableOpacity>
         </View>
         </View>
 

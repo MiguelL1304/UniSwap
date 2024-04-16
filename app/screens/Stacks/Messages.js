@@ -29,6 +29,7 @@ import {
   MessageText,
   TextSection,
 } from '../styles/MessageStyles';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 
 // DUMMY DATA
@@ -78,7 +79,7 @@ const MessageData = [
 
 const Messages = ({navigation}) => {
   return (
-    <Container>
+    <Container style={styles.container}>
       <FlatList 
         data={MessageData}
         keyExtractor={item=>item.id}
@@ -99,6 +100,7 @@ const Messages = ({navigation}) => {
           </Card>
         )}
       />
+      
     </Container>
   );
 };
