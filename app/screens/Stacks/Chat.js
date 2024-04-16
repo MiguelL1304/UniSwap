@@ -45,6 +45,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
+  setMessages(route.params.messages);
 
   useEffect(() => {
     setMessages([
@@ -112,7 +113,7 @@ const Chat = () => {
 
   const scrollToBottomComponent = () => {
     return(
-      <FontAwesome name='angle-double-down' size={22} color='#333' />
+      <FontAwesome name='angle-double-down' size={25} color='#333' />
     );
   }
 
