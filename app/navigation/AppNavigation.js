@@ -35,6 +35,7 @@ import Offer from "../screens/Stacks/Offer";
 import Bag from "../screens/Components/Bag/BagScreen";
 import AnswerOffer from "../screens/Stacks/AnswerOffer";
 import OfferDetails from "../screens/Stacks/OfferDetails";
+import MeetupDetails from "../screens/Stacks/MeetupDetails";
 import Chat from "../screens/Stacks/Chat";
 import Messages from "../screens/Stacks/Messages";
 
@@ -214,6 +215,14 @@ export default function AppNavigation() {
           component={OfferDetails}
           options={{
             headerTitle: "Offer Details",
+            headerBackVisible: true,
+          }}
+        />
+        <Stack.Screen
+          name="MeetupDetails"
+          component={MeetupDetails}
+          options={{
+            headerTitle: "Meetup",
             headerBackVisible: true,
           }}
         />

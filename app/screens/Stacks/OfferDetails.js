@@ -89,7 +89,7 @@ const OfferDetails= ({ route }) => { // Receive profile data as props
           />
         }
       >
-        {[...Array(numContainers).keys()].map((index) => (
+        {listings.map((item, index) => (
           <View style={[styles.contentContainer, { height: '100%'}]} key={index}>
             <View style={styles.imageWrapper}>
               <Image
@@ -99,7 +99,7 @@ const OfferDetails= ({ route }) => { // Receive profile data as props
             </View>
             <View>
               <Text style={styles.titleText}>{listings[index].title}</Text>
-              <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Price: $ {listings[index].price} | {listings[index].condition}</Text>
+              <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Price: ${item.price} | {item.condition}</Text>
             </View>
           </View>
         ))}
