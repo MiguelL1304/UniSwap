@@ -57,6 +57,7 @@ const SellerProfile = ({ route }) => {
     }
   };
 
+
   const handleMessage = async () => {
     try {
       const currentUserEmail = auth.currentUser.email;
@@ -66,7 +67,7 @@ const SellerProfile = ({ route }) => {
       // Fetch the profile document of the current user
       const profileDocRef = doc(firestoreDB, 'profile', currentUserEmail);
       const profileDocSnapshot = await getDoc(profileDocRef);
-
+  
       const sellerDocRef = doc(firestoreDB, 'profile', sellerID);
       const sellerDocSnapshot = await getDoc(sellerDocRef);
   
@@ -75,18 +76,16 @@ const SellerProfile = ({ route }) => {
         return;
       }
   
+      if (!sellerDocSnapshot.exists()) {
+        console.error('Seller profile document not found');
+        return;
+      }
+  
       const currentUserData = profileDocSnapshot.data();
       const sellerData = sellerDocSnapshot.data();
   
       // Extract necessary user information
       const { firstName, lastName, profilePic } = currentUserData;
-
-      if (!currentUserData.chatList) {
-        await setDoc(profileDocRef, { chatList: [] }, { merge: true });
-      }
-      if (!currentUserData.chatList) {
-        await setDoc(sellerDocRef, { chatList: [] }, { merge: true });
-      }
   
       // Create document references for both chat documents
       const chatDocRef = doc(firestoreDB, 'chats', chatDocName);
@@ -112,22 +111,39 @@ const SellerProfile = ({ route }) => {
           [sellerID]: {
             // Assuming you have seller information available
             // Replace these with actual seller information if available
-            name: userName,
-            profilePic: userPic,
+            name: sellerData.firstName + ' ' + sellerData.lastName,
+            profilePic: sellerData.profilePic,
             email: sellerID,
           },
         });
   
         console.log('New chat document created');
         selectedChatDocRef = chatDocRef; // Use the chatDocRef since it was just created
-
-        await updateDoc(profileDocRef, {
-          chatList: [chatDocName, ...currentUserData.chatList]
-        });
-
-        await updateDoc(sellerDocRef, {
-          chatList: [chatDocName, ...sellerData.chatList]
-        });
+  
+        // console.log("error here")
+        // console.log(profileDocRef)
+        // console.log(chatDocName)
+        // console.log(currentUserData)
+        // console.log(sellerData)
+        // Update chatList in both user's documents
+        // Ensure chatList exists in both user's data
+        if (!currentUserData.chatList) {
+          await setDoc(profileDocRef, { chatList: [chatDocName] }, { merge: true });
+        }
+        else {
+          await updateDoc(profileDocRef, {
+            chatList: [chatDocName, ...currentUserData.chatList],
+          });
+        }
+    
+        if (!sellerData.chatList) {
+          await setDoc(sellerDocRef, { chatList: [chatDocName] }, { merge: true });
+        }
+        else {
+          await updateDoc(sellerDocRef, {
+            chatList: [chatDocName, ...sellerData.chatList],
+          });
+        }
       }
   
       // Fetch chat data using the selected chat document reference
@@ -143,16 +159,16 @@ const SellerProfile = ({ route }) => {
           email: currentUserEmail,
         },
         seller: {
-          name: userName,
-          profilePic: userPic,
+          name: sellerData.firstName + ' ' + sellerData.lastName,
+          profilePic: sellerData.profilePic,
           email: sellerID,
-        }
+        },
       });
-  
     } catch (error) {
       console.error('Error handling message:', error);
     }
   };
+
 
   // Fetch Seller's Listings
   useEffect(() => {
