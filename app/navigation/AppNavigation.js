@@ -38,6 +38,7 @@ import OfferDetails from "../screens/Stacks/OfferDetails";
 import MeetupDetails from "../screens/Stacks/MeetupDetails";
 import Chat from "../screens/Stacks/Chat";
 import Messages from "../screens/Stacks/Messages";
+import Confirm from "../screens/Stacks/Confirm"
 
 
 
@@ -249,6 +250,14 @@ export default function AppNavigation() {
           //   headerTitle: "Messages",
           //   headerBackVisible: true,
           // }}
+        />
+         <Stack.Screen
+          name="Confirm"
+          component={Confirm}
+          options={{
+            headerTitle: "Confirmation",
+            headerBackVisible: true,
+          }}
         />
       </Stack.Navigator>
     );
