@@ -105,9 +105,6 @@ const FinalizedItems = ({ item }) => {
     fetchUserProfile();
   }, [item.buyer, item.seller]);
 
-  const totalPriceCal = item.listings.reduce((total, currentListing) => total + parseFloat(currentListing.price.replace('$', '')), 0);
-  const totalPrice = totalPriceCal.toString();
-
   return (
     <View style={styles.container}>
       <View style={styles.contentContainer}>
@@ -118,11 +115,15 @@ const FinalizedItems = ({ item }) => {
           />
         </View>
 
-        <View>
-          <Text style={styles.titleText}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.titleText} numberOfLines={2}>
             {item.listings[0].title}
             {item.listings.length > 1 ? ` and ${item.listings.length - 1} more` : ''}</Text>
-          <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Total Price: ${totalPrice}</Text>
+          <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Total Price: ${item.finalPrice}</Text>
+           <View style={styles.meetupInfo}>
+          <Text style={styles.meetupText}>Location: {item.location}</Text>
+          <Text style={styles.meetupText}>Date: {item.date ? new Date(item.date.seconds * 1000).toLocaleDateString() : 'Date not available'} {item.time ? new Date(item.time.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : 'Time not available'}</Text>
+        </View>
         </View>
       </View>
 
@@ -344,6 +345,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     justifyContent: 'left',
     backgroundColor: 'white',
+    paddingBottom: 10,
   },
   titleText: {
     fontSize: 18,
@@ -396,15 +398,29 @@ const styles = StyleSheet.create({
     height: Dimensions.get("window").height / 3,
     borderRadius: 10,
   },
-  username: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
+  meetupInfo: {
+    marginLeft: 5,
+  },
+  meetupText: {
+    color: "#3f9eeb",
+    fontSize: 14,
+    marginRight: 50,
+  },
+  transactionType: {
+    marginLeft: 20,
   },
   profilePic: {
     width: 50,
     height: 50,
     borderRadius: 25,
+    marginLeft: 10,
+  },
+  username: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+    marginLeft: 10,
   },
 });
 
