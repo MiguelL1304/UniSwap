@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Image, FlatList, Text, ScrollView, Dimensions } from "react-native";
+import { View, StyleSheet, Image, FlatList, Text, ScrollView, Dimensions, TouchableOpacity } from "react-native";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import ImageViewer from "react-native-image-zoom-viewer";
 
 const Meetups = () => {
+  const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [meetups, setMeetups] = useState([]);
 
@@ -40,6 +41,7 @@ const Meetups = () => {
       <View>
         <FinalizedItems 
           item={item}
+          navigation={navigation}
         />
         {index !== meetups.length - 1 && <View style={styles.divider} />}
       </View>
@@ -71,7 +73,7 @@ const Meetups = () => {
   );
 };
 
-const FinalizedItems = ({ item }) => {
+const FinalizedItems = ({ item, navigation }) => {
   const [userName, setUserName] = useState('');
   const [userPic, setUserPic] = useState('');
   const [transactionType, setTransactionType] = useState('');
@@ -105,6 +107,10 @@ const FinalizedItems = ({ item }) => {
     fetchUserProfile();
   }, [item.buyer, item.seller]);
 
+  const handleMeetupDetails = () => {
+    navigation.navigate("MeetupDetails", item); // Navigate to OfferDetails screen with item data
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.contentContainer}>
@@ -136,7 +142,12 @@ const FinalizedItems = ({ item }) => {
           />
         </View>
         <Text style={styles.username}>{userName}</Text>
-        <Text style={styles.offerPrice}>{item.offerPrice}</Text>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={handleMeetupDetails}>
+          <Text style={styles.buttonText}>View Meetup</Text>
+        </TouchableOpacity>
       </View>
 
    
@@ -187,59 +198,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 10,
-  },
-  topMenuButton: {
-    width: "100%", 
-    height: "33%",
-    borderRadius: 10,
-    paddingRight: 10,
-  },
-  topMenuButton2: {
-    width: "100%", 
-    height: "50%",
-    borderRadius: 10,
-    paddingRight: 10,
-  },
-  menuButton: {
-    width: "100%", 
-    height: "33%",
-    borderTopLeftRadius: 0, 
-    borderTopRightRadius: 0, 
-    borderBottomLeftRadius: 10, 
-    borderBottomRightRadius: 10,
-    borderTopWidth: 1,
-    borderColor: '#3f9eeb',
-    paddingRight: 10,
-  },
-  menuButton2: {
-    width: "100%", 
-    height: "50%",
-    borderTopLeftRadius: 0, 
-    borderTopRightRadius: 0, 
-    borderBottomLeftRadius: 10, 
-    borderBottomRightRadius: 10,
-    borderTopWidth: 1,
-    borderColor: '#3f9eeb',
-    paddingRight: 10,
-  },
-  topMenuButtonBS: {
-    width: "100%", 
-    height: "33%",
-    backgroundColor: "#ffffff",
-    borderRadius: 10,
-    paddingTop: 5,
-  },
-  menuButtonBS: {
-    width: "100%", 
-    height: "25%",
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: 0, 
-    borderTopRightRadius: 0, 
-    borderBottomLeftRadius: 10, 
-    borderBottomRightRadius: 10,
-    borderTopWidth: 1,
-    borderColor: '#3f9eeb',
-    paddingTop: 5,
   },
   listingItem: {
     flexDirection: "column",
@@ -421,6 +379,27 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 5,
     marginLeft: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: "center",
+    width: "100%",
+    height: "25%",
+  },
+  button: {
+    backgroundColor: "#3f9eeb",
+    width: "30%",
+    height: 35,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 10,
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "500",
+    fontSize: 16,
   },
 });
 
