@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, Image, StyleSheet, ScrollView } from "react-native";
 import { auth } from "../../../../Firebase/firebase";
-import { getBagItems, removeFromBag } from "./BagLogic";
+import { getBagItems, removeFromBag, handleSellerPress } from "./BagLogic";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useNavigation } from '@react-navigation/native';
 
@@ -11,8 +11,9 @@ const Bag = () => {
 
     const [editMode, setEditMode] = useState(false);
     const [groupedItems, setGroupedItems] = useState([]);
+    //const [renderedSellers, setRenderedSellers] = useState({});
 
-    React.useLayoutEffect(() => {
+      useEffect(() => {
         navigation.setOptions({
           headerRight: () => (
             <TouchableOpacity onPress={() => setEditMode(!editMode)}>
@@ -22,59 +23,60 @@ const Bag = () => {
             </TouchableOpacity>
           ),
         });
-      }, [navigation, editMode]);
+    }, [navigation, editMode]);
 
-    // adding + grouping item(s)
     useEffect(() => {
-        const groupItemsBySeller = (items) => {
-            const grouped = items.reduce((acc, item) => {
-                const key = item.sellerEmail; 
-                if (!acc[key]) {
-                    acc[key] = {
-                        sellerInfo: {
-                            name: `${item.sellerFirstName} ${item.sellerLastName}`,
-                            image: item.sellerImg
-                        },
-                        items: []
-                    };
-                }
-                acc[key].items.push(item);
-                return acc;
-            }, {});
-
-            return Object.values(grouped);
-        };
-
         const fetchItems = async () => {
             const user = auth.currentUser;
             if (user) {
                 const fetchedItems = await getBagItems(user.email);
-                const groupedItems = groupItemsBySeller(fetchedItems);
-                setGroupedItems(groupedItems);
+                console.log("Fetched Items from BagScreen.js: ", fetchedItems)
+                fetchedItems.forEach(item => {
+                    console.log("Seller Details for item: ", item.sellerDetails)
+                })
+                if (fetchedItems && Array.isArray(fetchedItems)) {
+                    const groupedItems = groupItemsBySeller(fetchedItems);
+                    setGroupedItems(groupedItems);
+                } else {
+                    console.error("Problem fetching items :(")
+                }
+
             }
         };
 
         fetchItems();
     }, []);
 
+    const groupItemsBySeller = (items) => {
+        const groups = items.reduce((acc, item) => {
+            const key = item.sellerEmail;
+            if (!acc[key]) {
+                acc[key] = {
+                    sellerInfo: {
+                        name: item.sellerDetails ? `${item.sellerDetails.firstName} ${item.sellerDetails.lastName}` : 'Unknown Seller',
+                        image: item.sellerDetails?.profilePic
+                    },
+                    items: []
+                };
+            }
+            acc[key].items.push(item);
+            console.log("Group being created/updated: ", acc[key])
+            return acc;
+        }, {});
+        console.log("Groups from groupItemsBySeller: ", groups)
+        return Object.values(groups);
+    };
+
     const handleRemoveFromBag = async (itemId) => {
         const user = auth.currentUser;
         if (user) {
-          await removeFromBag(user.email, itemId);
-          setGroupedItems(prevGroupedItems =>
-            prevGroupedItems.reduce((acc, group) => { //acc = accumulator 
-              const filteredItems = group.items.filter(item => item.id !== itemId);
-              if (filteredItems.length > 0) {
-                acc.push({
-                  ...group,
-                  items: filteredItems
-                });
-              }
-              return acc;
-            }, [])
-          );
+            await removeFromBag(user.email, itemId);
+            setGroupedItems(prev => prev.map(group => ({
+                ...group,
+                items: group.items.filter(item => item.id !== itemId)
+            })));
         }
-      };
+    };
 
       const navigateToOffer = (sellerItems) => {
         navigation.navigate("Offer", { listings: sellerItems });
@@ -82,50 +84,53 @@ const Bag = () => {
 
     return (
         <ScrollView>
-            <View style={{backgroundColor: "white"}}>
-                {groupedItems.map((group, index) => (
-                    <View key={index}>
-                        <View style={styles.sellerContainer}>
-
-                        {/*  ======== SELLER INFO ======== */}
+        <View style={{backgroundColor: "white"}}>
+            {groupedItems.map((group, index) => (
+                <View key={index}>
+                    {/* ======== SELLER INFO ======== */}
+                    {/* Render seller info only once per group */}
+                    <TouchableOpacity 
+                        style={styles.sellerContainer}
+                        onPress={() => handleSellerPress(navigation, group.items[0])}
+                    >
                         <Image
                             source={{ uri: group.sellerInfo.image || "https://via.placeholder.com/150" }}
                             style={styles.sellerImage}
                         />
                         <Text style={styles.sellerName}>{group.sellerInfo.name}</Text>
-                        </View>
-                        
-                        {/* ======== LISTINGS ======== */}
-                        {group.items.map((item) => (
-                            <View key={item.id} style={styles.listingContainer}>
-                                <Image
+                    </TouchableOpacity>
+                    
+                    {/* ======== LISTINGS ======== */}
+                    {group.items.map((item) => (
+                        <View key={item.id} style={styles.listingContainer}>
+                            <Image
                                 source={{ uri: item.listingImg1 || "https://via.placeholder.com/150" }}
                                 style={styles.listingImage}
-                                />
-                                <Text>Title: {item.title}</Text>
-                                <Text>Price: ${item.price}</Text>
-                                {editMode && (
-                                    <TouchableOpacity onPress={() => handleRemoveFromBag(item.id)}>
-                                        <Text style={styles.deleteItemButton}>Delete Item</Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-                        ))}
+                            />
+                            <Text>Title: {item.title}</Text>
+                            <Text>Price: ${item.price}</Text>
+                            {editMode && (
+                                <TouchableOpacity onPress={() => handleRemoveFromBag(item.id)}>
+                                    <Text style={styles.deleteItemButton}>Delete Item</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    ))}
 
-                        {/* ======== CHECKOUT ======== */}
-                        <TouchableOpacity 
-                            style={styles.checkoutContainer}
-                            onPress={() => navigateToOffer(group.items)}
-                        >
-                            <Text style={styles.checkoutButton}>Checkout</Text>
-                        </TouchableOpacity>
+                    {/* ======== CHECKOUT ======== */}
+                    <TouchableOpacity 
+                        style={styles.checkoutContainer}
+                        onPress={() => navigateToOffer(group.items)}
+                    >
+                        <Text style={styles.checkoutButton}>Checkout</Text>
+                    </TouchableOpacity>
 
-                        {/* ======== DIVIDER ======== */}
-                        <View style={styles.divider} />
-                    </View>
-                ))}
-            </View>
-        </ScrollView>
+                    {/* ======== DIVIDER ======== */}
+                    <View style={styles.divider} />
+                </View>
+            ))}
+        </View>
+    </ScrollView>
     );
 }
 
