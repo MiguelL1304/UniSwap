@@ -5,9 +5,9 @@ import { PanGestureHandler } from 'react-native-gesture-handler';
 
 const Confirm = () => {
   return(
-<View>
-  <Button title="confirm"></Button>
-</View>
+    <View>
+      <Button title="confirm"></Button>
+    </View>
   );
 }
 
