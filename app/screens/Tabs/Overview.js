@@ -50,11 +50,6 @@ const Overview = () => {
     navigation.navigate("Messages");
   };
 
-   // TEMPORARY CONFIRM BUTTON NAVIGATOR
-   const handleConfirm = () => {
-    navigation.navigate("Confirm");
-  };
-
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
@@ -93,13 +88,6 @@ const Overview = () => {
           <View style={styles.editProfileButtonContainer}>
             <TouchableOpacity onPress={handleChat}>
               <Text style={styles.buttonText}>CHAT</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* TEMPORARY CONFIRM BUTTON */}
-          <View style={styles.editProfileButtonContainer}>
-            <TouchableOpacity onPress={handleConfirm}>
-              <Text style={styles.buttonText}>CONFIRM</Text>
             </TouchableOpacity>
           </View>
 
