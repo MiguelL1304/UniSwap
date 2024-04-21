@@ -28,6 +28,8 @@ import { Picker } from '@react-native-picker/picker';
 import { addToBag } from "../Components/Bag/BagLogic";
 import SellerProfile from "./SellerProfile";
 import Swiper from 'react-native-swiper';
+import TestSwiper from './TestSwiper';  
+
 
 
 const Listing = ({ route }) => {
@@ -37,6 +39,10 @@ const Listing = ({ route }) => {
       price,
       title,
       listingImg1,
+      listingImg2,
+      listingImg3,
+      listingImg4,
+      listingImg5,
       condition,
       subject,
       course,
@@ -44,6 +50,20 @@ const Listing = ({ route }) => {
     } = listing;
     
     // const { sourceScreen } = route.params;
+
+    useEffect(() => {
+      // Collect all existing images into an array
+      const imgs = [];
+      if (listingImg1) imgs.push(listingImg1);
+      if (listingImg2) imgs.push(listingImg2);
+      if (listingImg3) imgs.push(listingImg3);
+      if (listingImg4) imgs.push(listingImg4);
+      if (listingImg5) imgs.push(listingImg5);
+      setImages(imgs);
+  }, [listingImg1, listingImg2, listingImg3, listingImg4, listingImg5]);
+
+  const [images, setImages] = useState([]);
+
   
     // Declarations for state hooks
     const [isInWishlist, setIsInWishlist] = useState(false); // Ensure unique declaration
@@ -276,21 +296,15 @@ const handleBackNavigation = () => {
         />
       }
     >
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
-          style={styles.image}
-        />
-      </View>
-
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: listingImg1 || "https://via.placeholder.com/150" }}
-          style={styles.image}
-        />
-      </View>
-      
-    </Swiper>
+      {images.map((img, index) => (
+                    <View key={index} style={styles.imageContainer}>
+                        <Image
+                            source={{ uri: img || "https://via.placeholder.com/150" }}
+                            style={styles.image}
+                        />
+                    </View>
+                ))}
+            </Swiper>
     
     
     <View style={styles.container2}>
