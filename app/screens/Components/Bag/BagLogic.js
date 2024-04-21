@@ -36,7 +36,7 @@ const fetchSellerDetails = async (sellerEmail) => {
     const sellerDocRef = doc(firestoreDB, "profile", sellerEmail);
     const sellerDocSnap = await getDoc(sellerDocRef);
     if (sellerDocSnap.exists()) {
-        console.log("sellerDocSnap from fetchSellerDetails: ", sellerDocSnap)
+        //console.log("sellerDocSnap from fetchSellerDetails: ", sellerDocSnap)
         return sellerDocSnap.data();
     } else {
         console.error("Seller profile NOT FOUND for: ", sellerEmail);
@@ -96,17 +96,6 @@ export const listenForBagItemCount = (userEmail, setItemCount) => {
 }
 
 export const handleSellerPress = (navigation, listing) => {
-    console.log("LISTING in handleSellerPress: ", listing);
-    // const {
-    //     id,
-    //     price,
-    //     title,
-    //     listingImg1,
-    //     condition,
-    //     subject,
-    //     course,
-    //     description
-    //   } = listing;
-
-      navigation.navigate("SellerProfile", { listing });
+    //console.log("LISTING in handleSellerPress: ", listing);
+    navigation.navigate("SellerProfile", { listing });
 }
