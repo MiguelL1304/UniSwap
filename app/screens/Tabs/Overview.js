@@ -46,6 +46,10 @@ const Overview = () => {
     navigation.navigate("UpdateProfile", { profileData: profileData });
   };
 
+  const handleConfirm = () => {
+    navigation.navigate("Confirm");
+  };
+
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
@@ -77,6 +81,11 @@ const Overview = () => {
           <View style={styles.editProfileButtonContainer}>
             <TouchableOpacity onPress={handleUpdate}>
               <Text style={styles.buttonText}>Edit Profile</Text>
+            </TouchableOpacity>
+            
+            {/* Temporary Confirm Button */}
+            <TouchableOpacity onPress={handleConfirm}>
+              <Text style={styles.buttonText}>Confirm</Text>
             </TouchableOpacity>
           </View>
         </View>
