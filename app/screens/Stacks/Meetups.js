@@ -1,20 +1,51 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Image, FlatList, Text, ScrollView, Dimensions, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Image, FlatList, Text, ScrollView, Dimensions, TouchableOpacity, Animated, Easing } from "react-native";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
-import ImageViewer from "react-native-image-zoom-viewer";
 
 const Meetups = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [meetups, setMeetups] = useState([]);
+  const [meetupLocations, setMeetupLocations] = useState([]);
+  const [selectedMeetup, setSelectedMeetup] = useState(null);
+  const [selectedMeetupLocation, setSelectedMeetupLocation] = useState(null);
+  const [animation] = useState(new Animated.Value(1));
 
   useEffect(() => {
     if (isFocused) {
       fetchMeetups();
+      fetchMeetupLocations();
     }
   }, [isFocused]);
+
+  useEffect(() => {
+    if (selectedMeetup) {
+    pulseAnimation();
+    }
+  }, [selectedMeetup]);
+
+  const pulseAnimation = () => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animation, {
+          toValue: 0.5,
+          duration: 1500,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animation, {
+          toValue: 1,
+          duration: 1500,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start(() => {
+      animation.setValue(1);
+    });
+  };
 
   const fetchMeetups = async () => {
     try {
@@ -36,28 +67,80 @@ const Meetups = () => {
     }
   };
 
+  const fetchMeetupLocations = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(firestoreDB, "meetuplocations"));
+      const fetchedLocations = [];
+      querySnapshot.forEach((doc) => {
+        fetchedLocations.push({ id: doc.id, ...doc.data() });
+      });
+
+      setMeetupLocations(fetchedLocations);
+    } catch (error) {
+      console.error("Error fetching meetup locations: ", error);
+    }
+  };
+
+  const dotCoordinates = (building) => {
+    const buildingCoordinates = {
+      A: { x: 215, y: 165},
+      B: { x: 70, y: 210},
+      C: { x: 25, y: 190},
+      D: { x: 335, y: 165},
+      E: { x: 40, y: 135},
+      F: { x: 270, y: 45},
+      L: { x: 90, y: 140},
+    };
+    return buildingCoordinates[building] || { x: 0, y: 0 };
+  };
+
+  const handleMeetupSelect = (meetup) => {
+    setSelectedMeetup(meetup);
+    setSelectedMeetupLocation(meetup.location);
+  };
+
   const renderItem = ({ item, index }) => {
+    const isSelected = selectedMeetup && selectedMeetup.id === item.id;
     return (
-      <View>
+      <TouchableOpacity onPress={() => handleMeetupSelect(item)}>
+      <View style={[styles.itemContainer, isSelected && styles.selectedItem]}>
         <FinalizedItems 
           item={item}
           navigation={navigation}
         />
         {index !== meetups.length - 1 && <View style={styles.divider} />}
       </View>
+      </TouchableOpacity>
     );
   };
   
   return (
-    <ScrollView style={{ backgroundColor: "#e6f2ff"}}>
       <View style={styles.mapContainer}>
         {/*GGC Map Image */}
         <Image
           source={require("../../assets/ggc-map.png")}
           style={styles.mapImage}
         />
-      </View>
+        {/* Render dots based on meetup locations */}
+        {meetupLocations.map((location) => {
+          const { building } = location;
+          const { x, y } = dotCoordinates(building);
+          return (
+          selectedMeetup && selectedMeetup.location === location.name ? (
+          <View key={building}>
+            <Text style={styles.meetupLocationText}>Building {building}: {selectedMeetupLocation}</Text>
+            <Animated.View
+            style={[
+              styles.dot, 
+              { left: x, bottom: y, transform: [{ scale: animation }] },
+              ]} 
+              />
+            </View>
+          ) : null
+        );
+      })}
 
+    <ScrollView style={{ backgroundColor: "#e6f2ff"}}>
       {meetups.length > 0 ? (
         <FlatList
           data={meetups}
@@ -69,7 +152,8 @@ const Meetups = () => {
       ) : (
         <Text>No meetups finalized at this time</Text>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -244,7 +328,7 @@ const styles = StyleSheet.create({
   scrollViewContainer: {
     flexGrow: 1, // Allow the ScrollView to grow vertically
     paddingHorizontal: 20,
-    paddingTop: 20, // Adjust padding as needed
+    paddingTop: Dimensions.get("window").height / 3.5, // Adjust padding as needed
     paddingBottom: 35, // Adjust padding as needed
   },
   subjectButtonTop: {
@@ -350,12 +434,30 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     marginBottom: 20,
     paddingHorizontal: 10,
+    position: "relative",
   },
   mapImage: {
     width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height / 3,
-    borderRadius: 10,
+    height: Dimensions.get("window").height / 3.5,
   },
+  dot: {
+    position: "absolute",
+    width: 20,
+    height: 20,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: 'white',
+    backgroundColor: "#3f9eeb",
+  },
+  meetupLocationText: {
+    position: 'absolute',
+    top: -100, 
+    left: 10,
+    backgroundColor: '#3f9eeb',
+    color: "white",
+    padding: 5,
+    borderRadius: 5,
+  }, 
   meetupInfo: {
     marginLeft: 5,
   },
@@ -363,6 +465,16 @@ const styles = StyleSheet.create({
     color: "#3f9eeb",
     fontSize: 14,
     marginRight: 50,
+  },
+  itemContainer: {
+    backgroundColor: "white",
+    padding: 10,
+    borderColor: "transparent", // Initial border color
+    borderWidth: 2,
+    borderRadius: 5,
+  },
+  selectedItem: {
+    borderColor: "#3f9eeb",
   },
   transactionType: {
     marginLeft: 20,
