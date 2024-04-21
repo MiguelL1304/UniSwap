@@ -33,7 +33,7 @@ const Confirm = () => {
       {shoot && <ConfettiCannon count={200} origin={{ x: -width, y: 0 }} />}
 
     </SafeAreaView>
-
+  );
  
 };
 
