@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, FlatList, ScrollView } from "react-native";
-import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
+import { View, Text, StyleSheet, Image, FlatList, ScrollView, TouchableOpacity } from "react-native";
 import { collection, doc, getDocs, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
