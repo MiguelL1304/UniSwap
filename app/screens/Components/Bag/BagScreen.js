@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, Image, StyleSheet, ScrollView, Button } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Text, Image, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from "react-native";
 import { auth } from "../../../../Firebase/firebase";
 import { getBagItems, removeFromBag, handleSellerPress } from "./BagLogic";
-import { TouchableOpacity } from "react-native-gesture-handler";
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -13,6 +12,14 @@ const Bag = () => {
     const [editMode, setEditMode] = useState(false);
     const [groupedItems, setGroupedItems] = useState([]);
     const [selectedToDelete, setSelectedToDelete] = useState({});
+    const [refreshing, setRefreshing] = useState(false);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        setTimeout(() => {
+          setRefreshing(false);
+        }, 2000);
+      }, []);
 
       useEffect(() => {
         navigation.setOptions({
@@ -30,16 +37,14 @@ const Bag = () => {
         const fetchItems = async () => {
             const user = auth.currentUser;
             if (user) {
-                const fetchedItems = await getBagItems(user.email);
-                //console.log("Fetched Items from BagScreen.js: ", fetchedItems)
-                fetchedItems.forEach(item => {
-                    //console.log("Seller Details for item: ", item.sellerDetails)
-                })
+                const result = await getBagItems(user.email);
+                const fetchedItems = result.items;
+
                 if (fetchedItems && Array.isArray(fetchedItems)) {
                     const groupedItems = groupItemsBySeller(fetchedItems);
                     setGroupedItems(groupedItems);
                 } else {
-                    console.error("Problem fetching items :(")
+                    console.error("Problem fetching items :(", fetchedItems);
                 }
 
             }
@@ -62,10 +67,10 @@ const Bag = () => {
                 };
             }
             acc[key].items.push(item);
-            console.log("Group being created/updated: ", acc[key])
+            //console.log("Group being created/updated: ", acc[key])
             return acc;
         }, {});
-        console.log("Groups from groupItemsBySeller: ", groups)
+        //console.log("Groups from groupItemsBySeller: ", groups)
         return Object.values(groups);
     };
 
@@ -124,7 +129,14 @@ const Bag = () => {
     };
 
     return (
-        <ScrollView style={{backgroundColor:"white"}}>
+        <ScrollView 
+            style={{backgroundColor:"white"}}
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}/>   
+            }
+        >
             <View style={{backgroundColor: "white"}}>
                 {groupedItems.map((group, index) => (
                     <View key={index}>

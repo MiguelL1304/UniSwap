@@ -1,7 +1,6 @@
 import React from "react";
 import { firestoreDB } from "../../../../Firebase/firebase";
-import { collection, doc, setDoc, deleteDoc, getDocs, getDoc, Timestamp } from "firebase/firestore";
-import { useNavigation } from "@react-navigation/native";
+import { collection, doc, setDoc, deleteDoc, getDocs, getDoc, Timestamp, onSnapshot } from "firebase/firestore";
 
 export const addToBag = async (userEmail, itemDetails) => {
 
@@ -62,11 +61,38 @@ export const getBagItems = async (userEmail) => {
                 sellerDetails,
             };
         }));
-        return itemsWithDetails;
+        console.log("itemCount: ", snapshot.size)
+
+        return {
+            itemCount: snapshot.size,
+            items: itemsWithDetails
+        };
     } catch (error) {
         console.error("CAN'T FETCH ITEMS :(", error);
-        return [];
+        return { itemCount: 0, items: []};
     }
+};
+
+export const getBagItemCount = async (userEmail) => {
+    try {
+        const result = await getBagItems(userEmail);
+        return result.itemCount;
+    } catch (error) {
+        console.error("Error fetching item count :( ", error)
+        return 0;
+    }
+};
+
+export const listenForBagItemCount = (userEmail, setItemCount) => {
+    const bagRef = collection(firestoreDB, "profile", userEmail, "bag");
+    const unsubscribe = onSnapshot(bagRef, snapshot => {
+        setItemCount(snapshot.size);
+        console.log("UPDATED item count: ", snapshot.size)
+    }, error => {
+        console.error("Error listening for item count changes: ", error);
+    });
+
+    return unsubscribe;
 }
 
 export const handleSellerPress = (navigation, listing) => {
