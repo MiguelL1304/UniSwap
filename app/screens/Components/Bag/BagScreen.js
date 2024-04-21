@@ -124,7 +124,7 @@ const Bag = () => {
     };
 
     return (
-        <ScrollView>
+        <ScrollView style={{backgroundColor:"white"}}>
             <View style={{backgroundColor: "white"}}>
                 {groupedItems.map((group, index) => (
                     <View key={index}>
@@ -198,7 +198,9 @@ const Bag = () => {
                         )}
 
                         {/* ======== DIVIDER ======== */}
-                    <View style={styles.divider} />
+                        {index !== groupedItems.length - 1 && (
+                            <View style={styles.divider} />
+                        )}
                 </View>
                 ))}
             </View>
