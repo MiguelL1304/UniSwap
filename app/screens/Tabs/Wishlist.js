@@ -105,16 +105,26 @@ const Wishlist = () => {
   };
 
   const toggleSelection = () => {
-    setIsSelecting(!isSelecting);
-    if (!isSelecting) {
-      // Unselect all checkboxes 
-      const updatedWishlistItems = wishlistItems.map((item) => ({
-        ...item,
-        selected: false,
-      }));
-      setWishlistItems(updatedWishlistItems);
-      setSelectedItems([]);
-    }
+    setIsSelecting((prevIsSelecting) => {
+      if (!prevIsSelecting) {
+        const updatedItems = wishlistItems.map((item) => ({
+          ...item,
+          selected: false,
+        }));
+        setWishlistItems(updatedItems);
+        setSelectedItems([]);
+      }
+      return !prevIsSelecting;
+    });
+    // if (!isSelecting) {
+    //   // Unselect all checkboxes 
+    //   const updatedWishlistItems = wishlistItems.map((item) => ({
+    //     ...item,
+    //     selected: false,
+    //   }));
+    //   setWishlistItems(updatedWishlistItems);
+    //   setSelectedItems([]);
+    // }
   };
 
   //removes selected items from a user's wishlist
