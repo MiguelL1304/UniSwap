@@ -84,6 +84,7 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
         seller: offer.seller,
         status: "upcoming",
         time: offer.time,
+        id: documentName,
       });
 
       const buyerDocRef = doc(firestoreDB, 'profile', offer.buyer);
@@ -98,6 +99,7 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
         seller: offer.seller,
         status: "upcoming",
         time: offer.time,
+        id: documentName,
       });
 
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, FlatList, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Image, FlatList, ScrollView, Dimensions } from "react-native";
 import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { collection, doc, getDocs, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { auth, firestoreDB } from "../../../Firebase/firebase";
@@ -102,7 +102,11 @@ const ReceivedOffers = () => {
           scrollEnabled={false}
         />
       ) : (
-        <Text>No offers received at this time</Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>
+            No offers received at this time.
+          </Text>
+        </View>
       )}
     </ScrollView>
   );
@@ -189,6 +193,8 @@ const OfferItem = ({ item, onPressDetails, onPressDecline, onPressDelete }) => {
     </View>
   );
 };
+
+const screenHeight = Dimensions.get('window').height * 0.8;
 
 const styles = StyleSheet.create({
   contentSheet: {
@@ -495,6 +501,21 @@ const styles = StyleSheet.create({
   offerPrice: {
     marginRight: 30,
     marginBottom: 5,
+  },
+  emptyContainer: {
+    backgroundColor: "white",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingLeft: 15,
+    height: screenHeight,
+  },
+  emptyText: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "gray",
+    flexWrap: "wrap",
+    paddingBottom: 100,
   },
 });
 

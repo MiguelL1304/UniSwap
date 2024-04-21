@@ -60,8 +60,22 @@ const OfferDetails= ({ route }) => { // Receive profile data as props
     navigation.navigate("ListingDetails", { listing: listing });
   };
 
-  const handleConfirm = () => {
-    navigation.navigate("Confirm");
+  const handleConfirm = async () => {
+    const exchangeRef = doc(firestoreDB, 'exchanges', meetup.id);
+    const exchangeRefSnapshot = await getDoc(exchangeRef);
+    if(!exchangeRefSnapshot.exists()){
+      await setDoc(exchangeRef, {
+        "buyerConfirmed": false,
+        "sellerConfirmed": false,
+        "exchangeComplete": false
+      });
+    }
+
+    navigation.navigate("Confirm", {
+      id: meetup.id,
+      buyer: meetup.buyer,
+      seller: meetup.seller,
+    });
   };
 
   //Backdrop
