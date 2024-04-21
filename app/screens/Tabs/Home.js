@@ -40,7 +40,6 @@ const Home = () => {
   const bottomSheetModalRef = useRef(null);
   const snapPoints = useMemo(() => ["65", "90%"], []);
 
-
   //
   //
   // Filter Logic
@@ -590,7 +589,11 @@ const Home = () => {
        }));
 
       const userEmail = auth.currentUser?.email;
-      const filteredDocuments = documents.filter(doc => !doc.id.startsWith(`${userEmail}_`)); 
+
+      const filteredDocuments = documents.filter(doc => {
+        // Check if the document ID doesn't start with `${userEmail}_` and the status is "available"
+        return !doc.id.startsWith(`${userEmail}_`) && doc.status === "available";
+      });
 
       await setOriginalListings(filteredDocuments);
       // console.log(originalListings);

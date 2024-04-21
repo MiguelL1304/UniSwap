@@ -192,6 +192,10 @@ const Listing = ({ route }) => {
           price: listing.price,
           title: listing.title,
           listingImg1: listingImg1,
+          condition: listing.condition,
+          subject: listing.subject,
+          course: listing.course,
+          description: listing.description,
         };
         //await addToBag(user.email, itemDetails);
         await addToBag(user.email, itemDetails, listing)
@@ -202,10 +206,41 @@ const Listing = ({ route }) => {
       navigation.navigate("Bag", { listing: listing });    
     };
 
+// 
+// 
+// TEMPORARILLY HERE. TO BE DELETED LATER
+// 
+// 
+// 
+// 
+// 
+const handleOffer = async () => {  
+  // navigation.navigate("Offer", { listing: listing });
+  navigation.navigate("Offer", { listings: [listing, listing] });
+};
+
+const handleBackNavigation = () => {
+  navigation.goBack();
+  if (sourceScreen === "Home") {
+    navigation.navigate("Home", {listing}); // Navigate back to home page
+  } else 
+  if (sourceScreen === "SellerProfile") {
+    // navigation.navigate("SellerProfile"); // Navigate back to seller profile page
+    navigation.replace("SellerProfile", {listing});
+  } else {
+    // Default behavior, navigate back
+    navigation.goBack();
+  }
+};
+
 
     return (
   <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 
+
+    <TouchableOpacity style={styles.backButtonContainer} onPress={handleBackNavigation}>
+    <Text>Back</Text>
+</TouchableOpacity>
     <View style={styles.listedByContainer}>
       <Image
         source={{ uri: userPic ? userPic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}

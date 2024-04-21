@@ -1,6 +1,7 @@
 import React from "react";
 import { firestoreDB } from "../../../../Firebase/firebase";
 import { collection, doc, setDoc, deleteDoc, getDocs, getDoc, Timestamp } from "firebase/firestore";
+import { useNavigation } from "@react-navigation/native";
 
 export const addToBag = async (userEmail, itemDetails) => {
 
@@ -36,6 +37,7 @@ const fetchSellerDetails = async (sellerEmail) => {
     const sellerDocRef = doc(firestoreDB, "profile", sellerEmail);
     const sellerDocSnap = await getDoc(sellerDocRef);
     if (sellerDocSnap.exists()) {
+        console.log("sellerDocSnap from fetchSellerDetails: ", sellerDocSnap)
         return sellerDocSnap.data();
     } else {
         console.error("Seller profile NOT FOUND for: ", sellerEmail);
@@ -45,27 +47,40 @@ const fetchSellerDetails = async (sellerEmail) => {
 
 export const getBagItems = async (userEmail) => {
     const bagRef = collection(firestoreDB, "profile", userEmail, "bag");
+    
     try {
         const snapshot = await getDocs(bagRef);
-        const items = snapshot.docs.map(async(doc) => {
+        const itemsWithDetails = await Promise.all(snapshot.docs.map(async (doc) => {
             const data = doc.data();
             const sellerEmail = doc.id.split("_")[0];
             const sellerDetails = await fetchSellerDetails(sellerEmail);
 
             return {
+                ...data,
                 id: doc.id,
                 sellerEmail,
-                sellerImg: sellerDetails?.profilePic,
-                sellerFirstName: sellerDetails?.firstName,
-                sellerLastName: sellerDetails?.lastName,
-                ...data
-            }
-        });
-
-        return Promise.all(items);
-
+                sellerDetails,
+            };
+        }));
+        return itemsWithDetails;
     } catch (error) {
         console.error("CAN'T FETCH ITEMS :(", error);
         return [];
     }
+}
+
+export const handleSellerPress = (navigation, listing) => {
+    console.log("LISTING in handleSellerPress: ", listing);
+    // const {
+    //     id,
+    //     price,
+    //     title,
+    //     listingImg1,
+    //     condition,
+    //     subject,
+    //     course,
+    //     description
+    //   } = listing;
+
+      navigation.navigate("SellerProfile", { listing });
 }

@@ -45,15 +45,6 @@ const Overview = () => {
   const handleUpdate = () => {
     navigation.navigate("UpdateProfile", { profileData: profileData });
   };
-  // TEMPORARY CHAT BUTTON NAVIGATOR
-  const handleChat = () => {
-    navigation.navigate("Messages");
-  };
-
-   // TEMPORARY CONFIRM BUTTON NAVIGATOR
-   const handleConfirm = () => {
-    navigation.navigate("Confirm");
-  };
 
   const handleSignOut = () => {
     signOut(auth)
@@ -88,21 +79,6 @@ const Overview = () => {
               <Text style={styles.buttonText}>Edit Profile</Text>
             </TouchableOpacity>
           </View>
-
-          {/* TEMPORARY CHAT BUTTON */}
-          <View style={styles.editProfileButtonContainer}>
-            <TouchableOpacity onPress={handleChat}>
-              <Text style={styles.buttonText}>CHAT</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* TEMPORARY CONFIRM BUTTON */}
-          <View style={styles.editProfileButtonContainer}>
-            <TouchableOpacity onPress={handleConfirm}>
-              <Text style={styles.buttonText}>CONFIRM</Text>
-            </TouchableOpacity>
-          </View>
-
         </View>
         
       </View>

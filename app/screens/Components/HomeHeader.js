@@ -147,7 +147,7 @@ const HomeHeader = ({ searchQuery, setSearchQuery, onFilterPress, onFilterClearP
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#e6f2ff",
+    backgroundColor: "#D4E9FA",
     //backgroundColor: "red",
   },
   headerBar: {
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     //backgroundColor: "pink",
-    backgroundColor: "#e6f2ff",
+    backgroundColor: "#D4E9FA",
     height: 80,
   },
   searchIcon: {
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     marginLeft: 0,
     //backgroundColor: "transparent",
     //backgroundColor: "pink",
-    backgroundColor: "#e6f2ff",
+    backgroundColor: "#D4E9FA",
     elevation: 2,
     shadowColor: "black",
     shadowOpacity: 0.12,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     // borderColor: "#3f9eeb",
     // borderWidth: 2,
     borderRadius: 10,
-    paddingLeft: 55,
+    paddingLeft: 20,
   },
   filterButton: {
     padding: 10,

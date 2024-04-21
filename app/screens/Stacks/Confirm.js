@@ -3,6 +3,7 @@ import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, Dimensions } fr
 import ConfettiCannon from 'react-native-confetti-cannon';
 
 const Confirm = () => {
+  
   const [shoot, setShoot] = useState(false);
   const { width } = Dimensions.get('window');
 
@@ -32,7 +33,8 @@ const Confirm = () => {
       {shoot && <ConfettiCannon count={200} origin={{ x: -width, y: 0 }} />}
 
     </SafeAreaView>
-  );
+
+ 
 };
 
 export default Confirm;

@@ -60,6 +60,10 @@ const OfferDetails= ({ route }) => { // Receive profile data as props
     navigation.navigate("ListingDetails", { listing: listing });
   };
 
+  const handleConfirm = () => {
+    navigation.navigate("Confirm");
+  };
+
   //Backdrop
   const renderBackdrop = useCallback(
     (props) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />,
@@ -184,7 +188,7 @@ const OfferDetails= ({ route }) => { // Receive profile data as props
       <View style={{ ...styles.divider, marginVertical: 0 }} />
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity onPress={handleConfirm} style={styles.button}>
           <Text style={styles.buttonText}>Meetup!</Text>
         </TouchableOpacity>
       </View>

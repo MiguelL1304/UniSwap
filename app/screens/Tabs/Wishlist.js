@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, SafeAreaView, Alert } from "react-native";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
-import { collection, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, setDoc, writeBatch } from "firebase/firestore";
 import { Checkbox } from "expo-checkbox";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -17,7 +17,26 @@ const Wishlist = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
-  //fetches items that were "♡" by the user to show up in the wishlist tab
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerStyle: {
+        backgroundColor: "#D4E9FA",
+      },
+      headerTintColor: "#3f9eeb",
+      headerTitleStyle: {
+        fontWeight: "bold",
+        fontSize: 25,
+      },
+      headerRight: () => (
+        <TouchableOpacity style={styles.selectButton} onPress={toggleSelection}>
+          <Text style={styles.selectButtonText}>
+            {isSelecting ? "Cancel" : "Select"}
+          </Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, isSelecting]);
+
   useEffect(() => {
     const fetchWishlistItems = async () => {
       //check for user's email 
@@ -86,16 +105,26 @@ const Wishlist = () => {
   };
 
   const toggleSelection = () => {
-    setIsSelecting(!isSelecting);
-    if (!isSelecting) {
-      // Unselect all checkboxes 
-      const updatedWishlistItems = wishlistItems.map((item) => ({
-        ...item,
-        selected: false,
-      }));
-      setWishlistItems(updatedWishlistItems);
-      setSelectedItems([]);
-    }
+    setIsSelecting((prevIsSelecting) => {
+      if (!prevIsSelecting) {
+        const updatedItems = wishlistItems.map((item) => ({
+          ...item,
+          selected: false,
+        }));
+        setWishlistItems(updatedItems);
+        setSelectedItems([]);
+      }
+      return !prevIsSelecting;
+    });
+    // if (!isSelecting) {
+    //   // Unselect all checkboxes 
+    //   const updatedWishlistItems = wishlistItems.map((item) => ({
+    //     ...item,
+    //     selected: false,
+    //   }));
+    //   setWishlistItems(updatedWishlistItems);
+    //   setSelectedItems([]);
+    // }
   };
 
   //removes selected items from a user's wishlist
@@ -205,21 +234,6 @@ const Wishlist = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={toggleSelection} style={styles.selectButton}>
-          <Text style={styles.selectButtonText}>
-            {isSelecting ? "Cancel" : "Select"}
-          </Text>
-        </TouchableOpacity>
-        {isSelecting && (
-          <TouchableOpacity
-            onPress={handleRemoveSelected}
-            style={styles.deleteButton}
-          >
-            <Ionicons name="trash" size={22} color="white" />
-          </TouchableOpacity>
-        )}
-      </View>
       <View style={styles.mainContainer}>
         {/* display of listings */}
         <FlatList
@@ -231,6 +245,16 @@ const Wishlist = () => {
           contentContainerStyle={styles.listingsContainer}
         />
       </View>
+      <View style={styles.deleteBtnContainer}>
+        {isSelecting && (
+            <TouchableOpacity
+              onPress={handleRemoveSelected}
+              style={styles.deleteButton}
+            >
+              <Ionicons name="trash" size={22} color="white" />
+            </TouchableOpacity>
+          )}
+        </View>
     </SafeAreaView>
   );
 };
@@ -240,7 +264,7 @@ export default Wishlist;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e6f2ff",
+    backgroundColor: "white",
   },
   header: {
     flexDirection: "row",
@@ -250,23 +274,40 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   selectButton: {
-    backgroundColor: "#3f9eeb",
+    //backgroundColor: "#3f9eeb",
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,
     margin: 5,
   },
   selectButtonText: {
-    color: "white",
+    color: "#3f9eeb",
     fontSize: 16,
     fontWeight: "bold",
   },
+  deleteBtnContainer: {
+    flexDirection: "row",
+    padding: 10,
+    justifyContent: "center",
+    paddingBottom: 30,
+    //zIndex: 1,
+  },
   deleteButton: {
     backgroundColor: "red",
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    padding: 10,
     borderRadius: 5,
-    marginLeft: 5,
+    width: 150,
+    //position: "absolute",
+    //bottom: 10,
+    //left: 0,
+    //right: 0,
+    justifyContent: "center",
+    //paddingVertical: 5,
+    //paddingHorizontal: 10,
+    //marginLeft: 5,
+    //width: 80,
+    alignItems: "center",
+    zIndex: 10,
   },
   deleteButtonText: {
     color: "white",
@@ -275,6 +316,7 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     flex: 1,
+    //paddingBottom: 40,
   },
   listingsContainer: {
     backgroundColor: "white",
