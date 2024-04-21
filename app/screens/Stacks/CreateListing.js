@@ -155,6 +155,7 @@ const CreateListing = ({ route }) => { // Receive profile data as props
           listingImg4: listingImg4,
           listingImg5: listingImg5,
           status: "available",
+          createdAt: new Date(),
         });
 
         await deleteDoc(doc(firestoreDB, "listing", newListingId));

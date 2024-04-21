@@ -59,7 +59,7 @@
 
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, PanResponder, Animated } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { auth, firebaseStorage, firestoreDB } from "../../../Firebase/firebase";
@@ -93,7 +93,7 @@ const SlideToConfirmButton = ({ route }) => {
       if (data.buyerConfirmed && data.sellerConfirmed && !data.exchangeComplete) {
         updateDoc(exchangeRef, { exchangeComplete: true })
         .then(() => {
-          setShoot(true);
+          //setShoot(true);
         })
         .catch(error => {
           console.error('Failed to update exchange document:', error);
@@ -130,6 +130,7 @@ const SlideToConfirmButton = ({ route }) => {
         setIsConfirmed(true);
         setShootConfetti(true);
       });
+      handleConfirm();
     } else {
       // If not confirmed, reset the slide width
       Animated.spring(slideWidth, {
