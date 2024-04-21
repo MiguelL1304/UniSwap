@@ -55,8 +55,10 @@ function Selling() {
         }));
     
         const filteredItems = items.filter((item) => item !== null);
+        console.log(filteredItems);
         const sortedListings = filteredItems.sort((a, b) => b.createdAt - a.createdAt);
-      
+        console.log(sortedListings);
+
         setUserListings(sortedListings);
       } else {
         console.warn("User listing document not found")
