@@ -1,57 +1,62 @@
-import React from 'react';
-import { View, StyleSheet, Text, Button } from 'react-native';
-import { useAnimatedGestureHandler } from 'react-native-reanimated';
-import { PanGestureHandler } from 'react-native-gesture-handler';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
 
 const Confirm = () => {
-  return(
-<View>
-  <Button title="confirm"></Button>
-</View>
+  const [shoot, setShoot] = useState(false);
+  const { width } = Dimensions.get('window');
+
+  useEffect(() => {
+    setTimeout(() => {
+      setShoot(true);
+    }, 10000);
+  }, []);
+
+  const handlePress = () => {
+    setShoot(false);
+    setTimeout(() => {
+      setShoot(true);
+    }, 500);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.innerContainer}>
+        <TouchableOpacity onPress={handlePress}>
+          <View style={styles.buttonContainer}>
+            <Text style={styles.buttonText}>Press for confetti</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      {shoot && <ConfettiCannon count={200} origin={{ x: -width, y: 0 }} />}
+
+    </SafeAreaView>
   );
-}
+};
 
-// const BUTTON_WIDTH = 350;
-// const BUTTON_HEIGHT = 100;
-// const BUTTON_PADDING = 10;
-// const SWIPEABLE_DIMENSIONS = BUTTON_HEIGHT - 2 * BUTTON_PADDING;
-
-// const H_WAVE_RANGE = SWIPEABLE_DIMENSIONS + 2 * BUTTON_PADDING;
-// const H_SWIPE_RANGE = BUTTON_WIDTH - 2 * BUTTON_PADDING - SWIPEABLE_DIMENSIONS;
-
-// const Confirm = ({ontoggle}) => {
-//   const x = userSharedValue(0);
-//   const animatedGestureHandler = useanimatedge
-//   return <View style={styles.swipecCont}>
-//     <Text>test</Text>
-//     {/* <View style={styles.swipeable}>
-//       <PanGestureHandler onGestureEvent={animatedGestureHandler}
-
-//     </View> */} 
-
-//   </View>
-  
-
-//   const styles = StyleSheet.create({
-//     swipecCont: {
-//       height: BUTTON_HEIGHT,
-//       width: BUTTON_WIDTH,
-//       padding: BUTTON_PADDING,
-//       backgroundColor: "#fff",
-//       display: "flex",
-//       alignItems: "center",
-//       justifyContent: "center",
-//       borderRadius: BUTTON_HEIGHT,
-//     },
-//     swipeable: {
-//       height: SWIPEABLE_DIMENSIONS,
-//       width: SWIPEABLE_DIMENSIONS,
-//       padding: SWIPEABLE_DIMENSIONS,
-//       backgroundColor: "#3f9eeb",
-//       position: "absolute",
-//       left: BUTTON_PADDING,
-
-//     }
-//   })
-// }
 export default Confirm;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  innerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonContainer: {
+    backgroundColor: 'blue',
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+});
+
+
