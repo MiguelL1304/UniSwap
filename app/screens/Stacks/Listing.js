@@ -191,6 +191,10 @@ const Listing = ({ route }) => {
           price: listing.price,
           title: listing.title,
           listingImg1: listingImg1,
+          condition: listing.condition,
+          subject: listing.subject,
+          course: listing.course,
+          description: listing.description,
         };
         //await addToBag(user.email, itemDetails);
         await addToBag(user.email, itemDetails, listing)
@@ -212,19 +216,6 @@ const handleOffer = async () => {
   // navigation.navigate("Offer", { listing: listing });
   navigation.navigate("Offer", { listings: [listing, listing] });
 };
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
 
 const handleBackNavigation = () => {
   navigation.goBack();
@@ -240,15 +231,12 @@ const handleBackNavigation = () => {
   }
 };
 
-
-
     return (
   <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 
     <TouchableOpacity style={styles.backButtonContainer} onPress={handleBackNavigation}>
     <Text>Back</Text>
 </TouchableOpacity>
-
 
     <View style={styles.listedByContainer}>
       <Image
