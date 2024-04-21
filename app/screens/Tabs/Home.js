@@ -7,7 +7,8 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Keyboard
+  Keyboard,
+  RefreshControl
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
@@ -20,8 +21,8 @@ import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import subjects from "../Components/SubjectsList";
 //default img if no img posted with listing
 import defaultImg from "../../assets/defaultImg.png";
-import BagScreen from "../Components/Bag/BagScreen";
 import { ScrollView } from "react-native-gesture-handler";
+import { getBagItemCount, listenForBagItemCount } from "../Components/Bag/BagLogic";
 
 
 const Home = () => {
@@ -35,10 +36,39 @@ const Home = () => {
   const [listings, setListings] = useState([]);
   const [originalListings, setOriginalListings] = useState([]);
   const [listingTitles, setListingTitles] = useState([]);
+  const [itemCount, setItemCount] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   // filter bottom sheet
   const bottomSheetModalRef = useRef(null);
   const snapPoints = useMemo(() => ["65", "90%"], []);
+
+  // listening for updates to #items in bag & updates red bubble
+  useEffect(() => {
+    const user = auth.currentUser;
+    let unsubscribe = () => {};
+
+    if (user) {
+      getBagItemCount(user.email).then(count => {
+        setItemCount(count);
+      }).catch(error => {
+        console.error("Error fetching initial item count :( ", error);
+      });
+
+      unsubscribe = listenForBagItemCount(user.email, setItemCount);
+    }
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   //
   //
@@ -734,6 +764,11 @@ const Home = () => {
           data={listings}
           numColumns={2}
           keyExtractor={(item) => item.id}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}/>
+          }
           renderItem={({ item }) => (
           <View style={styles.listingItem}>
             <TouchableOpacity onPress={() => handleListing(item)}>
@@ -762,12 +797,18 @@ const Home = () => {
       BAG ICON 
       
       */}
-      <TouchableOpacity  
-        style={styles.bagIconContainer}
-        onPress={() => navigation.navigate("Bag")}
-      >
-        <Ionicons name="bag-outline" size={40} color="white"/>
-      </TouchableOpacity>
+      <View>
+      {itemCount > 0 && (
+        <TouchableOpacity style={styles.bagIconContainer} onPress={() => navigation.navigate("Bag")}>
+          <Ionicons name="bag-outline" size={40} color="white"/>
+            <View style={styles.itemCountBubble}>
+              <Text style={styles.itemCountText}>{itemCount}</Text>
+            </View>
+          
+        </TouchableOpacity>
+      )}
+      </View>
+
       
       <BottomSheetModal
         ref={bottomSheetModalRef}
@@ -1268,6 +1309,21 @@ const styles = StyleSheet.create({
   },
   bagIcon: {
     //position: "absolute",
+  },
+  itemCountBubble: {
+    position: "absolute",
+    backgroundColor: "red",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+    width: 20,
+    height: 20,
+    right: -10,
+    top: -10,
+  },
+  itemCountText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });
 
