@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Image, FlatList, Text, ScrollView, Dimensions } from "react-native";
+import { View, StyleSheet, Image, FlatList, Text, ScrollView, Dimensions, TouchableOpacity } from "react-native";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import ImageViewer from "react-native-image-zoom-viewer";
 
 const Meetups = () => {
+  const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [meetups, setMeetups] = useState([]);
 
@@ -40,6 +41,7 @@ const Meetups = () => {
       <View>
         <FinalizedItems 
           item={item}
+          navigation={navigation}
         />
         {index !== meetups.length - 1 && <View style={styles.divider} />}
       </View>
@@ -71,7 +73,7 @@ const Meetups = () => {
   );
 };
 
-const FinalizedItems = ({ item }) => {
+const FinalizedItems = ({ item, navigation }) => {
   const [userName, setUserName] = useState('');
   const [userPic, setUserPic] = useState('');
   const [transactionType, setTransactionType] = useState('');
@@ -105,8 +107,9 @@ const FinalizedItems = ({ item }) => {
     fetchUserProfile();
   }, [item.buyer, item.seller]);
 
-  const totalPriceCal = item.listings.reduce((total, currentListing) => total + parseFloat(currentListing.price.replace('$', '')), 0);
-  const totalPrice = totalPriceCal.toString();
+  const handleMeetupDetails = () => {
+    navigation.navigate("MeetupDetails", item); // Navigate to OfferDetails screen with item data
+  };
 
   return (
     <View style={styles.container}>
@@ -118,11 +121,15 @@ const FinalizedItems = ({ item }) => {
           />
         </View>
 
-        <View>
-          <Text style={styles.titleText}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.titleText} numberOfLines={2}>
             {item.listings[0].title}
             {item.listings.length > 1 ? ` and ${item.listings.length - 1} more` : ''}</Text>
-          <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Total Price: ${totalPrice}</Text>
+          <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Total Price: ${item.finalPrice}</Text>
+           <View style={styles.meetupInfo}>
+          <Text style={styles.meetupText}>Location: {item.location}</Text>
+          <Text style={styles.meetupText}>Date: {item.date ? new Date(item.date.seconds * 1000).toLocaleDateString() : 'Date not available'} {item.time ? new Date(item.time.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : 'Time not available'}</Text>
+        </View>
         </View>
       </View>
 
@@ -135,7 +142,12 @@ const FinalizedItems = ({ item }) => {
           />
         </View>
         <Text style={styles.username}>{userName}</Text>
-        <Text style={styles.offerPrice}>{item.offerPrice}</Text>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={handleMeetupDetails}>
+          <Text style={styles.buttonText}>View Meetup</Text>
+        </TouchableOpacity>
       </View>
 
    
@@ -186,59 +198,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 10,
-  },
-  topMenuButton: {
-    width: "100%", 
-    height: "33%",
-    borderRadius: 10,
-    paddingRight: 10,
-  },
-  topMenuButton2: {
-    width: "100%", 
-    height: "50%",
-    borderRadius: 10,
-    paddingRight: 10,
-  },
-  menuButton: {
-    width: "100%", 
-    height: "33%",
-    borderTopLeftRadius: 0, 
-    borderTopRightRadius: 0, 
-    borderBottomLeftRadius: 10, 
-    borderBottomRightRadius: 10,
-    borderTopWidth: 1,
-    borderColor: '#3f9eeb',
-    paddingRight: 10,
-  },
-  menuButton2: {
-    width: "100%", 
-    height: "50%",
-    borderTopLeftRadius: 0, 
-    borderTopRightRadius: 0, 
-    borderBottomLeftRadius: 10, 
-    borderBottomRightRadius: 10,
-    borderTopWidth: 1,
-    borderColor: '#3f9eeb',
-    paddingRight: 10,
-  },
-  topMenuButtonBS: {
-    width: "100%", 
-    height: "33%",
-    backgroundColor: "#ffffff",
-    borderRadius: 10,
-    paddingTop: 5,
-  },
-  menuButtonBS: {
-    width: "100%", 
-    height: "25%",
-    backgroundColor: "#ffffff",
-    borderTopLeftRadius: 0, 
-    borderTopRightRadius: 0, 
-    borderBottomLeftRadius: 10, 
-    borderBottomRightRadius: 10,
-    borderTopWidth: 1,
-    borderColor: '#3f9eeb',
-    paddingTop: 5,
   },
   listingItem: {
     flexDirection: "column",
@@ -344,6 +303,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     justifyContent: 'left',
     backgroundColor: 'white',
+    paddingBottom: 10,
   },
   titleText: {
     fontSize: 18,
@@ -396,15 +356,50 @@ const styles = StyleSheet.create({
     height: Dimensions.get("window").height / 3,
     borderRadius: 10,
   },
-  username: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
+  meetupInfo: {
+    marginLeft: 5,
+  },
+  meetupText: {
+    color: "#3f9eeb",
+    fontSize: 14,
+    marginRight: 50,
+  },
+  transactionType: {
+    marginLeft: 20,
   },
   profilePic: {
     width: 50,
     height: 50,
     borderRadius: 25,
+    marginLeft: 10,
+  },
+  username: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+    marginLeft: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: "center",
+    width: "100%",
+    height: "25%",
+  },
+  button: {
+    backgroundColor: "#3f9eeb",
+    width: "30%",
+    height: 35,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    margin: 10,
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "500",
+    fontSize: 16,
   },
 });
 

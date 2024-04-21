@@ -45,6 +45,10 @@ const Overview = () => {
   const handleUpdate = () => {
     navigation.navigate("UpdateProfile", { profileData: profileData });
   };
+  // TEMPORARY CHAT BUTTON NAVIGATOR
+  const handleChat = () => {
+    navigation.navigate("Messages");
+  };
 
   const handleSignOut = () => {
     signOut(auth)
@@ -77,6 +81,13 @@ const Overview = () => {
           <View style={styles.editProfileButtonContainer}>
             <TouchableOpacity onPress={handleUpdate}>
               <Text style={styles.buttonText}>Edit Profile</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* TEMPORARY CHAT BUTTON */}
+          <View style={styles.editProfileButtonContainer}>
+            <TouchableOpacity onPress={handleChat}>
+              <Text style={styles.buttonText}>CHAT</Text>
             </TouchableOpacity>
           </View>
 

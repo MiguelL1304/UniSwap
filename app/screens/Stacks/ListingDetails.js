@@ -30,7 +30,7 @@ import SellerProfile from "./SellerProfile";
 import Swiper from 'react-native-swiper';
 
 
-const Listing = ({ route }) => {
+const ListingDetails = ({ route }) => {
     const { listing, sourceScreen } = route.params;
     const {
       id,
@@ -105,151 +105,20 @@ const Listing = ({ route }) => {
 
         checkWishlist();
     }, [id, isFocused]);
-
-    const handleAddWishlist = async () => {
-        try {
-          const email = auth.currentUser ? auth.currentUser.email: null;
-          if (!email) {
-            throw new Error("Current user is null or email is undefined.");
-          }
-          
-          const wishlistRef = collection(firestoreDB, "wishlist");
-          const wishlistDocRef = doc(wishlistRef, email);
-          const wishlistDocSnap = await getDoc(wishlistDocRef);
-          const wishlistData = wishlistDocSnap.data();
-  
-          if (wishlistDocSnap.exists()) {
-            // If the document exists, update it
-            await setDoc(wishlistDocRef, {
-              ...wishlistData,
-              [id]: true,
-            }, { merge: true });
-          } else {
-            // If the document doesn't exist, create it
-            await setDoc(wishlistDocRef, {
-              [id]: true,
-            });
-          }
-
-          setIsInWishlist(true);
-  
-        } catch (error) {
-          console.error(error.message);
-        }
-    };
-
-    const handleRemoveWishlist = async () => {
-        try {
-            const email = auth.currentUser ? auth.currentUser.email: null;
-            if (!email) {
-                throw new Error("Current user is null or email is undefined.");
-            }
-          
-            const wishlistRef = collection(firestoreDB, "wishlist");
-            const wishlistDocRef = doc(wishlistRef, email);
-
-            const wishlistDocSnapshot = await getDoc(wishlistDocRef);
-
-            if (wishlistDocSnapshot.exists()) {
-            // Get the data from the snapshot
-            const userData = wishlistDocSnapshot.data();
-        
-            if (userData.hasOwnProperty(id)) {
-                // Remove the specific field you want to delete
-                delete userData[id];
-        
-                // Update the document with the modified data
-                await setDoc(wishlistDocRef, userData)
-                    .then(() => { 
-                        console.log("Code Field has been deleted successfully"); 
-                    })
-                    .catch((error) => { 
-                        console.error("Error deleting code field:", error); 
-                    });
-            } else {
-                console.error("Field to delete does not exist in the document.");
-            }
-            } else {
-                console.error("Document does not exist.");
-            }
-
-            setIsInWishlist(false);
-        } catch (error) {
-          console.error(error.message);
-        }
-    };
-// navigate to seller's profile from user name
-    const handleSellerProfile = () => {
-      navigation.navigate("SellerProfile", {listing});
-    };    
     
-    //const handleAddToBag = (listing) => {
-    const handleAddToBag = async () => {  
-      const user = auth.currentUser;
-      if (user) {
-        const itemDetails = {
-          id: listing.id,
-          price: listing.price,
-          title: listing.title,
-          listingImg1: listingImg1,
-          condition: listing.condition,
-          subject: listing.subject,
-          course: listing.course,
-          description: listing.description,
-        };
-        //await addToBag(user.email, itemDetails);
-        await addToBag(user.email, itemDetails, listing)
-      } else {
-        console.error("User must be logged in to add items to bag.");
-      }
-      
-      navigation.navigate("Bag", { listing: listing });    
-    };
 
-// 
-// 
-// TEMPORARILLY HERE. TO BE DELETED LATER
-// 
-// 
-// 
-// 
-// 
-const handleOffer = async () => {  
-  // navigation.navigate("Offer", { listing: listing });
-  navigation.navigate("Offer", { listings: [listing, listing] });
-};
-
-const handleBackNavigation = () => {
-  navigation.goBack();
-  if (sourceScreen === "Home") {
-    navigation.navigate("Home", {listing}); // Navigate back to home page
-  } else 
-  if (sourceScreen === "SellerProfile") {
-    // navigation.navigate("SellerProfile"); // Navigate back to seller profile page
-    navigation.replace("SellerProfile", {listing});
-  } else {
-    // Default behavior, navigate back
-    navigation.goBack();
-  }
-};
-
-
-    return (
+return (
   <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
 
-
-    <TouchableOpacity style={styles.backButtonContainer} onPress={handleBackNavigation}>
-    <Text>Back</Text>
-</TouchableOpacity>
     <View style={styles.listedByContainer}>
       <Image
         source={{ uri: userPic ? userPic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
         style={styles.profileImg}
       />
       {/* seller's name button --> go to seller profile */}
-      <TouchableOpacity onPress={handleSellerProfile}>
-      <Text style={styles.listedBy}>{`${userName}`}</Text>
-      </TouchableOpacity>
+      <View>
+        <Text style={styles.listedBy}>{`${userName}`}</Text>
+      </View>
     </View>
 
 
@@ -295,22 +164,6 @@ const handleBackNavigation = () => {
     
     <View style={styles.container2}>
       <Text style={styles.price}>${price}</Text>
-
-      <TouchableOpacity 
-        onPress={() => { 
-          setIsInWishlist(!isInWishlist); 
-          if (isInWishlist) {
-            handleRemoveWishlist();
-          } else {
-            handleAddWishlist();
-          }
-        }}
-        style={styles.heartButton}
-      >
-        <Text style={[styles.heart, { color: isInWishlist ? "red" : "grey" }]}>
-          {isInWishlist ? "♥" : "♡"}
-        </Text>
-      </TouchableOpacity>
     </View>
     
     <Text style={styles.title}>{title}</Text>
@@ -339,12 +192,6 @@ const handleBackNavigation = () => {
       <Text style={styles.detailsText}>{listing.description}</Text>
     </View>
 
-    {/* Buy and Trade buttons */}
-    <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText} onPress={() => handleAddToBag(listing)}>Add to Bag</Text>
-      </TouchableOpacity>
-    </View>
 
     {/* Add Picker components for date/time and location selections here */}
   </ScrollView>
@@ -470,4 +317,4 @@ const handleBackNavigation = () => {
       },
     });
     
-    export default Listing;
+    export default ListingDetails;

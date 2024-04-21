@@ -37,7 +37,7 @@ const SentOffers = () => {
   };
 
   const handleDetails = (offer) => {
-    navigation.navigate("AnswerOffer", offer);
+    navigation.navigate("OfferDetails", offer);
   };
 
   const renderItem = ({ item, index }) => {
@@ -105,8 +105,8 @@ const OfferItem = ({ item, onPressDetails }) => {
           />
         </View>
 
-        <View>
-          <Text style={styles.titleText}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.titleText} numberOfLines={2}>
             {item.listings[0].title}
             {item.listings.length > 1 ? ` and ${item.listings.length - 1} more` : ''}</Text>
           <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Total Value: ${totalPrice}</Text>
@@ -121,7 +121,7 @@ const OfferItem = ({ item, onPressDetails }) => {
           />
         </View>
         <Text style={styles.username}>{userName}</Text>
-        <Text style={styles.offerPrice}>{item.offerPrice}</Text>
+        <Text style={styles.offerPrice}>Sent Amount: ${item.offerPrice}</Text>
       </View>
 
       {item.status === 'pending' && (
@@ -412,15 +412,22 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     aspectRatio: 1,
   },
-  username: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
   profilePic: {
     width: 50,
     height: 50,
     borderRadius: 25,
+    marginLeft: 20,
+  },
+  username: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+    marginLeft: 10,
+  },
+  offerPrice: {
+    marginRight: 30,
+    marginBottom: 5,
   },
 });
 

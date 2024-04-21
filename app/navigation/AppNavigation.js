@@ -23,6 +23,7 @@ import ForgotPassword from "../screens/Stacks/ForgotPassword";
 import CreateListing from "../screens/Stacks/CreateListing";
 import EditListing from "../screens/Stacks/EditListing";
 import Listing from "../screens/Stacks/Listing";
+import ListingDetails from "../screens/Stacks/ListingDetails";
 import { View } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import Overview from "../screens/Tabs/Overview";
@@ -33,6 +34,11 @@ import SellerProfile from "../screens/Stacks/SellerProfile";
 import Offer from "../screens/Stacks/Offer";
 import Bag from "../screens/Components/Bag/BagScreen";
 import AnswerOffer from "../screens/Stacks/AnswerOffer";
+import OfferDetails from "../screens/Stacks/OfferDetails";
+import MeetupDetails from "../screens/Stacks/MeetupDetails";
+import Chat from "../screens/Stacks/Chat";
+import Messages from "../screens/Stacks/Messages";
+import Confirm from "../screens/Stacks/Confirm"
 
 
 
@@ -136,32 +142,48 @@ export default function AppNavigation() {
           headerTitle: "Selling",
           }}
         />
-         <Stack.Screen
+        <Stack.Screen
           name="Bought"
           component={Bought}
           options={{
           headerTitle: "Bought",
           }}
         />
-         <Stack.Screen
+        <Stack.Screen
           name="Trade"
           component={Trade}
           options={{
           headerTitle: "Settings",
           }}
         />
-         <Stack.Screen
+        <Stack.Screen
           name="Profile"
           component={Profile}
           options={{
             headerTitle: "Profile",
          }}
         />
-         <Stack.Screen
+        <Stack.Screen
           name="Listing"
           component={Listing}
           options={{
             headerTitle: "Listing",
+            headerBackVisible: true,
+          }}
+        />
+        <Stack.Screen
+          name="Listing2"
+          component={Listing}
+          options={{
+            headerTitle: "Listing",
+            headerBackVisible: true,
+          }}
+        />
+        <Stack.Screen
+          name="ListingDetails"
+          component={ListingDetails}
+          options={{
+            headerTitle: "Listing Details",
             headerBackVisible: true,
           }}
         />
@@ -190,10 +212,50 @@ export default function AppNavigation() {
           }}
         />
         <Stack.Screen
+          name="OfferDetails"
+          component={OfferDetails}
+          options={{
+            headerTitle: "Offer Details",
+            headerBackVisible: true,
+          }}
+        />
+        <Stack.Screen
+          name="MeetupDetails"
+          component={MeetupDetails}
+          options={{
+            headerTitle: "Meetup",
+            headerBackVisible: true,
+          }}
+        />
+        <Stack.Screen
           name="Bag"
           component={Bag}
           options={{
             headerTitle: "Bag",
+            headerBackVisible: true,
+          }}
+        />
+        <Stack.Screen
+          name="Chat"
+          component={Chat}
+          // options={{
+          //   headerTitle: "Chat",
+          //   headerBackVisible: true,
+          // }}
+        />
+        <Stack.Screen
+          name="Messages"
+          component={Messages}
+          // options={{
+          //   headerTitle: "Messages",
+          //   headerBackVisible: true,
+          // }}
+        />
+         <Stack.Screen
+          name="Confirm"
+          component={Confirm}
+          options={{
+            headerTitle: "Confirmation",
             headerBackVisible: true,
           }}
         />

@@ -370,7 +370,6 @@ const Offer = ({ route }) => { // Receive profile data as props
           />
         }
       >
-        {/* {[...Array(numContainers).keys()].map((index) => ( */}
         {listings.map((item, index) => (
           <View style={[styles.contentContainer, { height: '100%'}]} key={index}>
             <View style={styles.imageWrapper}>

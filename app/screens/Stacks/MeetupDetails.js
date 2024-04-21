@@ -12,21 +12,18 @@ import { Ionicons } from "@expo/vector-icons";
 import defaultImg from "../../assets/defaultImg.png";
 import Swiper from 'react-native-swiper';
 
-const AnswerOffer= ({ route }) => { // Receive profile data as props
+const OfferDetails= ({ route }) => { // Receive profile data as props
 
-    const offer = route.params;
-    // Extract listings array from the offer object
-    const listings = offer.listings;
+    const meetup = route.params;
+    // Extract listings array from the Meetup object
+    const listings = meetup.listings;
+    const tradeListings = meetup.tradeListings;
     const numContainers = Math.min(listings.length, 3);
-    const sellerEmail = listings[0].id.split('_')[0];
+    const sellerEmail = meetup.seller;
 
     const isFocused = useIsFocused();
  
 
-    // useEffect(() => {
-    //   if (isFocused) {
-    //   } 
-    // }, [isFocused]);
 
     //Snap points for the different bottom screens
     const snapPointsLoc = useMemo(() => ['80%'], []);
@@ -42,106 +39,29 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
       }
     };
 
+
     const handleTradePress = () => {
       if (bottomSheetRefTrade.current) {
         bottomSheetRefTrade.current.expand();
       }
     };
 
-    //All document fields for the offer
-    const location = offer.location;
-    const date = offer.date;
-    const time = offer.time;
-    const offerPrice = offer.offerPrice;
-    const offerListings = offer.offerListings;
+    //All document fields for the meetup
+    const location = meetup.location;
+    const date = meetup.date;
+    const time = meetup.time;
+    const finalPrice = meetup.finalPrice;
     
     //Navigator
     const navigation = useNavigation();
 
 
-  const handleAcceptOffer = async () => {
-    try {
-      const createDocumentName = (user, seller) => {
-        const currentDate = new Date();
-        const dateString = currentDate.toISOString().slice(0, 10).replace(/-/g, ''); // Format: YYYYMMDD
-        const timeString = currentDate.toTimeString().slice(0, 8).replace(/:/g, ''); // Format: HHMMSS
-        const userPart = user.replace(/\s+/g, ''); // Remove whitespace from user name
-        const sellerPart = seller.replace(/\s+/g, ''); // Remove whitespace from seller name
-        return `${userPart}_${sellerPart}_${dateString}_${timeString}`;
-      };
-
-      const documentName = createDocumentName(offer.buyer, auth.currentUser.email);
-
-      const sellerDocRef = doc(firestoreDB, 'profile', offer.seller);
-      const sellerOfferDocRef = await setDoc(doc(sellerDocRef, 'meetups', documentName), {
-        buyer: offer.buyer,
-        createdAt: new Date(),
-        date: offer.date,
-        listings: offer.listings,
-        location: offer.location,
-        tradeListings: offer.offerListings,
-        finalPrice: offer.offerPrice,
-        seller: offer.seller,
-        status: "upcoming",
-        time: offer.time,
-      });
-
-      const buyerDocRef = doc(firestoreDB, 'profile', offer.buyer);
-      const buyerOfferDocRef = await setDoc(doc(buyerDocRef, 'meetups', documentName), {
-        buyer: offer.buyer,
-        createdAt: new Date(),
-        date: offer.date,
-        listings: offer.listings,
-        location: offer.location,
-        tradeListings: offer.offerListings,
-        finalPrice: offer.offerPrice,
-        seller: offer.seller,
-        status: "upcoming",
-        time: offer.time,
-      });
-
-
-      // Update the offer object in the receiver's profile
-      const receiverDocRef = doc(firestoreDB, 'profile', offer.seller);
-      const receiverOfferDocRef = doc(receiverDocRef, 'receivedOffers', offer.id);
-      await deleteDoc(receiverOfferDocRef);
-
-      // Update the offer object in the sender's profile
-      const senderDocRef = doc(firestoreDB, 'profile', offer.buyer);
-      const senderOfferDocRef = doc(senderDocRef, 'sentOffers', offer.id);
-      await deleteDoc(senderOfferDocRef);
-
-      console.log('Offer accepted successfully');
-
-      navigation.goBack();
-
-    } catch (error) {
-      console.error('Error accepting offer:', error);
-    } 
-  }
-
-  const handleDeclineOffer = async () => {
-    try {
-      // Update the offer object in the receiver's profile
-      const receiverDocRef = doc(firestoreDB, 'profile', offer.seller);
-      const receiverOfferDocRef = doc(receiverDocRef, 'receivedOffers', offer.id);
-      await updateDoc(receiverOfferDocRef, { status: "declined" });
-
-      // Update the offer object in the sender's profile
-      const senderDocRef = doc(firestoreDB, 'profile', offer.sentBy);
-      const senderOfferDocRef = doc(senderDocRef, 'sentOffers', offer.id);
-      await updateDoc(senderOfferDocRef, { status: "declined" });
-
-      console.log('Offer declined successfully');
-
-      navigation.goBack();
-      } catch (error) {
-        console.error('Error declining offer:', error);
-      }          
-  }
-
   const handleListing = (listing) => {
     navigation.navigate("ListingDetails", { listing: listing });
+  };
+
+  const handleConfirm = () => {
+    navigation.navigate("Confirm");
   };
 
   //Backdrop
@@ -234,16 +154,16 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
       <View style={styles.divider} />
 
       <View style={styles.contentContainer}>
-        <Text style={{ ...styles.titleText, fontWeight: '500'}}>Offer & Trades</Text>
+        <Text style={{ ...styles.titleText, fontWeight: '500'}}>Final Price & Trades</Text>
       </View>
 
       <View style={styles.menuView2}>
 
         <View style={styles.topMenuButton2}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={styles.titleTextMenu}> Pay Offer</Text>
+            <Text style={styles.titleTextMenu}> Final Price</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.menuSelection}> ${offerPrice}</Text>
+              <Text style={styles.menuSelection}> ${finalPrice}</Text>
             </View>
           </View> 
         </View>
@@ -255,7 +175,7 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
             
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={styles.menuSelection}>
-                {offerListings.length > 0 ? `${offerListings.length} selected` : ''}
+                {tradeListings.length > 0 ? `${tradeListings.length} selected` : ''}
               </Text>
               <Ionicons name="chevron-forward" size={20} color="#3f9eeb" style={{paddingTop: 5 }}/>
             </View>
@@ -265,15 +185,11 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
 
       </View>
 
-      <View style={styles.divider} />
+      <View style={{ ...styles.divider, marginVertical: 0 }} />
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleAcceptOffer} style={styles.button}>
-          <Text style={styles.buttonText}>Accept</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={handleDeclineOffer} style={styles.cancelButton}>
-          <Text style={styles.cancelText}>Decline</Text>
+        <TouchableOpacity onPress={handleConfirm} style={styles.button}>
+          <Text style={styles.buttonText}>Meetup!</Text>
         </TouchableOpacity>
       </View>
 
@@ -301,11 +217,11 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
         backdropComponent={renderBackdrop}
       >
         <ScrollView>  
-        {offerListings.length > 0 ? (
+        {tradeListings.length > 0 ? (
           <FlatList
             style={styles.listings}
             scrollEnabled={false}
-            data={offerListings}
+            data={tradeListings}
             numColumns={2}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
@@ -374,7 +290,7 @@ const styles = StyleSheet.create({
   },
   menuView2: {
     width: "85%", 
-    height: "14%",
+    height: "15%",
     borderRadius: 10,
   },
   menuBS: {
@@ -583,6 +499,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: "100%",
     height: "25%",
+    backgroundColor: '#ffffff',
+    //backgroundColor: '#e6f2ff', 
   },
   button: {
     backgroundColor: "#3f9eeb",
@@ -638,4 +556,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AnswerOffer;
+export default OfferDetails;
