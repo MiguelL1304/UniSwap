@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import HomeHeader from "../Components/HomeHeader";
+import categories from "../Components/CategoryList";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import "react-native-gesture-handler";
@@ -922,8 +923,7 @@ const CategoryContent = ({ onBack, selectedCategories, addCategory }) => (
     </View>
 
     <ScrollView>
-      {/* ADD ADDITIONAL CATEGORIES TO THIS ARRAY AS YOU SEE FIT */}
-      {["Books", "Clothes"].map((category) => (
+      {categories.map((category) => 
         <TouchableOpacity key={category} style={styles.subjectBox} onPress={() => addCategory(category)}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             {selectedCategories.includes(category) && (
@@ -932,7 +932,7 @@ const CategoryContent = ({ onBack, selectedCategories, addCategory }) => (
             <Text style={styles.filterSubjectOptions}>{category}</Text>
           </View>
         </TouchableOpacity>
-      ))}
+      )}
     </ScrollView>
   </View>  
 )
@@ -953,7 +953,7 @@ const SubjectContent = ({ onBack, selectedSubjects, addSubject }) => (
           <View style={{flexDirection: "row", alignItems: "center"}}>
             {selectedSubjects.includes(subject) && (
               <Ionicons name="checkmark-outline" size={20}/>
-            )}
+        )}
             <Text style={styles.filterSubjectOptions}>{subject}</Text>
           </View>
         </TouchableOpacity>

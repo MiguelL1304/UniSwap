@@ -14,6 +14,8 @@ import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Camera } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
+import categories from "../Components/CategoryList";
+import subjects from "../Components/SubjectsList";
 
 const CreateListing = ({ route }) => { // Receive profile data as props
     
@@ -712,111 +714,11 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         backdropComponent={renderBackdrop}
       >
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-          <TouchableOpacity style={styles.subjectButtonTop} onPress={() => handleSubject('Accounting')}>
-            <Text style={styles.subjectText}>Accounting</Text>
+          {subjects.map((subject) =>
+            <TouchableOpacity key={subject} style={styles.subjectButtonTop} onPress={() => handleSubject(subject)}>
+            <Text style={styles.subjectText}>{subject}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('African American Studies')}>
-            <Text style={styles.subjectText}>African American Studies</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Anthropology')}>
-            <Text style={styles.subjectText}>Anthropology</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Art')}>
-            <Text style={styles.subjectText}>Art</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Biochemistry')}>
-            <Text style={styles.subjectText}>Biochemistry</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Biology')}>
-            <Text style={styles.subjectText}>Biology</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Business Administration')}>
-            <Text style={styles.subjectText}>Business Administration</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Chemistry')}>
-            <Text style={styles.subjectText}>Chemistry</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Cinema Media')}>
-            <Text style={styles.subjectText}>Cinema Media</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Communications')}>
-            <Text style={styles.subjectText}>Communications</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Computer Science')}>
-            <Text style={styles.subjectText}>Computer Science</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Economics')}>
-            <Text style={styles.subjectText}>Economics</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Education')}>
-            <Text style={styles.subjectText}>Education</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('English')}>
-            <Text style={styles.subjectText}>English</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Environmental Science')}>
-            <Text style={styles.subjectText}>Environmental Science</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Film')}>
-            <Text style={styles.subjectText}>Film</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Finance')}>
-            <Text style={styles.subjectText}>Finance</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('French')}>
-            <Text style={styles.subjectText}>French</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Geography')}>
-            <Text style={styles.subjectText}>Geography</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Health Science')}>
-            <Text style={styles.subjectText}>Health Science</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Honors')}>
-            <Text style={styles.subjectText}>Honors</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Human Services')}>
-            <Text style={styles.subjectText}>Human Services</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Information Technology')}>
-            <Text style={styles.subjectText}>Information Technology</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Management')}>
-            <Text style={styles.subjectText}>Management</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Marketing')}>
-            <Text style={styles.subjectText}>Marketing</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Mathematics')}>
-            <Text style={styles.subjectText}>Mathematics</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Music')}>
-            <Text style={styles.subjectText}>Music</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Nursing')}>
-            <Text style={styles.subjectText}>Nursing</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Philosophy')}>
-            <Text style={styles.subjectText}>Philosophy</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Physical Education')}>
-            <Text style={styles.subjectText}>Physical Education</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Political Science')}>
-            <Text style={styles.subjectText}>Political Science</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Psychology')}>
-            <Text style={styles.subjectText}>Psychology</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Sociology')}>
-            <Text style={styles.subjectText}>Sociology</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Spanish')}>
-            <Text style={styles.subjectText}>Spanish</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subjectButton} onPress={() => handleSubject('Theatre')}>
-            <Text style={styles.subjectText}>Theatre</Text>
-          </TouchableOpacity>          
+          )}
         </ScrollView>
       </BottomSheet>
 
@@ -850,9 +752,12 @@ const CreateListing = ({ route }) => { // Receive profile data as props
         backdropComponent={renderBackdrop}
       >
         <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-          <TouchableOpacity style={styles.subjectButtonTop} onPress={() => handleCategory('Books')}>
-            <Text style={styles.subjectText}>Books</Text>
-          </TouchableOpacity>
+          {categories.map((category) => 
+            <TouchableOpacity key={category} style={styles.subjectButtonTop} onPress={() => handleCategory(category)}>
+              <Text style={styles.subjectText}>{category}</Text>
+            </TouchableOpacity>
+          )}
+          
         </ScrollView>
       </BottomSheet>
       
