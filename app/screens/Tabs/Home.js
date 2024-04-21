@@ -40,7 +40,6 @@ const Home = () => {
   const bottomSheetModalRef = useRef(null);
   const snapPoints = useMemo(() => ["65", "90%"], []);
 
-
   //
   //
   // Filter Logic
