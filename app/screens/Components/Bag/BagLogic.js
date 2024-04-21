@@ -47,14 +47,14 @@ const fetchSellerDetails = async (sellerEmail) => {
 
 export const getBagItems = async (userEmail) => {
     const bagRef = collection(firestoreDB, "profile", userEmail, "bag");
+    
     try {
         const snapshot = await getDocs(bagRef);
         const itemsWithDetails = await Promise.all(snapshot.docs.map(async (doc) => {
             const data = doc.data();
-            const sellerEmail = doc.id.split("_")[0]; // Assuming the sellerEmail is part of the document ID
+            const sellerEmail = doc.id.split("_")[0];
             const sellerDetails = await fetchSellerDetails(sellerEmail);
 
-            // Return a new object with both item details and seller details
             return {
                 ...data,
                 id: doc.id,
