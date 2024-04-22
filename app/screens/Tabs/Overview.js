@@ -135,7 +135,7 @@ const Overview = () => {
       >
         <tabs.Screen name="Selling" component={Selling}/>
         <tabs.Screen name="Bought" component={Bought}/>
-        <tabs.Screen name="Trade" component={Trade}/>
+        <tabs.Screen name="Sold" component={Trade}/>
       </tabs.Navigator>
     </View>
   );
