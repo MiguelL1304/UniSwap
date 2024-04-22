@@ -290,13 +290,27 @@ const Offer = ({ route }) => { // Receive profile data as props
   
       console.log('Offer sent successfully');
 
-      navigation.goBack();
-      // Optionally, you can navigate the user to a different screen or show a success message
+      for (const item of listings) {
+        await removeFromBag(userEmail, item.id);
+      }
+
+      navigation.navigate("Home");
+
     } catch (error) {
       console.error('Error sending offer:', error);
       // Handle errors or show error message to the user
     }
   };
+
+  const removeFromBag = async (userEmail, itemID) => {
+    const itemRef = doc(firestoreDB, "profile", userEmail, "bag", itemID);
+    try {
+        await deleteDoc(itemRef);
+        console.log("ITEM REMOVED");
+    } catch (error) {
+        console.error("Problem removing item from bag: ", error);
+    }
+  }
 
   const handleCancel = async () => {
     navigation.goBack();

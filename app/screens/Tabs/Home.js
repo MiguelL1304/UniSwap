@@ -624,14 +624,15 @@ const Home = () => {
       const filteredDocuments = documents.filter(doc => {
         // Check if the document ID doesn't start with `${userEmail}_` and the status is "available"
         return !doc.id.startsWith(`${userEmail}_`) && doc.status === "available";
-      });
+      })
+      const filteredAndSorted = filteredDocuments.sort((a, b) => b.createdAt - a.createdAt);
 
-      await setOriginalListings(filteredDocuments);
+      await setOriginalListings(filteredAndSorted);
       // console.log(originalListings);
       // console.log("---------------------");
           
-      const filteredListings = await filterListings(filteredDocuments, filters); // Apply filtering
-      await setListings(filteredListings);
+      const filteredListings = await filterListings(filteredAndSorted, filters); // Apply filtering
+      await setListings(filteredAndSorted);
 
       handleSearch();
       // console.log(listings);

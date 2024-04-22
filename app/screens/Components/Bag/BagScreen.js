@@ -302,6 +302,7 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 15,
         resizeMode: "contain",
+        borderRadius: 15,
     },
     listingTitle: {
         paddingTop: 15,
