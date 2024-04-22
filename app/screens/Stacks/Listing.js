@@ -316,7 +316,7 @@ const handleBackNavigation = () => {
         }}
         style={styles.heartButton}
       >
-        <Text style={[styles.heart, { color: isInWishlist ? "red" : "grey" }]}>
+        <Text style={[styles.heart, { color: isInWishlist ? "#e8594f" : "grey" }]}>
           {isInWishlist ? "♥" : "♡"}
         </Text>
       </TouchableOpacity>
