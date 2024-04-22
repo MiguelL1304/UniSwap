@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, FlatList, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Image, FlatList, ScrollView, TouchableOpacity, Dimensions } from "react-native";
 import { collection, doc, getDocs, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
@@ -39,12 +39,28 @@ const SentOffers = () => {
     navigation.navigate("OfferDetails", offer);
   };
 
+  const handleDelete = async (offer) => {
+    try {
+      // Delete the offer object in the sender's profile
+      const senderDocRef = doc(firestoreDB, 'profile', offer.buyer);
+      const senderOfferDocRef = doc(senderDocRef, 'sentOffers', offer.id);
+      await deleteDoc(senderOfferDocRef);
+  
+      console.log('Offer deleted successfully');
+  
+      fetchOffers();
+    } catch (error) {
+      console.error('Error deleting offer:', error);
+    }
+  };
+
   const renderItem = ({ item, index }) => {
     return (
       <View>
         <OfferItem
           item={item}
           onPressDetails={() => handleDetails(item)}
+          onPressDelete={() => handleDelete(item)}
         />
         {index !== offers.length - 1 && <View style={styles.divider} />}
       </View>
@@ -52,7 +68,7 @@ const SentOffers = () => {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: "#e6f2ff"}}>
+    <ScrollView style={{backgroundColor: "#e6f2ff"}}>
       {offers.length > 0 ? (
         <FlatList
           data={offers}
@@ -62,13 +78,17 @@ const SentOffers = () => {
           scrollEnabled={false}
         />
       ) : (
-        <Text>No offers sent at this time</Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>
+            No offers sent at this time.
+          </Text>
+        </View>
       )}
     </ScrollView>
   );
 };
 
-const OfferItem = ({ item, onPressDetails }) => {
+const OfferItem = ({ item, onPressDetails, onPressDelete }) => {
   const [userName, setUserName] = useState('');
   const [userPic, setUserPic] = useState('');
 
@@ -131,12 +151,23 @@ const OfferItem = ({ item, onPressDetails }) => {
         </View>
       )}
 
+      {item.status === 'declined' && (
+        <View style={styles.buttonContainer}>
+          <Text style={{ ...styles.cancelText, color: '#e8594f' }}>Your offer was declined</Text>
+          <TouchableOpacity style={{ ...styles.cancelButton, borderColor: '#e8594f' }} onPress={onPressDelete}>
+            <Text style={{ ...styles.cancelText, color: '#e8594f' }}>Delete</Text>
+          </TouchableOpacity>   
+        </View>
+      )}      
+
 
 
 
     </View>
   );
 };
+
+const screenHeight = Dimensions.get('window').height * 0.8;
 
 const styles = StyleSheet.create({
   contentSheet: {
@@ -427,6 +458,37 @@ const styles = StyleSheet.create({
   offerPrice: {
     marginRight: 30,
     marginBottom: 5,
+  },
+  cancelText: {
+    color: "#3f9eeb",
+    fontWeight: "500",
+    fontSize: 16,
+  },
+  cancelButton: {
+    backgroundColor: "#ffffff",
+    width: "30%",
+    height: 35,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderColor: "#3f9eeb",
+    borderWidth: 2.5,
+    margin: 10,
+  },
+  emptyContainer: {
+    backgroundColor: "white",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingLeft: 15,
+    height: screenHeight,
+  },
+  emptyText: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "gray",
+    flexWrap: "wrap",
+    paddingBottom: 100,
   },
 });
 

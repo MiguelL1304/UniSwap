@@ -1,0 +1,4 @@
+Header Blue - #d4e9fa (all if not most headers are this color)
+Accent Blue - #3f9eeb (Bag Icon/text/filter & search btn)
+Divider Blue - #e6f2ff (similar to header blue, but lighter)
+Red - #e8594f (received offers red)

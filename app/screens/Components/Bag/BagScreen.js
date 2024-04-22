@@ -179,7 +179,7 @@ const Bag = () => {
                                                 <Ionicons 
                                                     name="remove-circle" 
                                                     size={25} 
-                                                    color="red"/>
+                                                    color="#e8594f"/>
                                             </TouchableOpacity>
                                         </View>    
                                     )}
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
         //backgroundColor: "yellow",
     },
     deleteAllItemsBtn: {
-        backgroundColor: "red",
+        backgroundColor: "#e8594f", //received offers red
         fontSize: 20,
         fontWeight: "bold",
         textAlign: "center",
@@ -284,7 +284,8 @@ const styles = StyleSheet.create({
         //alignItems: "flex-start",
         //flex: 1,
         //overflow: "hidden",
-        //backgroundColor: "pink"
+        //backgroundColor: "pink",
+        width: 210,
     },
     listingImageContainer: {
         //position: "relative",
@@ -300,7 +301,9 @@ const styles = StyleSheet.create({
     listingImage: {
         width: 100,
         height: 100,
+        borderRadius: 15,
         resizeMode: "contain",
+        borderRadius: 15,
     },
     listingTitle: {
         paddingTop: 15,

@@ -72,7 +72,9 @@ const Wishlist = () => {
           const items = await Promise.all(itemsPromises);
           console.log("Fetched wishlist items:", items);
           const filteredItems = items.filter((item) => item !== null);
-          setWishlistItems(filteredItems);
+          const sortedItems = filteredItems.sort((a, b) => b.createdAt - a.createdAt);
+
+          setWishlistItems(sortedItems);
         } else {
           console.warn("User wishlist not found.");
         }
@@ -194,7 +196,10 @@ const Wishlist = () => {
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleListingPress(item)}>
+    <TouchableOpacity
+      onPress={() => handleListingPress(item)}
+      style={{ width: '50%' }}
+    >
       <View style={styles.listingItem}>
         <View style={styles.imageContainer}>
           <Image
@@ -210,7 +215,7 @@ const Wishlist = () => {
             />
           )}
           <View style={styles.heartContainer}>
-            <Ionicons name="heart" size={24} color="red" />
+            <Ionicons name="heart" size={24} color="#e8594f" />
           </View>
         </View>
         <View style={styles.textContainer}>
@@ -293,7 +298,7 @@ const styles = StyleSheet.create({
     //zIndex: 1,
   },
   deleteButton: {
-    backgroundColor: "red",
+    backgroundColor: "#e8594f",
     padding: 10,
     borderRadius: 5,
     width: 150,
@@ -336,7 +341,6 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     padding: 15,
     alignItems: "center",
-    width: 195,
     flexWrap: "wrap",
   },
   textContainer: {

@@ -96,12 +96,12 @@
 
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, PanResponder, Animated, StyleSheet } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 
-const Confirm = () => {
-  const [slideHeight] = useState(new Animated.Value(0));
+const SlideToConfirmButton = () => {
+  const [slideWidth] = useState(new Animated.Value(0));
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [shootConfetti, setShootConfetti] = useState(false);
 
@@ -117,6 +117,7 @@ const Confirm = () => {
         setIsConfirmed(true);
         setShootConfetti(true);
       });
+      handleConfirm();
     } else {
       // If not confirmed, reset the slide height
       Animated.spring(slideHeight, {

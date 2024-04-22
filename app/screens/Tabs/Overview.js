@@ -5,7 +5,7 @@ import { createMaterialTopTabNavigator } from "@react-navigation/material-top-ta
 import Selling from "../Stacks/Selling";
 import Bought from "../Stacks/Bought";
 import Trade from "../Stacks/Trade";
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, updateDoc } from 'firebase/firestore';
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { signOut } from "firebase/auth";
 
@@ -46,9 +46,25 @@ const Overview = () => {
     navigation.navigate("UpdateProfile", { profileData: profileData });
   };
 
-  const handleConfirm = () => {
-    navigation.navigate("Confirm");
-  };
+  // const handleConfirm = async () => {
+  //   try {
+  //     // Fetch all documents from the "listings" collection
+  //     const listingsSnapshot = await getDocs(collection(firestoreDB, "listing"));
+      
+  //     // Loop through each listing document
+  //     listingsSnapshot.forEach(async (doc) => {
+  //         // Update the status field for the listing document
+  //         await updateDoc(doc.ref, {
+  //           createdAt: new Date(Date.now() - Math.floor(Math.random() * 14 * 24 * 60 * 60 * 1000))
+  //         });
+  //     });
+
+  //     console.log("Status updated successfully for all listings.");
+  //   } catch (error) {
+  //       console.error("Error updating status:", error);
+  //       // Handle error
+  //   }
+  // };
 
   const handleSignOut = () => {
     signOut(auth)
@@ -84,9 +100,9 @@ const Overview = () => {
             </TouchableOpacity>
             
             {/* Temporary Confirm Button */}
-            <TouchableOpacity onPress={handleConfirm}>
+            {/* <TouchableOpacity onPress={handleConfirm}>
               <Text style={styles.buttonText}>Confirm</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
         
@@ -119,7 +135,7 @@ const Overview = () => {
       >
         <tabs.Screen name="Selling" component={Selling}/>
         <tabs.Screen name="Bought" component={Bought}/>
-        <tabs.Screen name="Trade" component={Trade}/>
+        <tabs.Screen name="Sold" component={Trade}/>
       </tabs.Navigator>
     </View>
   );
