@@ -210,7 +210,7 @@ const Wishlist = () => {
             />
           )}
           <View style={styles.heartContainer}>
-            <Ionicons name="heart" size={24} color="red" />
+            <Ionicons name="heart" size={24} color="#e8594f" />
           </View>
         </View>
         <View style={styles.textContainer}>
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     //zIndex: 1,
   },
   deleteButton: {
-    backgroundColor: "red",
+    backgroundColor: "#e8594f",
     padding: 10,
     borderRadius: 5,
     width: 150,

@@ -1312,7 +1312,7 @@ const styles = StyleSheet.create({
   },
   itemCountBubble: {
     position: "absolute",
-    backgroundColor: "red",
+    backgroundColor: "#e8594f",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 15,
