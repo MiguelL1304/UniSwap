@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     backgroundColor: "white",
-    marginBottom: 20,
+    marginBottom: 200,
     paddingHorizontal: 10,
     position: "relative",
   },

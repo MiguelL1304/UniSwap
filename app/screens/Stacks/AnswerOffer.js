@@ -113,6 +113,26 @@ const AnswerOffer= ({ route }) => { // Receive profile data as props
       const senderOfferDocRef = doc(senderDocRef, 'sentOffers', offer.id);
       await deleteDoc(senderOfferDocRef);
 
+      //Update all listing objects
+      const batch = writeBatch(firestoreDB);
+
+      const listingAR = offer.listings;
+
+      listingAR.forEach(listing => {
+        const listingDocRef = doc(firestoreDB, 'listing', listing.id);
+        batch.update(listingDocRef, { status: "unavailable" });
+      });
+
+      const offerListingsAR = offer.offerListings;
+      offerListingsAR.forEach(listing => {
+        const listingDocRef = doc(firestoreDB, 'listing', listing.id);
+        batch.update(listingDocRef, { status: "unavailable" });
+      });
+      
+      await batch.commit();
+
+      console.log('Offer accepted and listings updated successfully');
+
       console.log('Offer accepted successfully');
 
       navigation.goBack();
