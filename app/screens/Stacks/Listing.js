@@ -256,11 +256,6 @@ const handleBackNavigation = () => {
 
     return (
   <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-
-
-    <TouchableOpacity style={styles.backButtonContainer} onPress={handleBackNavigation}>
-    <Text>Back</Text>
-</TouchableOpacity>
     <View style={styles.listedByContainer}>
       <Image
         source={{ uri: userPic ? userPic : 'https://www.shutterstock.com/image-vector/blank-avatar-photo-place-holder-600nw-1095249842.jpg' }}
@@ -328,12 +323,6 @@ const handleBackNavigation = () => {
     </View>
     
     <Text style={styles.title}>{title}</Text>
-    
-
-    {/* Details section */}
-    <View style={styles.detailsContainer}>
-      <Text style={styles.detailsTitle}>Details</Text>
-    </View>
     
     {/* Description section */}
     <View style={styles.detailsSection}>

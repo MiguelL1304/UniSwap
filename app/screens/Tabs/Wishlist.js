@@ -72,7 +72,9 @@ const Wishlist = () => {
           const items = await Promise.all(itemsPromises);
           console.log("Fetched wishlist items:", items);
           const filteredItems = items.filter((item) => item !== null);
-          setWishlistItems(filteredItems);
+          const sortedItems = filteredItems.sort((a, b) => b.createdAt - a.createdAt);
+
+          setWishlistItems(sortedItems);
         } else {
           console.warn("User wishlist not found.");
         }
@@ -194,7 +196,10 @@ const Wishlist = () => {
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleListingPress(item)}>
+    <TouchableOpacity
+      onPress={() => handleListingPress(item)}
+      style={{ width: '50%' }}
+    >
       <View style={styles.listingItem}>
         <View style={styles.imageContainer}>
           <Image
@@ -336,7 +341,6 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     padding: 15,
     alignItems: "center",
-    width: 195,
     flexWrap: "wrap",
   },
   textContainer: {

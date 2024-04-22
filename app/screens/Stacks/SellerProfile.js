@@ -203,7 +203,8 @@ const SellerProfile = ({ route }) => {
             }));
     
             const filteredItems = items.filter((item) => item !== null);
-            setSellerListings(filteredItems);
+            const sortedListings = filteredItems.sort((a, b) => b.createdAt - a.createdAt);
+            setSellerListings(sortedListings);
           } else {
             console.warn("Seller listing document not found")
           }
