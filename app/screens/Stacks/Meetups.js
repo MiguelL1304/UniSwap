@@ -186,7 +186,11 @@ const Meetups = () => {
           scrollEnabled={false}
         />
       ) : (
-        <Text>No meetups finalized at this time</Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>
+            No meetups at this time.
+          </Text>
+        </View>
       )}
       </ScrollView>
     </View>
@@ -276,6 +280,8 @@ const FinalizedItems = ({ item, navigation }) => {
     </View>
   );
 };
+
+const screenHeight = Dimensions.get('window').height * 0.5;
 
 const styles = StyleSheet.create({
   contentSheet: {
@@ -548,6 +554,21 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "500",
     fontSize: 16,
+  },
+  emptyContainer: {
+    backgroundColor: "white",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingLeft: 15,
+    height: screenHeight,
+  },
+  emptyText: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "gray",
+    flexWrap: "wrap",
+    paddingBottom: 100,
   },
 });
 
