@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, FlatList, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import React, { useEffect, useState, useCallback  } from "react";
+import { View, Text, StyleSheet, Image, FlatList, ScrollView, TouchableOpacity, Dimensions, RefreshControl } from "react-native";
 import { collection, doc, getDocs, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
@@ -15,6 +15,16 @@ const SentOffers = () => {
     }
   }, [isFocused]);
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchOffers();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
   const fetchOffers = async () => {
     try {
       const email = auth.currentUser ? auth.currentUser.email : null;
@@ -29,7 +39,9 @@ const SentOffers = () => {
         fetchedOffers.push({ id: doc.id, ...doc.data() });
       });
 
-      setOffers(fetchedOffers);
+      const filteredAndSorted = fetchedOffers.sort((a, b) => b.createdAt - a.createdAt);
+      setOffers(filteredAndSorted);
+      
     } catch (error) {
       console.error("Error fetching offers:", error);
     }
@@ -68,7 +80,14 @@ const SentOffers = () => {
   };
 
   return (
-    <ScrollView style={{backgroundColor: "#e6f2ff"}}>
+    <ScrollView 
+      style={{backgroundColor: "#e6f2ff"}}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}/>
+      }
+    >
       {offers.length > 0 ? (
         <FlatList
           data={offers}
@@ -153,7 +172,7 @@ const OfferItem = ({ item, onPressDetails, onPressDelete }) => {
 
       {item.status === 'declined' && (
         <View style={styles.buttonContainer}>
-          <Text style={{ ...styles.cancelText, color: '#e8594f' }}>Your offer was declined</Text>
+          <Text style={{ ...styles.cancelText, color: '#e8594f' }}>Offer was declined.</Text>
           <TouchableOpacity style={{ ...styles.cancelButton, borderColor: '#e8594f' }} onPress={onPressDelete}>
             <Text style={{ ...styles.cancelText, color: '#e8594f' }}>Delete</Text>
           </TouchableOpacity>   

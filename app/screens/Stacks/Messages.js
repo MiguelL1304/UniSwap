@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { FlatList, StyleSheet, Text, View, RefreshControl } from 'react-native';
 import { collection, query, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
 import { firestoreDB, auth } from "../../../Firebase/firebase";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
@@ -19,6 +19,18 @@ import {
 const Messages = ({ navigation }) => {
     const [chats, setChats] = useState([]);
     const isFocused = useIsFocused();
+
+    //Refresher
+
+    const [refreshing, setRefreshing] = useState(false);
+
+    const onRefresh = useCallback(() => {
+      setRefreshing(true);
+      fetchChats();
+      setTimeout(() => {
+        setRefreshing(false);
+      }, 2000);
+    }, []);
 
     useEffect(() => {
       if (isFocused) {
@@ -92,11 +104,13 @@ const Messages = ({ navigation }) => {
               }
         
 
-              fetchedChats.push({ id: chatId, ...chatData, lastMessageTime: formattedTime, lastMessageText });
+              fetchedChats.push({ id: chatId, ...chatData, lastMessageTime: formattedTime, lastMessageText, timeStamp: lastMessageTime });
           }
       }
 
-      setChats(fetchedChats);
+      const sortedChats = fetchedChats.sort((a, b) => b.timeStamp - a.timeStamp);
+
+      setChats(sortedChats);
     };
 
     return (
@@ -112,6 +126,11 @@ const Messages = ({ navigation }) => {
             <FlatList
               data={chats}
               keyExtractor={item => item.id}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}/>
+              }
               renderItem={({ item }) => {
                 const userEmail = auth.currentUser.email
                 // Determine the current user and seller data

@@ -66,6 +66,7 @@ const Home = () => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
+    fetchData();
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
