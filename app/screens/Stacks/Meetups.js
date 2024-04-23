@@ -3,6 +3,9 @@ import { View, StyleSheet, Image, FlatList, Text, ScrollView, Dimensions, Toucha
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
+import { AntDesign } from "@expo/vector-icons";
+import { FontAwesome6 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 const Meetups = () => {
   const navigation = useNavigation();
@@ -197,6 +200,15 @@ const FinalizedItems = ({ item, navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.tagAndNameContainer}>
+        {/* <Text style={styles.transactionType}>{transactionType}</Text> */}
+        <Text style={styles.username}>{transactionType}{userName}</Text>
+        {transactionType === "Sold To: " ? (
+          <Ionicons name="bag-remove" size={24} color="#e8594f" />
+        ) : (
+          <Ionicons name="bag-add" size={24} color="#50C878" />
+        )}
+      </View>
       <View style={styles.contentContainer}>
         <View style={styles.imageWrapper}>
           <Image
@@ -217,7 +229,7 @@ const FinalizedItems = ({ item, navigation }) => {
         </View>
       </View>
 
-      <View style={styles.contentContainer}>
+      {/* <View style={styles.contentContainer}>
         <Text style={styles.transactionType}>{transactionType}</Text>
         <View style={styles.userInfo}>
           <Image
@@ -226,16 +238,13 @@ const FinalizedItems = ({ item, navigation }) => {
           />
         </View>
         <Text style={styles.username}>{userName}</Text>
-      </View>
+      </View> */}
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={handleMeetupDetails}>
           <Text style={styles.buttonText}>View Meetup</Text>
         </TouchableOpacity>
       </View>
-
-   
-
 
     </View>
   );
@@ -252,7 +261,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    alignItems: "center",
+    alignItems: "flex-start",
+    width: "100%",
     backgroundColor: '#ffffff',
   },
   listingsContainer: {
@@ -477,7 +487,13 @@ const styles = StyleSheet.create({
     borderColor: "#3f9eeb",
   },
   transactionType: {
-    marginLeft: 20,
+    fontWeight: "bold",
+    fontSize: 10,
+    //textAlign: "right",
+    //marginLeft: 20,
+    //marginRight: -126,
+    //marginLeft: 180,
+    //backgroundColor: "pink"
   },
   profilePic: {
     width: 50,
@@ -487,10 +503,17 @@ const styles = StyleSheet.create({
   },
   username: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 10,
     fontWeight: "bold",
-    marginBottom: 5,
-    marginLeft: 10,
+    textAlign: "right",
+    //marginBottom: 5,
+    //marginLeft: 10,
+    marginRight: 5,
+   //backgroundColor: "red",
+    //width: "30%",
+    //transform: [{ rotate: "45deg" }],
+    //position: "absolute",
+    //paddingHorizontal: 14,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -501,7 +524,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#3f9eeb",
-    width: "30%",
+    width: "40%",
     height: 35,
     borderRadius: 10,
     alignItems: "center",
@@ -510,8 +533,18 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontWeight: "500",
+    fontWeight: "bold",
     fontSize: 16,
+    padding: 5,
+  },
+  tagAndNameContainer: {
+    flexDirection: "row",
+    //justifyContent: "flex-end",
+    alignItems: "center",
+    //alignContent: "center",
+    alignSelf: "left",
+    //width: "100%",
+    //right: -10,
   },
 });
 

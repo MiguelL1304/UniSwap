@@ -478,7 +478,7 @@ const Offer = ({ route }) => { // Receive profile data as props
 
         <TouchableOpacity style={styles.topMenuButton2} onPress={handleBuyPress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={styles.titleTextMenu}> Buy Offer</Text>
+            <Text style={styles.titleTextMenu}> Offer</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={styles.menuSelection}> {offerPrice}</Text>
               <Ionicons name="chevron-forward" size={20} color="#3f9eeb" style={{paddingTop: 7 }}/>
@@ -489,7 +489,7 @@ const Offer = ({ route }) => { // Receive profile data as props
         <TouchableOpacity style={styles.menuButton2} onPress={handleTradePress}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
 
-            <Text style={styles.titleTextMenu}> Trades</Text>
+            <Text style={styles.titleTextMenu}> Trade</Text>
             
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={styles.menuSelection}>
@@ -605,7 +605,7 @@ const Offer = ({ route }) => { // Receive profile data as props
         backdropComponent={renderBackdrop}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={styles.priceText}>   Buy Offer:    $</Text>
+          <Text style={styles.priceText}>   Offer:    $</Text>
           <TextInput
             value={priceInput}
             style={styles.priceInput}
