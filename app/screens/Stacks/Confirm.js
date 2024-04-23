@@ -73,7 +73,6 @@ const Confirm = ({ route }) => {
     });
   };
 
-
   const handleConfirmationFinalized = async () => {
     try {
       const batch = writeBatch(firestoreDB);

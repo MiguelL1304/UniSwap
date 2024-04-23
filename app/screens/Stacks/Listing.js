@@ -29,6 +29,7 @@ import { addToBag } from "../Components/Bag/BagLogic";
 import SellerProfile from "./SellerProfile";
 import Swiper from 'react-native-swiper';
 import TestSwiper from './TestSwiper';  
+import { Ionicons } from "@expo/vector-icons";
 
 
 
@@ -278,6 +279,7 @@ const handleBackNavigation = () => {
     <Swiper 
       style={styles.wrapper} 
       autoHeight={true} 
+      paginationStyle={{ bottom: 15 }}
       activeDot={
         <View style={{
           backgroundColor: '#3f9eeb', 
@@ -302,27 +304,33 @@ const handleBackNavigation = () => {
             </Swiper>
     
     
-    <View style={styles.container2}>
-      <Text style={styles.price}>${price}</Text>
+            <View style={styles.container2}>
+  <Text style={styles.title}>{title}</Text>
+</View>
+<View style={[styles.container2, { justifyContent: 'space-between' }]}>
+  <Text style={styles.price}>${price}</Text>
+  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <Ionicons name="heart" size={24} color="red" style={{ marginRight: 10 }} />
+    <TouchableOpacity 
+      onPress={() => { 
+        setIsInWishlist(!isInWishlist); 
+        if (isInWishlist) {
+          handleRemoveWishlist();
+        } else {
+          handleAddWishlist();
+        }
+      }}
+      style={styles.heartButton}
+    >
+    <Text style={[styles.heart, { color: isInWishlist ? "#e8594f" : "grey" }]}>
+      {isInWishlist ? "♥" : "♡"}
+    </Text>
+  </TouchableOpacity>
+</View>
+</View>
 
-      <TouchableOpacity 
-        onPress={() => { 
-          setIsInWishlist(!isInWishlist); 
-          if (isInWishlist) {
-            handleRemoveWishlist();
-          } else {
-            handleAddWishlist();
-          }
-        }}
-        style={styles.heartButton}
-      >
-        <Text style={[styles.heart, { color: isInWishlist ? "#e8594f" : "grey" }]}>
-          {isInWishlist ? "♥" : "♡"}
-        </Text>
-      </TouchableOpacity>
-    </View>
-    
-    <Text style={styles.title}>{title}</Text>
+
+
     
     {/* Description section */}
     <View style={styles.detailsSection}>
@@ -344,10 +352,11 @@ const handleBackNavigation = () => {
 
     {/* Buy and Trade buttons */}
     <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText} onPress={() => handleAddToBag(listing)}>Add to Bag</Text>
-      </TouchableOpacity>
-    </View>
+  <TouchableOpacity style={styles.checkoutButton} onPress={() => handleAddToBag()}>
+    <Text style={{ color: "white", textAlign: "center", fontWeight: "bold" }}>Add To Bag</Text>
+  </TouchableOpacity>
+</View>
+
 
     {/* Add Picker components for date/time and location selections here */}
   </ScrollView>
@@ -367,11 +376,9 @@ const handleBackNavigation = () => {
       },
       container2: {
         flexDirection: 'row',
+        justifyContent: 'center',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '70%',
-        // borderWidth: 1,
-        // borderColor: 'black',
+        width: '100%', 
       },
       detailText: {
         textAlign: 'center',
@@ -401,10 +408,11 @@ const handleBackNavigation = () => {
         borderRadius: 10,
       },
       price: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         marginVertical: 8,
-        alignSelf: 'center',
+        width: '100%',
+        paddingLeft: 25,
       },
       title: {
         textAlign: 'center',
@@ -430,7 +438,8 @@ const handleBackNavigation = () => {
         fontWeight: 'bold',
       },
       heartButton: {
-        paddingLeft: 100,
+        position: 'absolute',
+        right: 60,
       },
       heart: {
         fontSize: 30,
@@ -471,6 +480,26 @@ const handleBackNavigation = () => {
       detailsText: {
         flex: 3,
       },
+      priceContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',  // Ensures content is centered
+        alignItems: 'center',
+        width: '100%',  // Takes full width of the screen
+        position: 'relative',  // Allows absolute positioning of children inside
+      },
+      checkoutButton: {
+        backgroundColor: "#3f9eeb",
+        fontSize: 20,
+        fontWeight: "bold",
+        textAlign: "center",
+        color: "white",
+        width: "90%",
+        padding: 8,
+        margin: 10,
+        borderRadius: 10,
+        overflow: "hidden",
+      }
+      
     });
     
     export default Listing;
