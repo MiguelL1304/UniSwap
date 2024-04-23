@@ -6,7 +6,7 @@ import { collection, addDoc, doc, setDoc, onSnapshot, updateDoc, deleteDoc, getD
 import { useNavigation } from "@react-navigation/native";
 
 const Confirm = ({ route }) => {
-  const [slideHeight] = useState(new Animated.Value(0));
+  const [slideWidth] = useState(new Animated.Value(0));
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [shootConfetti, setShootConfetti] = useState(false);
 
@@ -66,7 +66,7 @@ const Confirm = ({ route }) => {
   
   const handleConfirm = async () => {
     const exchangeRef = doc(firestoreDB, 'exchanges', id);
-    const fieldToUpdate = `${userRole}Confirmed`; // Directly use 'buyerConfirmed' or 'sellerConfirmed'
+    const fieldToUpdate = `${userRole}Confirmed`; 
     await updateDoc(exchangeRef, {
       [fieldToUpdate]: true
     });
@@ -131,6 +131,7 @@ const Confirm = ({ route }) => {
         setIsConfirmed(true);
         // setShootConfetti(true);
       });
+      handleConfirm();
     } else {
       // If not confirmed, reset the slide width
       Animated.spring(slideWidth, {
@@ -198,13 +199,13 @@ const Confirm = ({ route }) => {
       )}
       {isConfirmed && shootConfetti && <ConfettiCannon count={200} origin={{ x: -100, y: 0 }} />}
 
-      {/* {!shootConfetti && ( */}
+      {!shootConfetti && (
         <View style={styles.cancelContainer}>
           <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
         </View>
-      {/* )} */}
+      )}
     </View>
   );
 };
@@ -271,5 +272,6 @@ const styles = StyleSheet.create({
     marginTop: 100,
   }
 });
+
 
 export default Confirm;
