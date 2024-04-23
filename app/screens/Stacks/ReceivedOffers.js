@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontWeight: "500",
+    fontWeight: "bold",
     fontSize: 16,
   },
   cancelText: {
