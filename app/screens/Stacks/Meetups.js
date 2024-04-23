@@ -43,7 +43,7 @@ const Meetups = () => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(animation, {
-          toValue: 0.5,
+          toValue: 0.7,
           duration: 1500,
           easing: Easing.linear,
           useNativeDriver: true,
@@ -111,20 +111,25 @@ const Meetups = () => {
 
   const dotCoordinates = (building) => {
     const buildingCoordinates = {
-      A: { x: 215, y: 165},
-      B: { x: 70, y: 210},
-      C: { x: 25, y: 190},
-      D: { x: 335, y: 165},
-      E: { x: 40, y: 135},
-      F: { x: 270, y: 45},
-      L: { x: 90, y: 140},
+      A: { x: 235, y: 170},
+      B: { x: 55, y: 215},
+      C: { x: 35, y: 175},
+      D: { x: 335, y: 155},
+      E: { x: 55, y: 140},
+      F: { x: 280, y: 45},
+      L: { x: 100, y: 145},
     };
     return buildingCoordinates[building] || { x: 0, y: 0 };
   };
 
   const handleMeetupSelect = (meetup) => {
-    setSelectedMeetup(meetup);
-    setSelectedMeetupLocation(meetup.location);
+    if (selectedMeetup && selectedMeetup.id === meetup.id) {
+      setSelectedMeetup(null);
+      setSelectedMeetupLocation(null);
+    } else {
+      setSelectedMeetup(meetup);
+      setSelectedMeetupLocation(meetup.location);
+    }
   };
 
   const renderItem = ({ item, index }) => {
@@ -169,7 +174,7 @@ const Meetups = () => {
       })}
 
     <ScrollView 
-      style={{ backgroundColor: "#e6f2ff"}}
+      style={[styles.scrollViewContainer, { backgroundColor: "#e6f2ff"}]}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -302,7 +307,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     width: '100%',
-    height: 10,
+    height: 2,
     backgroundColor: '#e6f2ff',
   },
   menuView: {
@@ -369,9 +374,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContainer: {
     flexGrow: 1, // Allow the ScrollView to grow vertically
-    paddingHorizontal: 20,
-    paddingTop: Dimensions.get("window").height / 3.5, // Adjust padding as needed
-    paddingBottom: 35, // Adjust padding as needed
+    marginBottom: 60,
   },
   subjectButtonTop: {
     backgroundColor: '#ffffff',
@@ -429,7 +432,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     justifyContent: 'left',
     backgroundColor: 'white',
-    paddingBottom: 10,
+    paddingBottom: 5,
   },
   titleText: {
     fontSize: 18,
