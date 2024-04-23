@@ -392,7 +392,7 @@ const Offer = ({ route }) => { // Receive profile data as props
                 style={styles.listingImg}
               />
             </View>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.titleText}>{listings[index].title}</Text>
               <Text style={{ ...styles.titleText, fontSize: 14, opacity: 0.8 }}>Price: ${item.price} | {item.condition}</Text>
             </View>
@@ -485,7 +485,7 @@ const Offer = ({ route }) => { // Receive profile data as props
       <View style={styles.divider} />
 
       <View style={styles.contentContainer}>
-        <Text style={{ ...styles.titleText, fontWeight: '500'}}>Buy & Trade</Text>
+        <Text style={{ ...styles.titleText, fontWeight: '500'}}>Offer & Trade</Text>
       </View>
 
       <View style={styles.menuView2}>
