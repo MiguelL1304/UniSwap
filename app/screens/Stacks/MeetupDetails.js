@@ -75,6 +75,8 @@ const OfferDetails= ({ route }) => { // Receive profile data as props
       id: meetup.id,
       buyer: meetup.buyer,
       seller: meetup.seller,
+      listings: meetup.listings,
+      tradeListings: meetup.tradeListings,
     });
   };
 
