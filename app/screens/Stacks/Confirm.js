@@ -100,7 +100,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, PanResponder, Animated, StyleSheet } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 
-const SlideToConfirmButton = () => {
+const Confirm = () => {
   const [slideWidth] = useState(new Animated.Value(0));
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [shootConfetti, setShootConfetti] = useState(false);
