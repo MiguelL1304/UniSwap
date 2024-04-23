@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#3f9eeb",
-    width: "30%",
+    width: "40%",
     height: 35,
     borderRadius: 10,
     alignItems: "center",
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontWeight: "500",
+    fontWeight: "bold",
     fontSize: 16,
   },
   buttonOutlineText: {

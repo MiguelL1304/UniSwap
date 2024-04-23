@@ -157,6 +157,7 @@ const Meetups = () => {
           source={require("../../assets/ggc-map.png")}
           style={styles.mapImage}
         />
+        <View style={styles.divider}></View>
         {/* Render dots based on meetup locations */}
         {meetupLocations.map((location) => {
           const { building } = location;
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     width: '100%',
-    height: 2,
+    height: 3,
     backgroundColor: '#e6f2ff',
   },
   menuView: {
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContainer: {
     flexGrow: 1, // Allow the ScrollView to grow vertically
-    marginBottom: 60,
+    //marginBottom: 60,
   },
   subjectButtonTop: {
     backgroundColor: '#ffffff',
