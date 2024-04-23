@@ -120,10 +120,10 @@ const Confirm = ({ route }) => {
   };
 
   const handleSlide = (gestureState) => {
-    const { dy } = gestureState;
-    if (dy < -100) {
+    const { dx } = gestureState;
+    if (dx > 100) {
       // If user slides beyond a certain threshold, consider it as confirmation
-      Animated.timing(slideHeight, {
+      Animated.timing(slideWidth, {
         toValue: 1,
         duration: 300,
         useNativeDriver: false,
@@ -131,12 +131,11 @@ const Confirm = ({ route }) => {
         setIsConfirmed(true);
         // setShootConfetti(true);
       });
-      handleConfirm();
     } else {
-      // If not confirmed, reset the slide height
-      Animated.spring(slideHeight, {
+      // If not confirmed, reset the slide width
+      Animated.spring(slideWidth, {
         toValue: 0,
-        friction: 4,
+        friction: 49,
         useNativeDriver: false,
       }).start();
     }
@@ -145,33 +144,54 @@ const Confirm = ({ route }) => {
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
-    onPanResponderMove: Animated.event([null, { dy: slideHeight }], {
+    onPanResponderMove: Animated.event([null, { dx: slideWidth }], {
       useNativeDriver: false,
       listener: (event, gestureState) => {
-        if (gestureState.dy > 0) {
-          // Prevent sliding down
-          slideHeight.setValue(0);
+        if (gestureState.dx < 0) {
+          // Prevent sliding left
+          slideWidth.setValue(0);
         }
       },
     }),
-    onPanResponderRelease: (_, gestureState) => handleSlide(gestureState),
+    onPanResponderRelease: (evt, gestureState) => handleSlide(gestureState),
   });
+
+  const slideText = isConfirmed ? 'Confirmed!' : 'Slide to Confirm';
 
   return (
     <View style={styles.container}>
-      <View style={styles.buttonContainer}>
+      {/* Box with instructions */}
+      <View style={styles.instructionsBox}>
+        <Text style={styles.instructionsTitle}>Confirm you met with the seller:</Text>
+        <Text style={styles.instructionsText}>
+          {"\u2022"} Be 100% sure you are meeting with the right seller! {"\n"}
+          {"\u2022"} Check that all items purchased/traded are present {"\n"}
+          {"\u2022"} Discuss and make payment {"\n"}
+          {"\u2022"} Slide the button all the way to the right to confirm a successful transaction
+        </Text>
+      </View>
+
+      {/* Slide bar */}
+      <View style={styles.slidebar}>
         <Animated.View
-          style={[
-            styles.button,
-            {
-              transform: [{ translateY: slideHeight.interpolate({ inputRange: [0, 1], outputRange: [0, -100] }) }],
-            },
-          ]}
+          style={{
+            height: '75%',
+            width: '11%',
+            borderRadius: 50,
+            backgroundColor: '#3f9eeb',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'absolute',
+            left: 7,
+            transform: [{ translateX: slideWidth.interpolate({ inputRange: [0, 1], outputRange: [0, 100] }) }],
+          }}
           {...panResponder.panHandlers}
         >
-          {/* <Text style={{ color: 'black', fontWeight: 'bold' }}>{isConfirmed ? 'Confirmed!' : null}</Text> */}
-          <Text style={{ color: 'black', fontWeight: 'bold' }}>{isConfirmed ? 'Confirmed!' : null}</Text>
+          {/* <Text style={{ color: 'white', fontWeight: 'bold' }}>{slideText}</Text> */}
         </Animated.View>
+        {/* {!isConfirmed && (
+          <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Slide</Text>
+        )} */}
       </View>
       {!isConfirmed && (
         <Text style={styles.confirmText}>Slide up to Confirm</Text>
@@ -189,36 +209,29 @@ const Confirm = ({ route }) => {
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#ffffff',
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: 'white'
   },
-  buttonContainer: {
-    marginBottom: 20,
-    width: 100,
-    height: 100,
-    borderRadius: 50, // Make it a circle
+  instructionsBox: {
     backgroundColor: '#e6f2ff',
-    justifyContent: 'center',
-    overflow: 'hidden',
+    padding: 40,
+    marginTop: 40,
+    marginBottom: 20,
+    borderRadius: 10,
+    // alignSelf: 'stretch',
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
   },
-  button: {
-    backgroundColor: '#3f9eeb',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: '100%',
-    height: '100%',
-  },
-  confirmText: {
-    color: 'black',
+  instructionsTitle: {
+    color: '#3f9eeb',
     fontWeight: 'bold',
-    textAlign: 'center',
+    marginBottom: 5,
   },
   cancelText: {
     color: "#3f9eeb",
@@ -242,6 +255,21 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: 'center',
   },
+  instructionsText: {
+    color: '#3f9eeb',
+    textAlign: 'left',
+  },
+  slidebar: {
+    width: '80%',
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#e6f2ff',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 4,
+    borderColor: '#3f9eeb',
+    marginTop: 100,
+  }
 });
 
 export default Confirm;

@@ -46,6 +46,12 @@ const Overview = () => {
     navigation.navigate("UpdateProfile", { profileData: profileData });
   };
 
+
+//   const handleConfirm = () => {
+//     navigation.navigate("Confirm");
+//   };
+
+
   const handleConfirm = async () => {
     try {
       // Fetch all documents from the "listings" collection
