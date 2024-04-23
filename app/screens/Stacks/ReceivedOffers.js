@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, FlatList, ScrollView, Dimensions } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, StyleSheet, Image, FlatList, ScrollView, Dimensions, RefreshControl } from "react-native";
 import { TouchableOpacity, TouchableWithoutFeedback } from "react-native";
 import { collection, doc, getDocs, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { auth, firestoreDB } from "../../../Firebase/firebase";
@@ -16,6 +16,16 @@ const ReceivedOffers = () => {
     } 
   }, [isFocused]);
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchOffers();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
   const fetchOffers = async () => {
     try {
       const email = auth.currentUser ? auth.currentUser.email : null;
@@ -30,7 +40,42 @@ const ReceivedOffers = () => {
         fetchedOffers.push({ id: doc.id, ...doc.data() });
       });
 
-      setOffers(fetchedOffers);
+      const updatedOffers = [];
+      for (const offer of fetchedOffers) {
+        let declineOffer = false;
+
+        // Check each listing associated with the offer
+        for (const listing of offer.listings) {
+          const listingRef = doc(firestoreDB, "listing", listing.id);
+          const listingDoc = await getDoc(listingRef);
+          if (listingDoc.exists() && listingDoc.data().status === "unavailable") {
+            declineOffer = true;
+            break;
+          }
+        }
+
+        for (const listing of offer.offerListings) {
+          const listingRef = doc(firestoreDB, "listing", listing.id);
+          const listingDoc = await getDoc(listingRef);
+          if (listingDoc.exists() && listingDoc.data().status === "unavailable") {
+            declineOffer = true;
+            break;
+          }
+        }
+
+        // If any listing is unavailable, decline the offer
+        if (declineOffer) {
+          await handleDecline(offer);  // This will update the offer status to 'declined' in Firestore
+          updatedOffers.push({ ...offer, status: 'declined' });  // Modify offer here to reflect decline status
+        } else {
+          updatedOffers.push(offer);  // Add unchanged offer to the list
+        }
+      }
+      
+      const filteredAndSorted = updatedOffers.sort((a, b) => b.createdAt - a.createdAt);
+      setOffers(filteredAndSorted);
+
+    
     } catch (error) {
       console.error("Error fetching offers:", error);
     }
@@ -92,7 +137,14 @@ const ReceivedOffers = () => {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: '#e6f2ff'}}>
+    <ScrollView 
+      style={{ backgroundColor: '#e6f2ff'}}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}/>
+      }
+    >
       {offers.length > 0 ? (
         <FlatList
           data={offers}
@@ -180,7 +232,7 @@ const OfferItem = ({ item, onPressDetails, onPressDecline, onPressDelete }) => {
       )}
       {item.status === 'declined' && (
         <View style={styles.buttonContainer}>
-          <Text style={{ ...styles.cancelText, color: '#e8594f' }}>You declined this offer.</Text>
+          <Text style={{ ...styles.cancelText, color: '#e8594f' }}>Offer was declined.</Text>
           <TouchableOpacity style={{ ...styles.cancelButton, borderColor: '#e8594f' }} onPress={onPressDelete}>
             <Text style={{ ...styles.cancelText, color: '#e8594f' }}>Delete</Text>
           </TouchableOpacity>   

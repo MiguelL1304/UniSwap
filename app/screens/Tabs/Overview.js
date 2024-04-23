@@ -46,25 +46,25 @@ const Overview = () => {
     navigation.navigate("UpdateProfile", { profileData: profileData });
   };
 
-  // const handleConfirm = async () => {
-  //   try {
-  //     // Fetch all documents from the "listings" collection
-  //     const listingsSnapshot = await getDocs(collection(firestoreDB, "listing"));
+  const handleConfirm = async () => {
+    try {
+      // Fetch all documents from the "listings" collection
+      const listingsSnapshot = await getDocs(collection(firestoreDB, "listing"));
       
-  //     // Loop through each listing document
-  //     listingsSnapshot.forEach(async (doc) => {
-  //         // Update the status field for the listing document
-  //         await updateDoc(doc.ref, {
-  //           createdAt: new Date(Date.now() - Math.floor(Math.random() * 14 * 24 * 60 * 60 * 1000))
-  //         });
-  //     });
+      // Loop through each listing document
+      listingsSnapshot.forEach(async (doc) => {
+          // Update the status field for the listing document
+          await updateDoc(doc.ref, {
+            status: "available",
+          });
+      });
 
-  //     console.log("Status updated successfully for all listings.");
-  //   } catch (error) {
-  //       console.error("Error updating status:", error);
-  //       // Handle error
-  //   }
-  // };
+      console.log("Status updated successfully for all listings.");
+    } catch (error) {
+        console.error("Error updating status:", error);
+        // Handle error
+    }
+  };
 
   const handleSignOut = () => {
     signOut(auth)
@@ -100,9 +100,9 @@ const Overview = () => {
             </TouchableOpacity>
             
             {/* Temporary Confirm Button */}
-            {/* <TouchableOpacity onPress={handleConfirm}>
+            <TouchableOpacity onPress={handleConfirm}>
               <Text style={styles.buttonText}>Confirm</Text>
-            </TouchableOpacity> */}
+            </TouchableOpacity>
           </View>
         </View>
         

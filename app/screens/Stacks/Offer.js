@@ -79,7 +79,7 @@ const Offer = ({ route }) => { // Receive profile data as props
             }
           }));
   
-          const filteredItems = items.filter((item) => item !== null);
+          const filteredItems = items.filter(item => item !== null && item.status === "available")
           setUserListings(filteredItems);
         } else {
           console.warn("User listing document not found")
