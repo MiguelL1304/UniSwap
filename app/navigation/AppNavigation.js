@@ -256,7 +256,7 @@ export default function AppNavigation() {
           component={Confirm}
           options={{
             headerTitle: "Confirmation",
-            headerBackVisible: true,
+            headerBackVisible: false,
           }}
         />
       </Stack.Navigator>
