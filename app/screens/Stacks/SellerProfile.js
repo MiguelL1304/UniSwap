@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, Image, FlatList, TouchableOpacity, Dimensions } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { StyleSheet, Text, View, Image, FlatList, TouchableOpacity, Dimensions, RefreshControl } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { doc, getDoc, addDoc, collection, setDoc, updateDoc } from 'firebase/firestore';
 import { firestoreDB, auth } from "../../../Firebase/firebase";
@@ -20,6 +20,20 @@ const SellerProfile = ({ route }) => {
   const [sellerID, setSellerID] = useState('');
   const [profileFetched, setProfileFetched] = useState(false);
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    if (route && route.params && route.params.listing && route.params.listing.id) {
+      const { listing } = route.params;
+      const userId = listing.id.split('_')[0];
+
+      fetchSellerListings(userId);
+    }
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   useEffect(() => {
     if (route && route.params && route.params.listing && route.params.listing.id) {
@@ -176,47 +190,47 @@ const SellerProfile = ({ route }) => {
       const { listing } = route.params;
       const userId = listing.id.split('_')[0];
       
-      const fetchSellerListings = async () => {
-        try {
-          const userListingRef = doc(firestoreDB, "userListing", userId);
-          const userListingSnapshot = await getDoc(userListingRef);
-    
-          if (userListingSnapshot.exists()) {
-            const userListingData = userListingSnapshot.data();
-            const listingIds = Object.keys(userListingData);
-    
-            if (!Array.isArray(listingIds)) {
-              throw new Error("Listing IDs is not an array.");
-            }
-            
-            const items = await Promise.all(listingIds.map(async (listingId) => {
-              const listingDocRef = doc(firestoreDB, "listing", listingId);
-              const listingDocSnapshot = await getDoc(listingDocRef);
-    
-              if (listingDocSnapshot.exists()) {
-                const listingData = listingDocSnapshot.data();
-                return { id: listingId, listingImg1: listingData.listingImg1, ...listingData };
-              } else {
-                console.log("Listing document not found");
-                return null;
-              }
-            }));
-    
-            const filteredItems = items.filter((item) => item !== null);
-            const sortedListings = filteredItems.sort((a, b) => b.createdAt - a.createdAt);
-            setSellerListings(sortedListings);
-          } else {
-            console.warn("Seller listing document not found")
-          }
-        } catch (error) {
-          console.error('Error fetching seller listings:', error);
-        }
-      };
-      fetchSellerListings();
+      fetchSellerListings(userId);
     }
   }, [route]);
 
-  
+  const fetchSellerListings = async (userId) => {
+    try {
+      const userListingRef = doc(firestoreDB, "userListing", userId);
+      const userListingSnapshot = await getDoc(userListingRef);
+    
+      if (userListingSnapshot.exists()) {
+        const userListingData = userListingSnapshot.data();
+        const listingIds = Object.keys(userListingData);
+    
+        if (!Array.isArray(listingIds)) {
+          throw new Error("Listing IDs is not an array.");
+        }
+            
+        const items = await Promise.all(listingIds.map(async (listingId) => {
+          const listingDocRef = doc(firestoreDB, "listing", listingId);
+          const listingDocSnapshot = await getDoc(listingDocRef);
+    
+          if (listingDocSnapshot.exists()) {
+            const listingData = listingDocSnapshot.data();
+                return { id: listingId, listingImg1: listingData.listingImg1, ...listingData };
+          } else {
+            console.log("Listing document not found");
+            return null;
+          }
+        }));
+    
+        const filteredItems = items.filter(item => item !== null && item.status === "available")
+        const sortedListings = filteredItems.sort((a, b) => b.createdAt - a.createdAt);
+        setSellerListings(sortedListings);
+      } else {
+        console.warn("Seller listing document not found")
+      }
+    } catch (error) {
+      console.error('Error fetching seller listings:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
         {/* Display profile section */}
@@ -257,6 +271,11 @@ const SellerProfile = ({ route }) => {
         <FlatList
           data={sellerListings} 
           numColumns={numColumns}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}/>
+          }
           renderItem={({ item }) => (
             // click on listing --> listing page
             <TouchableOpacity onPress={() => handleListing(item)}>

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Image, FlatList, Text, ScrollView, Dimensions, TouchableOpacity, Animated, Easing } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { View, StyleSheet, Image, FlatList, Text, ScrollView, Dimensions, 
+  TouchableOpacity, Animated, Easing, RefreshControl } from "react-native";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
@@ -13,6 +14,18 @@ const Meetups = () => {
   const [selectedMeetupLocation, setSelectedMeetupLocation] = useState(null);
   const [animation] = useState(new Animated.Value(1));
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchMeetups();
+    fetchMeetupLocations();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
+    
   useEffect(() => {
     if (isFocused) {
       fetchMeetups();
@@ -22,7 +35,7 @@ const Meetups = () => {
 
   useEffect(() => {
     if (selectedMeetup) {
-    pulseAnimation();
+      pulseAnimation();
     }
   }, [selectedMeetup]);
 
@@ -61,7 +74,22 @@ const Meetups = () => {
         fetchedMeetups.push({ id: doc.id, ...doc.data() });
       });
 
-      setMeetups(fetchedMeetups);
+      const sortedMeetups = fetchedMeetups.sort((a, b) => {
+        const aDate = new Date(a.date.seconds * 1000);
+        const aTime = new Date(a.time.seconds * 1000);
+
+        const bDate = new Date(b.date.seconds * 1000);
+        const bTime = new Date(b.time.seconds * 1000);
+
+        const aFullDate = new Date(new Date(aDate).setHours(new Date(aTime).getHours(), new Date(aTime).getMinutes()));
+        const bFullDate = new Date(new Date(bDate).setHours(new Date(bTime).getHours(), new Date(bTime).getMinutes()));
+        
+        // Compare the full timestamps
+        return aFullDate - bFullDate; // Sorting in descending order
+      });
+
+      setMeetups(sortedMeetups);
+
     } catch (error) {
       console.error("Error fetching meetups:", error);
     }
@@ -140,7 +168,15 @@ const Meetups = () => {
         );
       })}
 
-    <ScrollView style={{ backgroundColor: "#e6f2ff"}}>
+    <ScrollView 
+      style={{ backgroundColor: "#e6f2ff"}}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      }
+    >
       {meetups.length > 0 ? (
         <FlatList
           data={meetups}

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Image, FlatList, Dimensions } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { StyleSheet, View, TouchableOpacity, Image, FlatList, Dimensions, RefreshControl } from "react-native";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { doc, getDoc } from 'firebase/firestore';
 import { useNavigation, useIsFocused } from "@react-navigation/native";
@@ -22,6 +22,16 @@ function Selling() {
       fetchUserListings();
     }
   }, [isFocused]);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchUserListings();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   const fetchUserListings = async () => {
     try {
@@ -54,7 +64,7 @@ function Selling() {
           }
         }));
     
-        const filteredItems = items.filter((item) => item !== null);
+        const filteredItems = items.filter(item => item !== null && item.status === "available")
         const sortedListings = filteredItems.sort((a, b) => b.createdAt - a.createdAt);
 
         setUserListings(sortedListings);
@@ -72,6 +82,11 @@ function Selling() {
       <FlatList
         data={userListings}
         numColumns={numColumns}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}/>
+        }
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => handleListing(item.id)}>
             <Image
