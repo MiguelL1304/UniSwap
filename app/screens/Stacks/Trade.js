@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { StyleSheet, View, TouchableOpacity, Image, FlatList, Dimensions, RefreshControl } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Image, FlatList, Dimensions, RefreshControl, Text } from "react-native";
 import { auth, firestoreDB } from "../../../Firebase/firebase";
 import { collection, doc, getDocs } from 'firebase/firestore';
 import { useNavigation, useIsFocused } from "@react-navigation/native";
@@ -52,7 +52,11 @@ function Sold() {
     }
   };
 
-
+  const renderEmptyComponent = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>No listings found.</Text>
+    </View>
+  );
   
   return (
     <View style={styles.container}>
@@ -74,10 +78,13 @@ function Sold() {
         )}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.flatListContent}
+        ListEmptyComponent={renderEmptyComponent}
       />
     </View>
   );
 }
+
+const screenHeight = Dimensions.get('window').height * 0.6;
 
 const styles = StyleSheet.create({
   container: {
@@ -95,6 +102,21 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start", // Align content to the top
     paddingTop: 1, 
     
+  },
+  emptyContainer: {
+    backgroundColor: "white",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingLeft: 15,
+    height: screenHeight,
+  },
+  emptyText: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "gray",
+    flexWrap: "wrap",
+    paddingBottom: 100,
   },
 });
 

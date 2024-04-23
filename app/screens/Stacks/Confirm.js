@@ -46,12 +46,13 @@ const Confirm = ({ route }) => {
         updateDoc(exchangeRef, { exchangeComplete: true })
         .then(() => {
           setShootConfetti(true);
-          if (userRole === 'buyer') {
-            handleConfirmationFinalized();
-          }
-          else {
-            navigation.goBack();
-          }
+          setTimeout(() => {
+            if (userRole === 'buyer') {
+              handleConfirmationFinalized();
+            } else {
+              navigation.navigate("Inbox");
+            }
+          }, 4000);
         })
         .catch(error => {
           console.error('Failed to update exchange document:', error);
@@ -113,7 +114,7 @@ const Confirm = ({ route }) => {
       await deleteDoc(doc(doc(firestoreDB, 'profile', seller), 'meetups', id));
       await deleteDoc(doc(doc(firestoreDB, 'profile', buyer), 'meetups', id));
   
-      navigation.goBack();
+      navigation.navigate("Inbox");
     } catch (error) {
       console.error('Error finalizing confirmation:', error);
     }
