@@ -60,10 +60,12 @@ and select a suitable option.
 Please note that there is a mobile application [ExpoGo](https://expo.dev/go) that will allow you to run this project on your personal mobile device.
 
 ## ❔ FAQ
+**
 <details>
-**<summary>Do I have to be a current university student to use UniSwap?</summary>**
+<summary>Do I have to be a current university student to use UniSwap?</summary>
 Yes. Without a valid university associated email address, sign up will not be permitted.
 </details>
+**
 
 ## 📬 Communication 📬
 
