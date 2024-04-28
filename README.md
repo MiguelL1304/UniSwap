@@ -27,7 +27,7 @@
 ### 📷 Screenshots
 <img src="https://i.ibb.co/5hrsSmq/loggingin-ezgif-com-optimize.gif" alt="Logging in sequence" style="margin-right: 10px;"> <img src="https://i.ibb.co/FJHSz1j/quickwalkthrough-ezgif-com-crop.gif" alt="Quick walkthrough">
 
-### 💿 Tech Stack 
+### 💿 Tech Stack 💿
 
 - **React Native (with Expo)**
 - **JavaScript**
@@ -35,11 +35,11 @@
 - **Google Firebase**
   - Cloud Firestore
 
-## 📌 Getting Started
+## 📌 Getting Started 📌
 
-### Prerequisites
+### ❗Prerequisites
 This project requires Node.js (LTS 20.12.2) which comes bundled with npm: <br>
-[Download Link](https://nodejs.org/en/download)
+- [Download Link](https://nodejs.org/en/download)
 
 You will also need the Expo CLI: <br>
 `npm install expo-cli`
@@ -47,6 +47,12 @@ You will also need the Expo CLI: <br>
 To run the project, you will need an iOS emulator and an Android emulator:
 - [Android Studio](https://developer.android.com/studio/install)
 - [Xcode](https://developer.apple.com/xcode/)
+
+To start the project, run:
+`npm start` and select a suitable option.
+
+### 📌 Optional
+Please note that there is a mobile app [ExpoGo](https://expo.dev/go) that will allow you to run this project on your personal mobile device.
 
 ## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
 
