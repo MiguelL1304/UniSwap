@@ -27,3 +27,11 @@
 ## Link to Our JIRA: [Epic](https://jira.ggc.edu/projects/UN/issues/UN-82?filter=allissues)
 
 ## Communication: [Discord](https://discord.gg/vTHar55mdF)
+
+### 💿 Tech Stack 💿
+**React Native**
+**JavaScript**
+**Node.js**
+**Google Firebase**
+  *Cloud Firestore*
+
