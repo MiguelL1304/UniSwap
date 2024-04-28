@@ -24,6 +24,6 @@
 
 ## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
 
-## Link to Our JIRA: [Epic](https://jira.ggc.edu/projects/SDII24/issues/SDII24-8?filter=allopenissues)
+## Link to Our JIRA: [Epic](https://jira.ggc.edu/projects/UN/issues/UN-82?filter=allissues)
 
 ## Communication: [Discord](https://discord.gg/vTHar55mdF)
