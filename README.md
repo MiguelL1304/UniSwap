@@ -29,7 +29,7 @@
 
 ### 💿 Tech Stack 
 
-- **React Native**
+- **React Native (with Expo)**
 - **JavaScript**
 - **Node.js**
 - **Google Firebase**
@@ -41,8 +41,12 @@
 This project requires Node.js (LTS 20.12.2) which comes bundled with npm: <br>
 [Download Link](https://nodejs.org/en/download)
 
-You will also need the React Native CLI: <br>
-```npm install react-native-cli```
+You will also need the Expo CLI: <br>
+`npm install expo-cli`
+
+To run the project, you will need an iOS emulator and an Android emulator:
+[Android Studio](https://developer.android.com/studio/install)
+[Xcode](https://developer.apple.com/xcode/)
 
 ## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
 
