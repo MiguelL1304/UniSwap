@@ -25,7 +25,7 @@
 # 🌟 About the Project 🌟
 
 ### 📷 Screenshots
-![logging in sequence](https://ibb.co/vD0J474)
+<img src="https://ibb.co/vD0J474" alt="Logging in sequence">
 
 ### 💿 Tech Stack 
 
