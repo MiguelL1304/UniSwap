@@ -42,7 +42,9 @@ This project requires Node.js (LTS 20.12.2) which comes bundled with npm: <br>
 - [Download Link](https://nodejs.org/en/download)
 
 You will also need the Expo CLI: <br>
-`npm install expo-cli`
+```
+npm install expo-cli
+```
 
 To run the project, you will need an iOS emulator and an Android emulator:
 - [Android Studio](https://developer.android.com/studio/install)
