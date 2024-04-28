@@ -45,8 +45,8 @@ You will also need the Expo CLI: <br>
 `npm install expo-cli`
 
 To run the project, you will need an iOS emulator and an Android emulator:
-[Android Studio](https://developer.android.com/studio/install)
-[Xcode](https://developer.apple.com/xcode/)
+- [Android Studio](https://developer.android.com/studio/install)
+- [Xcode](https://developer.apple.com/xcode/)
 
 ## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
 
