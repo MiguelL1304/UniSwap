@@ -51,7 +51,10 @@ To run the project, you will need an iOS emulator and an Android emulator:
 - [Xcode](https://developer.apple.com/xcode/)
 
 To start the project, run:
-`npm start` and select a suitable option.
+```
+npm start
+```
+and select a suitable option.
 
 ### ❗ Optional
 Please note that there is a mobile application [ExpoGo](https://expo.dev/go) that will allow you to run this project on your personal mobile device.
