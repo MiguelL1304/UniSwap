@@ -42,7 +42,7 @@ This project requires Node.js (LTS 20.12.2) which comes bundled with npm: <br>
 [Download Link](https://nodejs.org/en/download)
 
 You will also need the React Native CLI: <br>
-`npm install react-native-cli`
+```npm install react-native-cli```
 
 ## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
 
