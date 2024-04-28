@@ -59,8 +59,24 @@ and select a suitable option.
 ### ❗ Optional
 Please note that there is a mobile application [ExpoGo](https://expo.dev/go) that will allow you to run this project on your personal mobile device.
 
-## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
+### ❗ Run Locally 
+To run this project locally, clone the repo in an appropriate directory:
+```
+git clone git@github.com:MiguelL1304/UniSwap.git
+```
 
-## Link to Our JIRA: [Epic](https://jira.ggc.edu/projects/UN/issues/UN-82?filter=allissues)
+Navigate to the cloned project folder:
+```
+cd path/to/project/directory
+```
+Start the project:
+```
+npm start
+```
+and select one of the options given.
 
-## Communication: [Discord](https://discord.gg/vTHar55mdF)
+## 📬 Communication 📬
+
+### Our [JIRA](https://jira.ggc.edu/projects/UN/issues/UN-82?filter=allissues)
+
+### Our [Discord](https://discord.gg/vTHar55mdF)
