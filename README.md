@@ -22,7 +22,7 @@
 1. **Drew Kuykendall**
     * Data Modeler
 
-### 💿 Tech Stack 💿
+# 💿 Tech Stack 💿
 
 - **React Native**
 - **JavaScript**
