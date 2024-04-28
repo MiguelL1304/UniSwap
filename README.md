@@ -35,6 +35,15 @@
 - **Google Firebase**
   - Cloud Firestore
 
+# 📌 Getting Started
+
+### Prerequisites
+This project requires Node.js (LTS 20.12.2) which comes bundled with npm: 
+[Download Link](https://nodejs.org/en/download)
+
+You will also need the React Native CLI:
+`npm install react-native-cli`
+
 ## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
 
 ## Link to Our JIRA: [Epic](https://jira.ggc.edu/projects/UN/issues/UN-82?filter=allissues)
