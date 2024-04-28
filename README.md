@@ -22,7 +22,7 @@
 1. **Drew Kuykendall**
     * Data Modeler
 
-# 🌟 About the Project 🌟
+## 🌟 About the Project 🌟
 
 ### 📷 Screenshots
 <img src="https://i.ibb.co/5hrsSmq/loggingin-ezgif-com-optimize.gif" alt="Logging in sequence" style="margin-right: 10px;"> <img src="https://i.ibb.co/FJHSz1j/quickwalkthrough-ezgif-com-crop.gif" alt="Quick walkthrough">
@@ -35,13 +35,13 @@
 - **Google Firebase**
   - Cloud Firestore
 
-# 📌 Getting Started
+## 📌 Getting Started
 
 ### Prerequisites
-This project requires Node.js (LTS 20.12.2) which comes bundled with npm: 
+This project requires Node.js (LTS 20.12.2) which comes bundled with npm: <br>
 [Download Link](https://nodejs.org/en/download)
 
-You will also need the React Native CLI:
+You will also need the React Native CLI: <br>
 `npm install react-native-cli`
 
 ## Link to Our Repo: [UniSwap](https://github.com/MiguelL1304/UniSwap.git)
