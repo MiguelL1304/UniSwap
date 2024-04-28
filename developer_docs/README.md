@@ -80,3 +80,7 @@ and select one of the options given.
 ### Our [JIRA](https://jira.ggc.edu/projects/UN/issues/UN-82?filter=allissues)
 
 ### Our [Discord](https://discord.gg/vTHar55mdF)
+
+## ⚠️ License ⚠️
+This work is licensed under the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.en.html) which is intended to guarantee your freedom to share and change all versions of this program--to make sure it remains free software for all its users.<br>
+Any modifications or derivative works of this code must also be released under the GPL.
