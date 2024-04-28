@@ -29,9 +29,9 @@
 ## Communication: [Discord](https://discord.gg/vTHar55mdF)
 
 ### 💿 Tech Stack 💿
-**React Native**
-**JavaScript**
-**Node.js**
-**Google Firebase**
+1. **React Native**
+1. **JavaScript**
+1. **Node.js**
+1. **Google Firebase**
   *Cloud Firestore*
 
