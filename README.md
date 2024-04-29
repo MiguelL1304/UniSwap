@@ -1,7 +1,7 @@
 # UniSwap
 
 ### Introduction
-  Uni Swap is a mobile application that offers an e-commerce market like eBay, Facebook Marketplace, etc. for users at the same college/university institution. This app will allow student-to-student transactions for used goods, organize meetup locations and times, and provide a feedback system for sellers.
+The current challenge for college students is the lack of a dedicated platform for buying and selling second-hand books and other items. To address this challenge, this application aims to foster student-to-student transactions within the confines of their educational institution. This platform will facilitate easy and secure exchanges, enabling students to buy and sell items relevant to their studies, dorm life, and extracurricular activities within their campus community. By providing a centralized marketplace, our app will streamline the process of finding and acquiring essential items, fostering a sense of community and collaboration among students.
 
 ### Team
 
