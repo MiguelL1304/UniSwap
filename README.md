@@ -59,7 +59,7 @@ and select a suitable option.
 ### ❗ Optional
 Please note that there is a mobile application [ExpoGo](https://expo.dev/go) that will allow you to run this project on your personal mobile device.
 
-## ❔ FAQ
+## ❔ FAQ ❔
 
 <details>
 <summary>Do I have to be a current university student to use UniSwap?</summary>
